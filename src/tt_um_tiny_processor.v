@@ -28,8 +28,8 @@ module tt_um_tiny_processor (
 );
 
 // Global //
-reg[`INST_W-1:0]     imem[`IMEM_SZ];
-reg[`DATAPATH_W-1:0] dmem[`DMEM_SZ];
+reg[`INST_W-1:0]     imem[0:`IMEM_SZ-1];
+reg[`DATAPATH_W-1:0] dmem[0:`DMEM_SZ-1];
 
 wire rst = ~rst_n;
 
@@ -52,10 +52,6 @@ always @(posedge clk) begin
     imem[5] <= 8'h0E;
     imem[6] <= 8'hF2;
     imem[7] <= 8'h13;
-
-    for(integer i = 8; i < `IMEM_SZ; i++) begin
-      imem[i] <= 8'h0;
-    end
   end else begin
     //Nothing for now...
   end
@@ -69,7 +65,7 @@ wire[3:0] rs     = inst[7:4];
 wire[3:0] imm    = inst[7:4];
 
 // Forward accumulator register
-reg[`DATAPATH_W-1:0] fwd_alu_res;
+wire[`DATAPATH_W-1:0] fwd_alu_res;
 
 // Early branch detect
 always @(posedge clk) begin
@@ -133,9 +129,21 @@ end
 
 always @(posedge clk) begin
   if ( rst ) begin
-    for(integer i = 0; i < `DMEM_SZ; i++) begin
-      dmem[i] <= 8'h0;
-    end    
+    dmem[0] <= 8'h0;
+    dmem[1] <= 8'h0;
+    dmem[2] <= 8'h0;
+    dmem[3] <= 8'h0;
+    dmem[4] <= 8'h0;
+    dmem[5] <= 8'h0;
+    dmem[6] <= 8'h0;
+    dmem[7] <= 8'h0;
+    dmem[8] <= 8'h0;
+    dmem[9] <= 8'h0;
+    dmem[10] <= 8'h0;
+    dmem[11] <= 8'h0;
+    dmem[12] <= 8'h0;
+    dmem[13] <= 8'h0;
+    dmem[14] <= 8'h0;
   end else if ( ir_opcode == 4'hF ) begin
     dmem[ir_rs] <= acc;
   end

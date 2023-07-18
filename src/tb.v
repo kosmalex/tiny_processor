@@ -16,10 +16,6 @@ module tb ();
         #1;
     end
 
-    // wire up the inputs and outputs
-    wire       lsb      = uo_out[7];
-    wire [6:0] segments = uo_out[6:0];
-
     wire [7:0] uo_out;
     wire [7:0] ui_in;
     wire [7:0] uio_out;
@@ -28,6 +24,10 @@ module tb ();
     wire clk;
     wire rst_n;
     wire ena;
+   
+    // wire up the inputs and outputs
+    wire [6:0] segments = uo_out[6:0];
+    wire       lsb      = uo_out[7];
 
     // instantiate the DUT with lower MAX_COUNT for a faster sim
     tt_um_tiny_processor tt_um_tiny_processor (
