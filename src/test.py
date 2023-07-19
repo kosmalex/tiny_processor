@@ -22,27 +22,27 @@ segments = {
 }
 
 insts = {
-  "add"  :0x0,
-  "sub"  :0x1,
-  "sll"  :0x2,
-  "bnez" :0x3,
-  "srl"  :0x4,
-  "mul"  :0x5,
-  "nand" :0x6,
-  "xor"  :0x7,
-  "addi" :0x8,
-  "li"   :0x9,
-  "slli" :0x10,
+  0x0  : "add"  ,
+  0x1  : "sub"  ,
+  0x2  : "sll"  ,
+  0x3  : "bnez" ,
+  0x4  : "srl"  ,
+  0x5  : "mul"  ,
+  0x6  : "nand" ,
+  0x7  : "xor"  ,
+  0x8  : "addi" ,
+  0x9  : "li"   ,
+  0x10 : "slli" ,
   
-  "rst"  :0xd,
-  "la"   :0xe,
-  "sa"   :0xf
+  0xd :"rst",
+  0xe :"la" ,
+  0xf :"sa" 
 }
 
-def print_regs(_range:Range):
+def print_regs(_range:range, dut):
   for j in _range:
     reg = "[rs {}]: {}".format(j, dut.tt_um_tiny_processor.dmem[j].value)
-    dut._log.info(reg + val)
+    dut._log.info(reg)
 
 
 @cocotb.test()
@@ -58,8 +58,8 @@ async def test_7seg(dut):
     await ClockCycles(dut.clk, 1)
 
     dut._log.info("check all segments")
-    for i in range(120):
-
+    for i in range(100):
+      dut._log.info(f"------------ cc {i} ------------")
       dut._log.info("--- FETCH ---")
       # assert int(dut.tt_um_tiny_processor.pc.value) == i 
       # dut._log.info("[PC {}] -> [SEG {}]".format(dut.tt_um_tiny_processor.pc.value, dut.segments.value))
@@ -72,11 +72,11 @@ async def test_7seg(dut):
       dut._log.info("[alu_res]: {}".format(dut.tt_um_tiny_processor.alu_res.value))
       dut._log.info("[fwd_alu_res]: {}".format(dut.tt_um_tiny_processor.fwd_alu_res.value))
       dut._log.info("- seq")
-      dut._log.info("[Inst: {}, rs: {}, imm: {}]".format(insts[int(dut.tt_um_tiny_processor.ir_opcode.value)], dut.tt_um_tiny_processor.ir_rs.value, dut.tt_um_tiny_processor.ir_imm.value, dut.tt_um_tiny_processor.sext_imm.value))
+      dut._log.info("[Inst: {}, rs: {}, imm: {}]".format(insts[int(dut.tt_um_tiny_processor.opcode.value)], dut.tt_um_tiny_processor.rs.value, dut.tt_um_tiny_processor.imm.value, dut.tt_um_tiny_processor.sext_imm.value))
       dut._log.info("[acc]: {}".format(dut.tt_um_tiny_processor.acc.value))
 
-      print_regs(range(2))
+      print_regs(range(2), dut)
 
       await ClockCycles(dut.clk, 1)
 
-    print_regs(range(15))
+    print_regs(range(15), dut)

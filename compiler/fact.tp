@@ -1,6 +1,7 @@
 li 5
 sa x0
 li 1
+sa x1
 
 loop:
   la x1

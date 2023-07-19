@@ -43,18 +43,18 @@ localparam PC_W = `CLOG2(`IMEM_SZ);
 reg[PC_W-1:0] pc;
 
 always @(posedge clk) begin
-  if ( rst ) begin    
-    imem[0] <= 8'h44;
-    imem[1] <= 8'h0F;
-    imem[2] <= 8'h1E;
-    imem[3] <= 8'h22;
-    imem[4] <= 8'h1F;
-    imem[5] <= 8'h0E;
-    imem[6] <= 8'hF2;
-    imem[7] <= 8'h13;
-    imem[8] <= 8'h00;
-    imem[9] <= 8'h00;
-    imem[10] <= 8'h00;
+  if ( rst ) begin
+    imem[0 ] <= 8'h59;
+    imem[1 ] <= 8'h0F;
+    imem[2 ] <= 8'h19;
+    imem[3 ] <= 8'h1F;
+    imem[4 ] <= 8'h1E;
+    imem[5 ] <= 8'h05;
+    imem[6 ] <= 8'h1F;
+    imem[7 ] <= 8'h0E;
+    imem[8 ] <= 8'hF8;
+    imem[9 ] <= 8'h0F;
+    imem[10] <= 8'h43;
     imem[11] <= 8'h00;
     imem[12] <= 8'h00;
     imem[13] <= 8'h00;
@@ -80,39 +80,49 @@ always @(posedge clk) begin
   if ( rst ) begin
     pc <= 0;
   end else begin
-    pc <= ( (opcode & 4'h3) && fwd_alu_res ) ? jmp : pc+1;
+    if ( opcode == 4'h3 ) begin
+        pc <= ( fwd_alu_res != 0 ) ? jmp : pc+1;
+    end else if (pc != 4'hF) begin
+      pc <= pc + 1;
+    end
   end
 end
 
-// IR //
-reg[3:0] ir_opcode, ir_rs, ir_imm;
-always @(posedge clk) begin
-  if ( rst ) begin
-    ir_opcode <= 0;
-    ir_rs     <= 0;
-    ir_imm    <= 0;
-  end else begin
-    ir_opcode <= opcode;
-    ir_rs     <= rs;
-    ir_imm    <= imm;
-  end
-end
+// // IR //
+// reg[3:0] ir_opcode, ir_rs, ir_imm;
+// always @(posedge clk) begin
+//   if ( rst ) begin
+//     ir_opcode <= 0;
+//     ir_rs     <= 0;
+//     ir_imm    <= 0;
+//   end else begin
+//     ir_opcode <= opcode;
+//     ir_rs     <= rs;
+//     ir_imm    <= imm;
+//   end
+// end
+
+// // Execute-Writeback stage //
+// reg[`DATAPATH_W-1:0] acc;
+
+// wire[`DATAPATH_W-1:0] op_data  = dmem[ir_rs];
+// wire[`DATAPATH_W-1:0] sext_imm = {{4{ir_imm[3]}}, ir_imm};
 
 // Execute-Writeback stage //
 reg[`DATAPATH_W-1:0] acc;
 
-wire[`DATAPATH_W-1:0] op_data  = dmem[ir_rs];
-wire[`DATAPATH_W-1:0] sext_imm = {{4{ir_imm[3]}}, ir_imm};
+wire[`DATAPATH_W-1:0] op_data  = dmem[rs];
+wire[`DATAPATH_W-1:0] sext_imm = {{4{imm[3]}}, imm};
 
 // ALU
 reg[`DATAPATH_W-1:0] alu_res;
 always @(*) begin
-  case (ir_opcode)
+  case (opcode)
     4'h0: alu_res = op_data + acc;        //ADD
     4'h1: alu_res = acc + ~(op_data) + 1; //SUB
-    4'h2: alu_res = acc << op_data[2:0];   //SLL
-    4'h4: alu_res = acc >> op_data[2:0];   //SRL
-    4'h5: alu_res = op_data * acc;        //MUL
+    4'h2: alu_res = acc << op_data[2:0];  //SLL
+    4'h4: alu_res = acc >> op_data[2:0];  //SRL
+    // 4'h5: alu_res = op_data * acc;        //MUL
     4'h6: alu_res = ~(op_data & acc);     //NAND
     4'h7: alu_res = op_data ^ acc;        //XOR
     4'h8: alu_res = sext_imm + acc;       //ADDI
@@ -155,8 +165,8 @@ always @(posedge clk) begin
     dmem[12] <= 8'h0;
     dmem[13] <= 8'h0;
     dmem[14] <= 8'h0;
-  end else if ( ir_opcode == 4'hF ) begin
-    dmem[ir_rs] <= alu_res;
+  end else if ( opcode == 4'hF ) begin
+    dmem[rs] <= alu_res;
   end
 end
 
