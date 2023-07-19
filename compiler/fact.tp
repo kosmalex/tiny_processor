@@ -1,0 +1,13 @@
+li 5
+sa x0
+li 1
+
+loop:
+  la x1
+  mul x0
+  sa x1
+  la x0
+  addi -1
+  sa x0
+  bnez loop
+

@@ -111,13 +111,15 @@ always @(*) begin
     4'h0: alu_res = op_data + acc;        //ADD
     4'h1: alu_res = acc + ~(op_data) + 1; //SUB
     4'h2: alu_res = acc << opdata[2:0];   //SLL
-    4'h3: alu_res = acc >> opdata[2:0];   //SRL
-    4'h4: alu_res = op_data * acc;        //MUL
-    4'h5: alu_res = ~(op_data & acc);     //NAND
-    4'h6: alu_res = op_data ^ acc;        //XOR
-    4'h7: alu_res = sext_imm + acc;       //ADDI
-    4'h8: alu_res = acc << sext_imm[2:0]; //SLLI
-    4'h9: alu_res = acc >> sext_imm[2:0]; //SRLI
+    4'h4: alu_res = acc >> opdata[2:0];   //SRL
+    4'h5: alu_res = op_data * acc;        //MUL
+    4'h6: alu_res = ~(op_data & acc);     //NAND
+    4'h7: alu_res = op_data ^ acc;        //XOR
+    4'h8: alu_res = sext_imm + acc;       //ADDI
+    4'h9: alu_res = sext_imm;             //LI
+    4'hA: alu_res = acc << sext_imm[2:0]; //SLLI
+    
+    4'hD: alu_res = 0;                    //RST
     4'hE: alu_res = op_data;              //LOAD ACC or LA
     4'hF: alu_res = acc;                  //STORE ACC or SA
 

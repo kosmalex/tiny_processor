@@ -22,15 +22,28 @@ segments = {
 }
 
 insts = {
-  0x0: "ADD",
-  0x1: "NAND",
-  0x3: "BNEZ",
-  0x2: "ADDI",
-  0x4: "LI",
-  0x5: "SLLI",
-  0xe: "LA",
-  0xf: "SA",
+  "add"  :0x0,
+  "sub"  :0x1,
+  "sll"  :0x2,
+  "bnez" :0x3,
+  "srl"  :0x4,
+  "mul"  :0x5,
+  "nand" :0x6,
+  "xor"  :0x7,
+  "addi" :0x8,
+  "li"   :0x9,
+  "slli" :0x10,
+  
+  "rst"  :0xd,
+  "la"   :0xe,
+  "sa"   :0xf
 }
+
+def print_regs(_range:Range):
+  for j in _range:
+    reg = "[rs {}]: {}".format(j, dut.tt_um_tiny_processor.dmem[j].value)
+    dut._log.info(reg + val)
+
 
 @cocotb.test()
 async def test_7seg(dut):
@@ -61,15 +74,9 @@ async def test_7seg(dut):
       dut._log.info("- seq")
       dut._log.info("[Inst: {}, rs: {}, imm: {}]".format(insts[int(dut.tt_um_tiny_processor.ir_opcode.value)], dut.tt_um_tiny_processor.ir_rs.value, dut.tt_um_tiny_processor.ir_imm.value, dut.tt_um_tiny_processor.sext_imm.value))
       dut._log.info("[acc]: {}".format(dut.tt_um_tiny_processor.acc.value))
-      for j in range(2):
-        reg = "[rs {}]: ".format(j)
-        val = ""
-        val += "{}".format(dut.tt_um_tiny_processor.dmem[j].value)
-        dut._log.info(reg + val)
+
+      print_regs(range(2))
+
       await ClockCycles(dut.clk, 1)
 
-    for j in range(15):
-      reg = "[rs {}]: ".format(j)
-      val = ""
-      val += "{}".format(dut.tt_um_tiny_processor.dmem[j].value)
-      dut._log.info(reg + val)
+    print_regs(range(15))
