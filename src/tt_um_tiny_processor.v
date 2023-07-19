@@ -52,6 +52,14 @@ always @(posedge clk) begin
     imem[5] <= 8'h0E;
     imem[6] <= 8'hF2;
     imem[7] <= 8'h13;
+    imem[8] <= 8'h00;
+    imem[9] <= 8'h00;
+    imem[10] <= 8'h00;
+    imem[11] <= 8'h00;
+    imem[12] <= 8'h00;
+    imem[13] <= 8'h00;
+    imem[14] <= 8'h00;
+    imem[15] <= 8'h00;
   end else begin
     //Nothing for now...
   end
