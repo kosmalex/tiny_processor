@@ -122,7 +122,7 @@ always @(*) begin
     4'h1: alu_res = acc + ~(op_data) + 1; //SUB
     4'h2: alu_res = acc << op_data[2:0];  //SLL
     4'h4: alu_res = acc >> op_data[2:0];  //SRL
-    // 4'h5: alu_res = op_data * acc;        //MUL
+    4'h5: alu_res = op_data * acc;        //MUL
     4'h6: alu_res = ~(op_data & acc);     //NAND
     4'h7: alu_res = op_data ^ acc;        //XOR
     4'h8: alu_res = sext_imm + acc;       //ADDI
