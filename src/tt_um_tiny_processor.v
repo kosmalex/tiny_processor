@@ -80,11 +80,7 @@ always @(posedge clk) begin
   if ( rst ) begin
     pc <= 0;
   end else begin
-    if ( opcode == 4'h3 ) begin
-      pc <= ( fwd_alu_res != 0 ) ? jmp : pc+1;
-    end else begin
-      pc <= pc + 1;
-    end
+    pc <= ( (opcode & 4'h3) && fwd_alu_res ) ? jmp : pc+1;
   end
 end
 
@@ -107,18 +103,23 @@ reg[`DATAPATH_W-1:0] acc;
 
 wire[`DATAPATH_W-1:0] op_data  = dmem[ir_rs];
 wire[`DATAPATH_W-1:0] sext_imm = {{4{ir_imm[3]}}, ir_imm};
-// wire[`DATAPATH_W-1:0] sext_imm = ir_imm;
 
 // ALU
 reg[`DATAPATH_W-1:0] alu_res;
 always @(*) begin
   case (ir_opcode)
     4'h0: alu_res = op_data + acc;        //ADD
-    4'h1: alu_res = ~(op_data & acc);     //NAND
-    4'h2: alu_res = sext_imm + acc;       //ADDI
-    4'h4: alu_res = sext_imm;             //LI
-    4'h5: alu_res = acc << sext_imm[2:0]; //SLLI
+    4'h1: alu_res = acc + ~(op_data) + 1; //SUB
+    4'h2: alu_res = acc << opdata[2:0];   //SLL
+    4'h3: alu_res = acc >> opdata[2:0];   //SRL
+    4'h4: alu_res = op_data * acc;        //MUL
+    4'h5: alu_res = ~(op_data & acc);     //NAND
+    4'h6: alu_res = op_data ^ acc;        //XOR
+    4'h7: alu_res = sext_imm + acc;       //ADDI
+    4'h8: alu_res = acc << sext_imm[2:0]; //SLLI
+    4'h9: alu_res = acc >> sext_imm[2:0]; //SRLI
     4'hE: alu_res = op_data;              //LOAD ACC or LA
+    4'hF: alu_res = acc;                  //STORE ACC or SA
 
     default: alu_res = acc;               // NOOP
   endcase
@@ -153,7 +154,7 @@ always @(posedge clk) begin
     dmem[13] <= 8'h0;
     dmem[14] <= 8'h0;
   end else if ( ir_opcode == 4'hF ) begin
-    dmem[ir_rs] <= acc;
+    dmem[ir_rs] <= alu_res;
   end
 end
 
