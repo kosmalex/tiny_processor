@@ -33,6 +33,7 @@ generate
     );
   end
 endgenerate
+
 endmodule
 
 module barrel_shift (
