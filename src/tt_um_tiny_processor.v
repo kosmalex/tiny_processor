@@ -90,7 +90,7 @@ reg[`DATAPATH_W-1:0] dmem[0:`DMEM_SZ-1];
 wire rst = ~rst_n;
 
 // Fetch-Decode //
-reg[PC_W-1:0]         pc;
+reg [PC_W-1:0]        pc;
 wire[PC_W-1:0]        jmp;
 wire[`INST_W-1:0]     inst;
 wire[RID_W-1:0]       rs;
