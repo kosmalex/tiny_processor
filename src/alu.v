@@ -48,20 +48,20 @@ generate
   genvar j;
   
   // Reverse bits
-  for (j = 0; j < 7; j = j + 1) begin
+  for (j = 0; j < 8; j = j + 1) begin
     assign lvl[0][j] = rshift_in ? value_in[7 - j] : value_in[j];
   end
 
   // First level shift
   assign lvl[1][0] = amnt_in[0] ? 1'b0 : value_in[0];
-  for (j = 1; j < 7; j = j + 1) begin
+  for (j = 1; j < 8; j = j + 1) begin
     assign lvl[1][j] = amnt_in[0] ? lvl[1][j-1] : lvl[1][j];
   end
   
   // Second level shift
   assign lvl[2][0] = amnt_in[1] ? 1'b0 : value_in[0];
   assign lvl[2][1] = amnt_in[1] ? 1'b0 : value_in[1];
-  for (j = 2; j < 7; j = j + 1) begin
+  for (j = 2; j < 8; j = j + 1) begin
     assign lvl[2][j] = amnt_in[1] ? lvl[2][j-2] : lvl[2][j];
   end
 
@@ -69,12 +69,12 @@ generate
   assign lvl[3][0] = amnt_in[2] ? 1'b0 : value_in[0];
   assign lvl[3][1] = amnt_in[2] ? 1'b0 : value_in[1];
   assign lvl[3][2] = amnt_in[2] ? 1'b0 : value_in[2];
-  for (j = 3; j < 7; j = j + 1) begin
+  for (j = 3; j < 8; j = j + 1) begin
     assign lvl[3][j] = amnt_in[2] ? lvl[3][j-3] : lvl[3][j];
   end
 
   // Reverse bits again
-  for (j = 0; j < 7; j = j + 1) begin
+  for (j = 0; j < 8; j = j + 1) begin
     assign res_out[j] = rshift_in ? lvl[3][7 - j] : lvl[3][j];
   end
 endgenerate
