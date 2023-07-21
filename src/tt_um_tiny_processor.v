@@ -181,7 +181,7 @@ alu alu_0 (
   .unit_sel_in (ctrl2alu_unit_sel),
   .op_sel_in   (ctrl2alu_op_sel),
 
-  .acc_in      (acc),
+  .acc_in      (acc[7:0]),
   .src_in      (src),
 
   .alu_res_out (alu_res)
