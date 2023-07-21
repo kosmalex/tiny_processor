@@ -54,24 +54,24 @@ generate
   end
 
   // First level shift
-  assign lvl[1][0] = amnt_in[0] ? 1'b0 : value_in[0];
+  assign lvl[1][0] = amnt_in[0] ? 1'b0 : lvl[0][0];
   for (j = 1; j < 8; j = j + 1) begin
-    assign lvl[1][j] = amnt_in[0] ? lvl[1][j-1] : lvl[1][j];
+    assign lvl[1][j] = amnt_in[0] ? lvl[0][j-1] : lvl[0][j];
   end
   
   // Second level shift
-  assign lvl[2][0] = amnt_in[1] ? 1'b0 : value_in[0];
-  assign lvl[2][1] = amnt_in[1] ? 1'b0 : value_in[1];
+  assign lvl[2][0] = amnt_in[1] ? 1'b0 : lvl[1][0];
+  assign lvl[2][1] = amnt_in[1] ? 1'b0 : lvl[1][1];
   for (j = 2; j < 8; j = j + 1) begin
-    assign lvl[2][j] = amnt_in[1] ? lvl[2][j-2] : lvl[2][j];
+    assign lvl[2][j] = amnt_in[1] ? lvl[1][j-2] : lvl[1][j];
   end
 
   // Third level shift
-  assign lvl[3][0] = amnt_in[2] ? 1'b0 : value_in[0];
-  assign lvl[3][1] = amnt_in[2] ? 1'b0 : value_in[1];
-  assign lvl[3][2] = amnt_in[2] ? 1'b0 : value_in[2];
+  assign lvl[3][0] = amnt_in[2] ? 1'b0 : lvl[2][0];
+  assign lvl[3][1] = amnt_in[2] ? 1'b0 : lvl[2][1];
+  assign lvl[3][2] = amnt_in[2] ? 1'b0 : lvl[2][2];
   for (j = 3; j < 8; j = j + 1) begin
-    assign lvl[3][j] = amnt_in[2] ? lvl[3][j-3] : lvl[3][j];
+    assign lvl[3][j] = amnt_in[2] ? lvl[2][j-3] : lvl[2][j];
   end
 
   // Reverse bits again

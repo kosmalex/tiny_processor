@@ -136,19 +136,19 @@ assign uio_out = 8'h0;
 
 always @(posedge clk) begin
   if ( rst ) begin
-    imem[0 ] <= 8'h5B;
-    imem[1 ] <= 8'h07;
+    imem[0 ] <= 8'h1B;
+    imem[1 ] <= 8'h17;
     imem[2 ] <= 8'h1B;
-    imem[3 ] <= 8'h17;
-    imem[4 ] <= 8'h13;
-    imem[5 ] <= 8'h0E;
-    imem[6 ] <= 8'h17;
-    imem[7 ] <= 8'h03;
-    imem[8 ] <= 8'hF8;
-    imem[9 ] <= 8'h07;
-    imem[10] <= 8'h4F;
-    imem[11] <= 8'h00;
-    imem[12] <= 8'h00;
+    imem[3 ] <= 8'h37;
+    imem[4 ] <= 8'hFB;
+    imem[5 ] <= 8'h07;
+    imem[6 ] <= 8'h11;
+    imem[7 ] <= 8'h20;
+    imem[8 ] <= 8'h27;
+    imem[9 ] <= 8'h03;
+    imem[10] <= 8'h36;
+    imem[11] <= 8'h07;
+    imem[12] <= 8'h6F;
     imem[13] <= 8'h00;
     imem[14] <= 8'h00;
     imem[15] <= 8'h00;

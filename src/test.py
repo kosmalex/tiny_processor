@@ -87,7 +87,7 @@ async def test_7seg(dut):
       dut._log.info("[alu_res]: {}".format(dut.tt_um_tiny_processor.alu_res.value))
       dut._log.info("[acc]: {}".format(dut.tt_um_tiny_processor.acc.value))
 
-      print_regs(range(2), dut)
+      print_regs(range(4), dut)
 
       await ClockCycles(dut.clk, 1)
 
