@@ -98,7 +98,7 @@ wire[3:0]             imm;
 
 // ALU //
 wire[`DATAPATH_W-1:0] src;
-reg[15:0]  acc;
+reg[`DATAPATH_W-1:0]  acc;
 reg[`DATAPATH_W-1:0]  alu_res;
 reg[`DATAPATH_W-1:0]  op_data;
 
@@ -181,7 +181,7 @@ alu alu_0 (
   .unit_sel_in (ctrl2alu_unit_sel),
   .op_sel_in   (ctrl2alu_op_sel),
 
-  .acc_in      (acc[7:0]),
+  .acc_in      (acc),
   .src_in      (src),
 
   .alu_res_out (alu_res)
