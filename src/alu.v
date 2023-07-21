@@ -79,7 +79,6 @@ generate
     assign res_out[j] = rshift_in ? lvl[3][7 - j] : lvl[3][j];
   end
 endgenerate
-
 endmodule
 
 module alu (

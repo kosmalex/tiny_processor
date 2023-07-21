@@ -98,7 +98,7 @@ wire[3:0]             imm;
 
 // ALU //
 wire[`DATAPATH_W-1:0] src;
-reg[`DATAPATH_W-1:0]  acc;
+reg[15:0]  acc;
 reg[`DATAPATH_W-1:0]  alu_res;
 reg[`DATAPATH_W-1:0]  op_data;
 
