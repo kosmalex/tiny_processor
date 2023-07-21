@@ -14,6 +14,59 @@
 `define IMEM_SZ    16
 `define DMEM_SZ    15
 
+module control_logic (
+  input wire[3:0] opcode_in,
+  input wire[3:0] pc_in,
+  input wire[7:0] alu_res_in,
+  
+  output reg      pc_sel_out,
+  output reg      pc_en_out,
+
+  output reg[2:0] unit_sel_out,
+  output reg      op_sel_out,
+  output reg      src_sel_out,
+  output reg      wen_out,
+
+  output reg      wacc_en_out
+);
+
+// Check if `bnez` branch is taken
+wire is_branch   = &opcode_in;
+wire is_not_zero = |alu_res_in;
+wire is_taken    = is_branch & is_not_zero;
+
+assign pc_sel_out = is_taken;
+
+/** If the last instruction is not a branch or is a not taken branch -->
+    the programm has terminated --> freeze `pc`.
+ */
+assign pc_en_out  = ~( &pc_in & (~is_branch | ~is_taken) );
+
+/**
+  op_sel_out: Used to distinguish between addition-subtraction, 
+              left-right shift, `and` and `nand` logic ops.
+  src_sel_out: Operand select -> RS or SEXT immediate
+ */
+assign op_sel_out  = opcode_in[2];
+assign src_sel_out = opcode_in[3] & ~opcode_in[2];
+
+wire unit_sel_1 = &opcode_in[3:2]; /* Divides units into 2 categories:
+                                     1> Those that do operate with immediates
+                                     2> And those that do not */
+
+wire[1:0] unit_sel_0 = opcode_in[1:0]; /* Select between different ops in the category */
+
+
+assign unit_sel_out = {unit_sel_1, unit_sel_0};
+
+// Equivalent to `opcode_in == 4'h7`;
+assign wen_out = &opcode_in[2:0];
+
+// When storing don't write accumulator register
+assign wacc_en_out = ~wen_out;
+
+endmodule
+
 module tt_um_tiny_processor (
   input  wire [7:0] ui_in,    // Dedicated inputs - connected to the input switches
   output wire [7:0] uo_out,   // Dedicated outputs - connected to the 7 segment display
@@ -26,6 +79,9 @@ module tt_um_tiny_processor (
   input  wire       clk,      // clock
   input  wire       rst_n     // reset_n - low to reset
 );
+localparam PC_W  = `CLOG2(`IMEM_SZ);
+localparam RID_W = `CLOG2(`DMEM_SZ);
+localparam OPC_W = 4;
 
 // Global //
 reg[`INST_W-1:0]     imem[0:`IMEM_SZ-1];
@@ -33,28 +89,64 @@ reg[`DATAPATH_W-1:0] dmem[0:`DMEM_SZ-1];
 
 wire rst = ~rst_n;
 
+// Fetch-Decode //
+reg[PC_W-1:0]         pc;
+wire[PC_W-1:0]        jmp;
+wire[`INST_W-1:0]     inst;
+wire[RID_W-1:0]       rs;
+wire[3:0]             imm;
+
+// ALU //
+reg[`DATAPATH_W-1:0]  acc;
+reg[`DATAPATH_W-1:0]  src;
+reg[`DATAPATH_W-1:0]  alu_res;
+reg[`DATAPATH_W-1:0]  op_data;
+
+// Control Signals //
+reg      ctrl_pc_sel;
+reg      ctrl_pc_en;
+
+reg[2:0] ctrl2alu_unit_sel;
+reg      ctrl2alu_op_sel;
+reg      ctrl_src_sel;
+
+reg      ctrl_wen;
+
+reg      ctrl_wacc_en;
+
+control_logic control_logic_0 (
+  .opcode_in    (inst[OPC_W-1:0]),
+  .pc_in        (pc),
+  .alu_res_in   (alu_res),
+
+  .pc_sel_out   (ctrl_pc_sel),
+  .pc_en_out    (ctrl_pc_en),
+
+  .unit_sel_out (ctrl2alu_unit_sel),
+  .op_sel_out   (ctrl2alu_op_sel),
+  .src_sel_out  (ctrl_src_sel),
+  .wen_out      (ctrl_wen),
+
+  .wacc_en_out  (ctrl_wacc_en)
+);
+
 // No bidirectional IO
 assign uio_oe  = 8'h0;
 assign uio_out = 8'h0;
 
-// Fetch-Decode stage //
-localparam PC_W = `CLOG2(`IMEM_SZ);
-
-reg[PC_W-1:0] pc;
-
 always @(posedge clk) begin
   if ( rst ) begin
-    imem[0 ] <= 8'h59;
-    imem[1 ] <= 8'h0F;
-    imem[2 ] <= 8'h19;
-    imem[3 ] <= 8'h1F;
-    imem[4 ] <= 8'h1E;
-    imem[5 ] <= 8'h05;
-    imem[6 ] <= 8'h1F;
-    imem[7 ] <= 8'h0E;
+    imem[0 ] <= 8'h5B;
+    imem[1 ] <= 8'h07;
+    imem[2 ] <= 8'h1B;
+    imem[3 ] <= 8'h17;
+    imem[4 ] <= 8'h13;
+    imem[5 ] <= 8'h0E;
+    imem[6 ] <= 8'h17;
+    imem[7 ] <= 8'h03;
     imem[8 ] <= 8'hF8;
-    imem[9 ] <= 8'h0F;
-    imem[10] <= 8'h43;
+    imem[9 ] <= 8'h07;
+    imem[10] <= 8'h4F;
     imem[11] <= 8'h00;
     imem[12] <= 8'h00;
     imem[13] <= 8'h00;
@@ -65,85 +157,40 @@ always @(posedge clk) begin
   end
 end
 
-wire[`INST_W-1:0] inst = imem[pc];
-
-wire[3:0] opcode = inst[3:0];
-wire[3:0] jmp    = inst[7:4];
-wire[3:0] rs     = inst[7:4];
-wire[3:0] imm    = inst[7:4];
-
-// Forward accumulator register
-wire[`DATAPATH_W-1:0] fwd_alu_res;
+assign inst = imem[pc];
+assign jmp  = inst[7:4];
+assign imm  = inst[7:4];
+assign rs   = inst[7:4];
 
 // Early branch detect
 always @(posedge clk) begin
   if ( rst ) begin
     pc <= 0;
-  end else begin
-    if ( opcode == 4'h3 ) begin
-        pc <= ( fwd_alu_res != 0 ) ? jmp : pc+1;
-    end else if (pc != 4'hF) begin
-      pc <= pc + 1;
-    end
+  end else if (ctrl_pc_en) begin
+    pc <= ctrl_pc_sel ? jmp : pc+1;
   end
 end
 
-// // IR //
-// reg[3:0] ir_opcode, ir_rs, ir_imm;
-// always @(posedge clk) begin
-//   if ( rst ) begin
-//     ir_opcode <= 0;
-//     ir_rs     <= 0;
-//     ir_imm    <= 0;
-//   end else begin
-//     ir_opcode <= opcode;
-//     ir_rs     <= rs;
-//     ir_imm    <= imm;
-//   end
-// end
-
-// // Execute-Writeback stage //
-// reg[`DATAPATH_W-1:0] acc;
-
-// wire[`DATAPATH_W-1:0] op_data  = dmem[ir_rs];
-// wire[`DATAPATH_W-1:0] sext_imm = {{4{ir_imm[3]}}, ir_imm};
-
 // Execute-Writeback stage //
-reg[`DATAPATH_W-1:0] acc;
-
-wire[`DATAPATH_W-1:0] op_data  = dmem[rs];
 wire[`DATAPATH_W-1:0] sext_imm = {{4{imm[3]}}, imm};
 
-// ALU
-reg[`DATAPATH_W-1:0] alu_res;
-always @(*) begin
-  case (opcode)
-    4'h0: alu_res = op_data + acc;        //ADD
-    4'h1: alu_res = acc + ~(op_data) + 1; //SUB
-    4'h2: alu_res = acc << op_data[2:0];  //SLL
-    4'h4: alu_res = acc >> op_data[2:0];  //SRL
-    4'h5: alu_res = op_data * acc;        //MUL
-    4'h6: alu_res = ~(op_data & acc);     //NAND
-    4'h7: alu_res = op_data ^ acc;        //XOR
-    4'h8: alu_res = sext_imm + acc;       //ADDI
-    4'h9: alu_res = sext_imm;             //LI
-    4'hA: alu_res = acc << sext_imm[2:0]; //SLLI
-    
-    4'hD: alu_res = 0;                    //RST
-    4'hE: alu_res = op_data;              //LOAD ACC or LA
-    4'hF: alu_res = acc;                  //STORE ACC or SA
+assign src = ctrl_src_sel ? sext_imm : dmem[rs];
 
-    default: alu_res = acc;               // NOOP
-  endcase
-end
+// ALU //
+alu alu_0 (
+  .unit_sel_in (ctrl2alu_unit_sel),
+  .op_sel_in   (ctrl2alu_op_sel),
 
-// Forward ALU res to Fetch stage
-assign fwd_alu_res = alu_res;
+  .acc_in      (acc),
+  .src_in      (src),
 
-always @(posedge clk) begin
+  .alu_res_out (alu_res)
+);
+
+always @(posedge clk) begin : Accumulator
   if ( rst ) begin
     acc <= 0;
-  end else begin
+  end else if (ctrl_wacc_en) begin
     acc <= alu_res;
   end
 end
@@ -165,8 +212,8 @@ always @(posedge clk) begin
     dmem[12] <= 8'h0;
     dmem[13] <= 8'h0;
     dmem[14] <= 8'h0;
-  end else if ( opcode == 4'hF ) begin
-    dmem[rs] <= alu_res;
+  end else if ( ctrl_wen ) begin
+    dmem[rs] <= acc;
   end
 end
 

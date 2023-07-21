@@ -22,21 +22,26 @@ segments = {
 }
 
 insts = {
-  0x0  : "add"  ,
-  0x1  : "sub"  ,
-  0x2  : "sll"  ,
-  0x3  : "bnez" ,
-  0x4  : "srl"  ,
-  0x5  : "mul"  ,
-  0x6  : "nand" ,
-  0x7  : "xor"  ,
-  0x8  : "addi" ,
-  0x9  : "li"   ,
-  0x10 : "slli" ,
+  0x0 : "add"  ,
+  0x4 : "sub"  ,
+  0x8 : "addi" ,
   
-  0xd :"rst",
-  0xe :"la" ,
-  0xf :"sa" 
+  0x1 : "and"  ,
+  0x5 : "nand" ,
+  0x9 : "andi" ,
+  
+  0x2 : "sll"  ,
+  0xA : "slli" ,
+  0x6 : "srl"  ,
+  
+  0x3 : "la"  ,
+  0xB : "li"  ,
+  0x7 : "sa"  ,
+  
+  0xC : "or"  ,
+  0xD : "xor" ,
+  0xE : "mul" ,
+  0xF : "bnez",
 }
 
 def print_regs(_range:range, dut):
@@ -63,16 +68,23 @@ async def test_7seg(dut):
       dut._log.info("--- FETCH ---")
       # assert int(dut.tt_um_tiny_processor.pc.value) == i 
       # dut._log.info("[PC {}] -> [SEG {}]".format(dut.tt_um_tiny_processor.pc.value, dut.segments.value))
-      dut._log.info("[PC {}] -> [{}]".format(dut.tt_um_tiny_processor.pc.value, dut.tt_um_tiny_processor.inst.value))
+      dut._log.info("[PC {}] -> [{}]".format(dut.tt_um_tiny_processor.pc.value, insts[int(dut.tt_um_tiny_processor.control_logic_0.opcode_in.value)]))
+      dut._log.info("[opcode {}]".format(dut.tt_um_tiny_processor.control_logic_0.opcode_in.value))
+      dut._log.info("[usel0 {}]".format(dut.tt_um_tiny_processor.control_logic_0.unit_sel_0.value))
+      dut._log.info("[usel1 {}]".format(dut.tt_um_tiny_processor.control_logic_0.unit_sel_1.value))
+      dut._log.info("[unit_sel {}]".format(dut.tt_um_tiny_processor.ctrl2alu_unit_sel.value))
+      dut._log.info("[is_store {}]".format(dut.tt_um_tiny_processor.control_logic_0.wen_out.value))
+      dut._log.info("[rs {}]".format(dut.tt_um_tiny_processor.rs.value))
+      # dut._log.info("[isbranch {}]".format(dut.tt_um_tiny_processor.control_logic_0.is_branch.value))
+      # dut._log.info("[iszero {}]".format(dut.tt_um_tiny_processor.control_logic_0.is_not_zero.value))
+      # dut._log.info("[iszero {}]".format(dut.tt_um_tiny_processor.ctrl_pc_sel.value))
+      # dut._log.info("[iszero {}]".format(dut.tt_um_tiny_processor.jmp.value))
       # assert int(dut.segments.value) == segments[int(dut.tt_um_tiny_processor.pc.value)]
 
       dut._log.info("--- EXEC ---")
-      dut._log.info("- comb")
       dut._log.info("[sext_imm: {}]".format(dut.tt_um_tiny_processor.sext_imm.value))
+      dut._log.info("[src: {}]".format(dut.tt_um_tiny_processor.src.value))
       dut._log.info("[alu_res]: {}".format(dut.tt_um_tiny_processor.alu_res.value))
-      dut._log.info("[fwd_alu_res]: {}".format(dut.tt_um_tiny_processor.fwd_alu_res.value))
-      dut._log.info("- seq")
-      dut._log.info("[Inst: {}, rs: {}, imm: {}]".format(insts[int(dut.tt_um_tiny_processor.opcode.value)], dut.tt_um_tiny_processor.rs.value, dut.tt_um_tiny_processor.imm.value, dut.tt_um_tiny_processor.sext_imm.value))
       dut._log.info("[acc]: {}".format(dut.tt_um_tiny_processor.acc.value))
 
       print_regs(range(2), dut)
