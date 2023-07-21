@@ -19,15 +19,15 @@ module control_logic (
   input wire[3:0] pc_in,
   input wire[7:0] alu_res_in,
   
-  output reg      pc_sel_out,
-  output reg      pc_en_out,
+  output wire      pc_sel_out,
+  output wire      pc_en_out,
 
-  output reg[2:0] unit_sel_out,
-  output reg      op_sel_out,
-  output reg      src_sel_out,
-  output reg      wen_out,
+  output wire[2:0] unit_sel_out,
+  output wire      op_sel_out,
+  output wire      src_sel_out,
+  output wire      wen_out,
 
-  output reg      wacc_en_out
+  output wire      wacc_en_out
 );
 
 // Check if `bnez` branch is taken
@@ -97,8 +97,8 @@ wire[RID_W-1:0]       rs;
 wire[3:0]             imm;
 
 // ALU //
+wire[`DATAPATH_W-1:0] src;
 reg[`DATAPATH_W-1:0]  acc;
-reg[`DATAPATH_W-1:0]  src;
 reg[`DATAPATH_W-1:0]  alu_res;
 reg[`DATAPATH_W-1:0]  op_data;
 
