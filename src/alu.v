@@ -19,7 +19,7 @@ module adder_8bit(
   output reg[7:0] S_out
 );
 
-wire[7:0] C;
+wire[8:0] C;
 assign C[0] = C_in;
 
 generate

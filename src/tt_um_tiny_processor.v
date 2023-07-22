@@ -83,7 +83,7 @@ localparam PC_W  = `CLOG2(`IMEM_SZ);
 localparam RID_W = `CLOG2(`DMEM_SZ);
 localparam OPC_W = 4;
 
-// Global //
+// Processor global //
 reg[`INST_W-1:0]     imem[0:`IMEM_SZ-1];
 reg[`DATAPATH_W-1:0] dmem[0:`DMEM_SZ-1];
 
@@ -216,6 +216,25 @@ always @(posedge clk) begin
     dmem[rs] <= acc;
   end
 end
+
+/** 
+  SPI-interface: The slaves in this case are the
+    data and instruction registers of the processor
+ */
+wire csd, csi;   // Chip select signals for data and instruction caches
+wire sclk;       // Serial clock
+wire miso, mosi; // Master In Slave Out and Master Out Slave In
+
+assign sclk = uio_in[0];
+assign csi  = uio_in[1];
+assign csd  = uio_in[2];
+assign mosi = uio_in[3];
+assign miso = uio_out[4];
+
+assign uio_oe[3:0] = 4'b0; // sclk, csi, csd, mosi
+assign uio_oe[ 4 ] = 3'b1; // miso
+assign uio_oe[7:5] = 3'b0; // ...
+
 
 reg[4:0] seg7In;
 always @(*) begin
