@@ -25,7 +25,7 @@ assign C[0] = C_in;
 generate
   genvar i;
 
-  for (i = 0; i < 7; i = i + 1) begin : carry_propagate_adder
+  for (i = 0; i < 8; i = i + 1) begin : carry_propagate_adder
     cs_add cs_add_0(
       .x(A_in[i]), .y(B_in[i]), .z(C[i]),
       
