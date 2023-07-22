@@ -146,9 +146,9 @@ always @(posedge clk) begin
     imem[7 ] <= 8'h20;
     imem[8 ] <= 8'h27;
     imem[9 ] <= 8'h03;
-    imem[10] <= 8'h36;
-    imem[11] <= 8'h07;
-    imem[12] <= 8'h6F;
+    imem[10] <= 8'h00;
+    imem[11] <= 8'h00;
+    imem[12] <= 8'h00;
     imem[13] <= 8'h00;
     imem[14] <= 8'h00;
     imem[15] <= 8'h00;
