@@ -34,8 +34,6 @@ generate
   end
 endgenerate
 
-assign S_out[7] = A_in[7] ^ B_in[7] ^ C[7];
-
 endmodule
 
 module barrel_shift (
@@ -124,7 +122,7 @@ always @(*) begin
     
     3'b100: alu_res_out = acc_in | src_in;
     3'b101: alu_res_out = acc_in ^ src_in;
-    // 3'b110: alu_res_out = acc_in * src_in;
+    3'b110: alu_res_out = acc_in * src_in;
     3'b111: alu_res_out = acc_in; // this is for bnez
   endcase
 end
