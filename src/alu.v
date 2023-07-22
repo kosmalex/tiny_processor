@@ -19,13 +19,13 @@ module adder_8bit(
   output reg[7:0] S_out
 );
 
-wire[8:0] C;
+wire[7:0] C;
 assign C[0] = C_in;
 
 generate
   genvar i;
 
-  for (i = 0; i < 8; i = i + 1) begin : carry_propagate_adder
+  for (i = 0; i < 7; i = i + 1) begin : carry_propagate_adder
     cs_add cs_add_0(
       .x(A_in[i]), .y(B_in[i]), .z(C[i]),
       
@@ -33,6 +33,8 @@ generate
     );
   end
 endgenerate
+
+assign S_out[7] = A_in[7] ^ B_in[7] ^ C[7];
 
 endmodule
 
