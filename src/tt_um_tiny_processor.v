@@ -14,21 +14,125 @@
 `define IMEM_SZ    16
 `define DMEM_SZ    15
 
+module cache #(
+  parameter SIZE = 8,
+
+  localparam SIZE_W = `CLOG2(SIZE)
+)(
+  input wire clk, rst,
+
+  input wire[`DATAPATH_W-1:0]  data_in,
+  input wire[SIZE_W-1:0]       addr_in,
+  input wire                   en_in,
+
+  output wire[`DATAPATH_W-1:0] data_out
+);
+
+reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
+
+always @(posedge clk) begin
+  if (rst) begin
+    for (integer i = 0; i < SIZE; i = i + 1) begin
+      mem[i] <= 0;
+    end 
+  end else begin
+    if (en_in) mem[addr_in] <= data_in;
+  end
+end
+
+assign data_out = mem[addr_in];
+endmodule
+
+module shift_reg #(
+  parameter SIZE = 8
+)(
+  input wire sclk   ,  // Master clock (FPGA)
+  input wire sdata_in, // Serial data
+  input wire en_in  ,  // Enable write and shift
+
+  output wire[SIZE-1:0] data_out //parallel data output
+);
+
+reg[SIZE-1:0] register;
+
+generate
+  genvar i;
+
+  for (i = SIZE-1; i > 0; i = i - 1) begin : shift_reg_SIZEm2_0
+    if ( i == (SIZE-1) ) begin
+      always @(posedge sclk) begin
+        if (en_in) begin
+            register[i] <= sdata_in;
+        end
+      end
+    end else begin
+      always @(posedge sclk) begin
+        if (en_in) begin
+          register[i-1] <= register[i];
+        end
+      end
+    end
+  end
+endgenerate
+
+assign data_out = register;
+endmodule
+
 module control_logic (
-  input wire[3:0] opcode_in,
-  input wire[3:0] pc_in,
-  input wire[7:0] alu_res_in,
-  
+  input wire       clk, rst,
+
+  input wire[3:0]  opcode_in,
+  input wire[3:0]  pc_in,
+  input wire[7:0]  alu_res_in,
+
+  input wire       master_en_proc,
+  input wire       master_wr,
+
   output wire      pc_sel_out,
   output wire      pc_en_out,
+  output wire      pc_rst_out,
 
   output wire[2:0] unit_sel_out,
   output wire      op_sel_out,
   output wire      src_sel_out,
-  output wire      wen_out,
 
-  output wire      wacc_en_out
+  output wire      dcache_wen_out,
+  output wire      icache_wen_out,
+
+  output wire      buff_shen_out,
+
+  output wire      acc_wen_out
 );
+
+// FSM for SPI interface //
+typedef enum reg[1:0] {IDLE = 2'b00, EXEC = 2'b01, RECV = 2'b10, WRITE = 2'b11} state_t;
+state_t st;
+always @(posedge clk) begin
+  if (rst) begin
+    st <= IDLE;
+  end begin
+    case (st)
+      IDLE: begin
+        st <= master_en_proc ? EXEC : IDLE;
+        st <= master_wr ? RECV : IDLE;
+      end
+
+      EXEC: begin
+        st <= master_en_proc ? EXEC : IDLE;
+      end
+
+      RECV: begin
+        st <= master_wr ? RECV : WRITE;
+      end
+
+      WRITE: begin
+        st <= IDLE;
+      end
+
+      default: st <= IDLE;
+    endcase
+  end
+end
 
 // Check if `bnez` branch is taken
 wire is_branch   = &opcode_in;
@@ -41,6 +145,8 @@ assign pc_sel_out = is_taken;
     the programm has terminated --> freeze `pc`.
  */
 assign pc_en_out  = ~( &pc_in & (~is_branch | ~is_taken) );
+
+assign pc_rst_out = ( st != EXEC );
 
 /**
   op_sel_out: Used to distinguish between addition-subtraction, 
@@ -56,15 +162,17 @@ wire unit_sel_1 = &opcode_in[3:2]; /* Divides units into 2 categories:
 
 wire[1:0] unit_sel_0 = opcode_in[1:0]; /* Select between different ops in the category */
 
-
 assign unit_sel_out = {unit_sel_1, unit_sel_0};
 
 // Equivalent to `opcode_in == 4'h7`;
-assign wen_out = &opcode_in[2:0];
+assign dcache_wen_out = &opcode_in[2:0] && ( st == EXEC );
+assign icache_wen_out = ( st == WRITE );
 
-// When storing don't write accumulator register
-assign wacc_en_out = ~wen_out;
+// When storing, don't write accumulator register
+assign acc_wen_out = ~dcache_wen_out && ( st == EXEC );
 
+// Buffer shift register
+assign buff_shen_out = ( st == RECV );
 endmodule
 
 module tt_um_tiny_processor (
@@ -84,104 +192,154 @@ localparam RID_W = `CLOG2(`DMEM_SZ);
 localparam OPC_W = 4;
 
 // Processor global //
-reg[`INST_W-1:0]     imem[0:`IMEM_SZ-1];
-reg[`DATAPATH_W-1:0] dmem[0:`DMEM_SZ-1];
-
 wire rst = ~rst_n;
 
 // Fetch-Decode //
-reg [PC_W-1:0]        pc;
-wire[PC_W-1:0]        jmp;
-wire[`INST_W-1:0]     inst;
-wire[RID_W-1:0]       rs;
-wire[3:0]             imm;
+reg [PC_W-1:0]  pc;
+wire[PC_W-1:0]  pc_next;
+wire[PC_W-1:0]  jmp;
+wire[RID_W-1:0] rs;
+wire[3:0]       imm;
 
 // ALU //
 wire[`DATAPATH_W-1:0] src;
-reg[15:0]  acc;
+reg[`DATAPATH_W-1:0]  acc;
 reg[`DATAPATH_W-1:0]  alu_res;
 reg[`DATAPATH_W-1:0]  op_data;
 
+// Caches //
+wire[`DATAPATH_W-1:0] dcache_data;
+wire[`DATAPATH_W-1:0] icache_data;
+
+// Shift register (8bit data and 4bit address --> tot: 12bits) //
+wire[(`DATAPATH_W + 4)-1:0] sr_data;
+
+/**
+  SPI-interface: The slave is the processor. The master operates
+    with the slaves clock freq.
+ */
+wire csd, csi;   // Chip select signals for data and instruction caches
+wire sclk;       // Serial clock
+wire miso, mosi; // Master In Slave Out and Master Out Slave In
+
+assign csi  = uio_in[0];
+assign csd  = uio_in[1];
+assign mosi = uio_in[2];
+
+assign uio_out[3] = clk;        // sclk to master (FPGA)
+assign uio_out[4] = sr_data[0]; // mosi
+
+assign uio_oe[2:0] = 4'b0; // csi, csd, mosi
+assign uio_oe[4:3] = 3'b1; // miso, sclk
+
+// ...
+assign uio_oe[7:5] = 3'b0;
+assign uio_out[7:5] = 3'b0;
+assign uio_out[3:0] = 4'b0;
+
 // Control Signals //
-reg      ctrl_pc_sel;
-reg      ctrl_pc_en;
+wire      ctrl_pc_sel;
+wire      ctrl_pc_en;
+wire      ctrl_pc_rst;
 
-reg[2:0] ctrl2alu_unit_sel;
-reg      ctrl2alu_op_sel;
-reg      ctrl_src_sel;
+wire[2:0] ctrl2alu_unit_sel;
+wire      ctrl2alu_op_sel;
+wire      ctrl_src_sel;
 
-reg      ctrl_wen;
+wire      ctrl2dcache_wen;
+wire      ctrl2icache_wen;
 
-reg      ctrl_wacc_en;
+wire      ctrl_acc_wen;
+
+wire      ctrl_buff_shen;
 
 control_logic control_logic_0 (
-  .opcode_in    (inst[OPC_W-1:0]),
-  .pc_in        (pc),
-  .alu_res_in   (alu_res),
+  .clk          (clk),
+  .rst          (rst),
+
+  .opcode_in    (icache_data[OPC_W-1:0]),
+  .pc_in        (pc                    ),
+  .alu_res_in   (alu_res               ),
 
   .pc_sel_out   (ctrl_pc_sel),
-  .pc_en_out    (ctrl_pc_en),
+  .pc_en_out    (ctrl_pc_en ),
+  .pc_rst_out   (ctrl_pc_rst),
 
   .unit_sel_out (ctrl2alu_unit_sel),
-  .op_sel_out   (ctrl2alu_op_sel),
-  .src_sel_out  (ctrl_src_sel),
-  .wen_out      (ctrl_wen),
+  .op_sel_out   (ctrl2alu_op_sel  ),
+  .src_sel_out  (ctrl_src_sel     ),
 
-  .wacc_en_out  (ctrl_wacc_en)
+  .icache_wen_out (ctrl2icache_wen),
+  .dcache_wen_out (ctrl2dcache_wen),
+  
+  .buff_shen_out (ctrl_buff_shen),
+  .acc_wen_out   (ctrl_acc_wen  )
 );
 
-// No bidirectional IO
-assign uio_oe  = 8'h0;
-assign uio_out = 8'h0;
+shift_reg #(
+  .SIZE(`DATAPATH_W)
+)
+shift_reg_0(
+  .sclk     (sclk),
+  .sdata_in (mosi),
+  .en_in    (),
 
-always @(posedge clk) begin
-  if ( rst ) begin
-    imem[0 ] <= 8'h1B;
-    imem[1 ] <= 8'h17;
-    imem[2 ] <= 8'h1B;
-    imem[3 ] <= 8'h37;
-    imem[4 ] <= 8'hFB;
-    imem[5 ] <= 8'h07;
-    imem[6 ] <= 8'h11;
-    imem[7 ] <= 8'h20;
-    imem[8 ] <= 8'h27;
-    imem[9 ] <= 8'h03;
-    imem[10] <= 8'h00;
-    imem[11] <= 8'h00;
-    imem[12] <= 8'h00;
-    imem[13] <= 8'h00;
-    imem[14] <= 8'h00;
-    imem[15] <= 8'h00;
-  end else begin
-    //Nothing for now...
-  end
-end
+  .data_out (sr_data)
+);
 
-assign inst = imem[pc];
-assign jmp  = inst[7:4];
-assign imm  = inst[7:4];
-assign rs   = inst[7:4];
+cache #(
+  .SIZE(`IMEM_SZ)
+)
+icache(
+  .clk      (clk),
+  .rst      (rst),
+
+  .data_in  (sr_data[11:4]),
+  .addr_in  (sr_data[3:0]),
+  .en_in    (ctrl2icache_wen),
+
+  .data_out (icache_data)
+);
+
+cache #(
+  .SIZE(`DMEM_SZ)
+)
+dcache(
+  .clk      (clk),
+  .rst      (rst),
+
+  .data_in  (acc),
+  .addr_in  (rs),
+  .en_in    (ctrl2dcache_wen),
+
+  .data_out (dcache_data)
+);
+
+assign jmp = icache_data[7:4];
+assign imm = icache_data[7:4];
+assign rs  = icache_data[7:4];
 
 // Early branch detect
+assign pc_next = ctrl_pc_sel ? jmp : pc+1;
 always @(posedge clk) begin
-  if ( rst ) begin
+  if ( rst | ctrl_pc_rst ) begin
     pc <= 0;
   end else if (ctrl_pc_en) begin
-    pc <= ctrl_pc_sel ? jmp : pc+1;
+    pc <= pc_next;
   end
 end
 
 // Execute-Writeback stage //
 wire[`DATAPATH_W-1:0] sext_imm = {{4{imm[3]}}, imm};
 
-assign src = ctrl_src_sel ? sext_imm : dmem[rs];
+assign src = ctrl_src_sel ? sext_imm : dcache_data;
 
 // ALU //
 alu alu_0 (
   .unit_sel_in (ctrl2alu_unit_sel),
   .op_sel_in   (ctrl2alu_op_sel),
 
-  .acc_in      (acc[7:0]),
+  .acc_in      (acc),
   .src_in      (src),
 
   .alu_res_out (alu_res)
@@ -190,72 +348,16 @@ alu alu_0 (
 always @(posedge clk) begin : Accumulator
   if ( rst ) begin
     acc <= 0;
-  end else if (ctrl_wacc_en) begin
+  end else if (ctrl_acc_wen) begin
     acc <= alu_res;
   end
 end
 
-always @(posedge clk) begin
-  if ( rst ) begin
-    dmem[0] <= 8'h0;
-    dmem[1] <= 8'h0;
-    dmem[2] <= 8'h0;
-    dmem[3] <= 8'h0;
-    dmem[4] <= 8'h0;
-    dmem[5] <= 8'h0;
-    dmem[6] <= 8'h0;
-    dmem[7] <= 8'h0;
-    dmem[8] <= 8'h0;
-    dmem[9] <= 8'h0;
-    dmem[10] <= 8'h0;
-    dmem[11] <= 8'h0;
-    dmem[12] <= 8'h0;
-    dmem[13] <= 8'h0;
-    dmem[14] <= 8'h0;
-  end else if ( ctrl_wen ) begin
-    dmem[rs] <= acc;
-  end
-end
-
-/** 
-  SPI-interface: The slaves in this case are the
-    data and instruction registers of the processor
- */
-wire csd, csi;   // Chip select signals for data and instruction caches
-wire sclk;       // Serial clock
-wire miso, mosi; // Master In Slave Out and Master Out Slave In
-
-assign sclk = uio_in[0];
-assign csi  = uio_in[1];
-assign csd  = uio_in[2];
-assign mosi = uio_in[3];
-assign miso = uio_out[4];
-
-assign uio_oe[3:0] = 4'b0; // sclk, csi, csd, mosi
-assign uio_oe[ 4 ] = 3'b1; // miso
-assign uio_oe[7:5] = 3'b0; // ...
-
-
+// Seven segment interface //
 reg[4:0] seg7In;
 always @(*) begin
   case (ui_in[3:0])
-    4'h0: seg7In = ui_in[4] ? {1'h1, dmem[0] [7:4]} : {1'h0, dmem[0] [3:0]};
-    4'h1: seg7In = ui_in[4] ? {1'h1, dmem[1] [7:4]} : {1'h0, dmem[1] [3:0]};
-    4'h2: seg7In = ui_in[4] ? {1'h1, dmem[2] [7:4]} : {1'h0, dmem[2] [3:0]};
-    4'h3: seg7In = ui_in[4] ? {1'h1, dmem[3] [7:4]} : {1'h0, dmem[3] [3:0]};
-    4'h4: seg7In = ui_in[4] ? {1'h1, dmem[4] [7:4]} : {1'h0, dmem[4] [3:0]};
-    4'h5: seg7In = ui_in[4] ? {1'h1, dmem[5] [7:4]} : {1'h0, dmem[5] [3:0]};
-    4'h6: seg7In = ui_in[4] ? {1'h1, dmem[6] [7:4]} : {1'h0, dmem[6] [3:0]};
-    4'h7: seg7In = ui_in[4] ? {1'h1, dmem[7] [7:4]} : {1'h0, dmem[7] [3:0]};
-    4'h8: seg7In = ui_in[4] ? {1'h1, dmem[8] [7:4]} : {1'h0, dmem[8] [3:0]};
-    4'h9: seg7In = ui_in[4] ? {1'h1, dmem[9] [7:4]} : {1'h0, dmem[9] [3:0]};
-    4'hA: seg7In = ui_in[4] ? {1'h1, dmem[10][7:4]} : {1'h0, dmem[10][3:0]};
-    4'hB: seg7In = ui_in[4] ? {1'h1, dmem[11][7:4]} : {1'h0, dmem[11][3:0]};
-    4'hC: seg7In = ui_in[4] ? {1'h1, dmem[12][7:4]} : {1'h0, dmem[12][3:0]};
-    4'hD: seg7In = ui_in[4] ? {1'h1, dmem[13][7:4]} : {1'h0, dmem[13][3:0]};
-    4'hE: seg7In = ui_in[4] ? {1'h1, dmem[14][7:4]} : {1'h0, dmem[14][3:0]};
     4'hF: seg7In = {1'h1, pc};
-
     default: seg7In = {1'h1, pc};
   endcase
 end

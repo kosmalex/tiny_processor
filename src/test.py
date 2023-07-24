@@ -68,7 +68,9 @@ async def test_7seg(dut):
       dut._log.info("--- FETCH ---")
       # assert int(dut.tt_um_tiny_processor.pc.value) == i 
       # dut._log.info("[PC {}] -> [SEG {}]".format(dut.tt_um_tiny_processor.pc.value, dut.segments.value))
-      dut._log.info("[PC {}] -> [{}]".format(dut.tt_um_tiny_processor.pc.value, insts[int(dut.tt_um_tiny_processor.control_logic_0.opcode_in.value)]))
+      dut._log.info("[PC {}] -> [{}]".format(dut.tt_um_tiny_processor.pc.value, dut.tt_um_tiny_processor.control_logic_0.opcode_in.value))
+      dut._log.info("[iwen {}]".format(dut.tt_um_tiny_processor.ctrl2icache_wen.value))
+      # dut._log.info("[PC {}] -> [{}]".format(dut.tt_um_tiny_processor.pc.value, insts[int(dut.tt_um_tiny_processor.control_logic_0.opcode_in.value)]))
       dut._log.info("[opcode {}]".format(dut.tt_um_tiny_processor.control_logic_0.opcode_in.value))
       dut._log.info("[usel0 {}]".format(dut.tt_um_tiny_processor.control_logic_0.unit_sel_0.value))
       dut._log.info("[usel1 {}]".format(dut.tt_um_tiny_processor.control_logic_0.unit_sel_1.value))
