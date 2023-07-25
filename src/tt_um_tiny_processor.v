@@ -57,13 +57,13 @@ reg[SIZE-1:0] register;
 generate
   genvar i;
 
-  for (i = 0; i < SIZE; i = i + 1) begin : shift_reg_SIZEm2_0
+  for (i = 0; i < SIZE-1; i = i + 1) begin : shift_reg_SIZEm2_0
     always @(posedge clk) begin
       if (en_in) begin
         if (i == 0) begin
           register[SIZE - i - 1] <= sdata_in;
         end else begin
-          register[SIZE - i - 2] <= register[SIZE - i - 1];
+          register[SIZE - i - 1] <= register[SIZE - i];
         end
       end
     end
