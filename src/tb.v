@@ -24,6 +24,11 @@ module tb ();
     wire clk;
     wire rst_n;
     wire ena;
+
+    wire proc_en = uio_in[0];
+    wire csi     = uio_in[1];
+    wire csd     = uio_in[2];
+    wire mosi    = uio_in[3];
    
     // wire up the inputs and outputs
     wire [6:0] segments = uo_out[6:0];

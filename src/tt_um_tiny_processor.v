@@ -33,7 +33,7 @@ reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
 always @(posedge clk) begin
   if (rst) begin
       {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 0;
-      {mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 0;
+      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 0;
   end else begin
     if (en_in) mem[addr_in] <= data_in;
   end
