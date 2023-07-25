@@ -55,6 +55,16 @@ def print_regs(_range:range, dut, mode = 1):
 
 def print_info(dut):
   dut._log.info("pc: {}".format(dut.tt_um_tiny_processor.pc.value))
+  dut._log.info("state: {}".format(dut.tt_um_tiny_processor.control_logic_0.st.value))
+  
+  dut._log.info("icache_data: {}".format(dut.tt_um_tiny_processor.icache_data.value))
+  
+  dut._log.info("acc: {}".format(dut.tt_um_tiny_processor.acc.value))
+  dut._log.info("src: {}".format(dut.tt_um_tiny_processor.src.value))
+  dut._log.info("ctrl_src_sel: {}".format(dut.tt_um_tiny_processor.ctrl_src_sel.value))
+  
+  dut._log.info("pc_sel: {}".format(dut.tt_um_tiny_processor.ctrl_pc_sel.value))
+  dut._log.info("isnotz: {}".format(dut.tt_um_tiny_processor.control_logic_0.is_not_zero.value))
 
 @cocotb.test()
 async def test_tproc(dut):
@@ -68,15 +78,25 @@ async def test_tproc(dut):
   await ClockCycles(dut.clk, 10)
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 1)
-
-  for i in range(16):
-    dut._log.info(f"------------ cc {i} ------------")
+  cc = 0
+  
+  for i in range(10):
+    dut._log.info(f"------------ cc {cc} ------------")
 
     if i == 2:
       dut.proc_en.value = 1
 
+    print_info(dut)
     await ClockCycles(dut.clk, 1)
+    cc += 1
+
+  dut.proc_en.value = 0
+
+  for i in range(4):
+    dut._log.info(f"------------ cc {cc} ------------")
 
     print_info(dut)
+    await ClockCycles(dut.clk, 1)
+    cc += 1
 
   print_regs(range(15), dut)

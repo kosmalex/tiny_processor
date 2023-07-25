@@ -80,7 +80,7 @@ module control_logic (
   input wire[3:0]  pc_in,
   input wire[7:0]  alu_res_in,
 
-  input wire       master_en_proc_in,
+  input wire       master2proc_en_in,
   input wire       master_wr_in,
 
   output wire      pc_sel_out,
@@ -93,6 +93,8 @@ module control_logic (
 
   output wire      dcache_wen_out,
   output wire      icache_wen_out,
+  output wire      icache_addr_sel_out,
+
 
   output wire      buff_shen_out,
 
@@ -105,19 +107,21 @@ parameter WRITE = 2'b11;
 
 reg[1:0] st;
 
-// FSM for SPI interface //
+// FSM //
 always @(posedge clk) begin
   if (rst) begin
     st <= IDLE;
   end begin
     case (st)
       IDLE: begin
-        st <= master_en_proc_in ? EXEC : IDLE;
-        st <= master_wr_in ? RECV : IDLE;
+        if (master2proc_en_in)
+          st <= EXEC;
+        else if (master_wr_in)
+          st <= RECV;
       end
 
       EXEC: begin
-        st <= master_en_proc_in ? EXEC : IDLE;
+        st <= master2proc_en_in ? EXEC : IDLE;
       end
 
       RECV: begin
@@ -165,7 +169,9 @@ assign unit_sel_out = {unit_sel_1, unit_sel_0};
 
 // Equivalent to `opcode_in == 4'h7`;
 assign dcache_wen_out = &opcode_in[2:0] && ( st == EXEC );
+
 assign icache_wen_out = ( st == WRITE );
+assign icache_addr_sel_out = ( st == WRITE );
 
 // When storing, don't write accumulator register
 assign acc_wen_out = ~dcache_wen_out && ( st == EXEC );
@@ -210,6 +216,8 @@ reg[`DATAPATH_W-1:0]  op_data;
 wire[`DATAPATH_W-1:0] dcache_data;
 wire[`DATAPATH_W-1:0] icache_data;
 
+wire[3:0] icache_addr;
+
 // Shift register (8bit data and 4bit address --> tot: 12bits) //
 wire[(`DATAPATH_W + 4)-1:0] buff_data;
 
@@ -233,14 +241,14 @@ assign uio_oe[5:4] = 2'b1; // miso, sclk
 
 // ...
 assign uio_oe[7:6]  = 2'b0;
-assign uio_out[7:6] = 3'b0;
+assign uio_out[7:6] = 2'b0;
 assign uio_out[3:0] = 3'b0;
 
 // Master //
-wire master_en_proc = uio_in[0];
+wire master_proc_en = uio_in[0];
 assign uio_oe[0]    = 1'b0;
 
-wire master_wr      = (~csi | ~csd) & ~master_en_proc;
+wire master_wr      = (~csi | ~csd) & ~master_proc_en;
 
 // Control Signals //
 wire      ctrl_pc_sel;
@@ -253,6 +261,7 @@ wire      ctrl_src_sel;
 
 wire      ctrl2dcache_wen;
 wire      ctrl2icache_wen;
+wire      ctrl_icache_addr_sel;
 
 wire      ctrl_acc_wen;
 
@@ -266,7 +275,7 @@ control_logic control_logic_0 (
   .pc_in        (pc                    ),
   .alu_res_in   (alu_res               ),
 
-  .master_en_proc_in (master_en_proc),
+  .master2proc_en_in (master_proc_en),
   .master_wr_in      (master_wr),
 
   .pc_sel_out   (ctrl_pc_sel),
@@ -277,8 +286,9 @@ control_logic control_logic_0 (
   .op_sel_out   (ctrl2alu_op_sel  ),
   .src_sel_out  (ctrl_src_sel     ),
 
-  .icache_wen_out (ctrl2icache_wen),
   .dcache_wen_out (ctrl2dcache_wen),
+  .icache_wen_out (ctrl2icache_wen),
+  .icache_addr_sel_out (ctrl_icache_addr_sel),
   
   .buff_shen_out (ctrl_buff_shen),
   .acc_wen_out   (ctrl_acc_wen  )
@@ -295,6 +305,7 @@ buffer (
   .data_out (buff_data)
 );
 
+assign icache_addr = ctrl_icache_addr_sel ? buff_data[3:0] : pc;
 cache #(
   .SIZE(`IMEM_SZ)
 )
@@ -303,7 +314,7 @@ icache(
   .rst      (rst),
 
   .data_in  (buff_data[11:4]),
-  .addr_in  (buff_data[3:0]),
+  .addr_in  (icache_addr),
   .en_in    (ctrl2icache_wen),
 
   .data_out (icache_data)
