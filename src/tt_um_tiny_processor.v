@@ -32,9 +32,8 @@ reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
 
 always @(posedge clk) begin
   if (rst) begin
-    for (integer i = 0; i < SIZE; i = i + 1) begin
-      mem[i] <= 0;
-    end 
+      {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 0;
+      {mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 0;
   end else begin
     if (en_in) mem[addr_in] <= data_in;
   end
@@ -85,8 +84,8 @@ module control_logic (
   input wire[3:0]  pc_in,
   input wire[7:0]  alu_res_in,
 
-  input wire       master_en_proc,
-  input wire       master_wr,
+  input wire       master_en_proc_in,
+  input wire       master_wr_in,
 
   output wire      pc_sel_out,
   output wire      pc_en_out,
@@ -103,26 +102,30 @@ module control_logic (
 
   output wire      acc_wen_out
 );
+parameter IDLE  = 2'b00;
+parameter EXEC  = 2'b01;
+parameter RECV  = 2'b10;
+parameter WRITE = 2'b11;
+
+reg[1:0] st;
 
 // FSM for SPI interface //
-typedef enum reg[1:0] {IDLE = 2'b00, EXEC = 2'b01, RECV = 2'b10, WRITE = 2'b11} state_t;
-state_t st;
 always @(posedge clk) begin
   if (rst) begin
     st <= IDLE;
   end begin
     case (st)
       IDLE: begin
-        st <= master_en_proc ? EXEC : IDLE;
-        st <= master_wr ? RECV : IDLE;
+        st <= master_en_proc_in ? EXEC : IDLE;
+        st <= master_wr_in ? RECV : IDLE;
       end
 
       EXEC: begin
-        st <= master_en_proc ? EXEC : IDLE;
+        st <= master_en_proc_in ? EXEC : IDLE;
       end
 
       RECV: begin
-        st <= master_wr ? RECV : WRITE;
+        st <= master_wr_in ? RECV : WRITE;
       end
 
       WRITE: begin
@@ -204,7 +207,7 @@ wire[3:0]       imm;
 // ALU //
 wire[`DATAPATH_W-1:0] src;
 reg[`DATAPATH_W-1:0]  acc;
-reg[`DATAPATH_W-1:0]  alu_res;
+wire[`DATAPATH_W-1:0] alu_res;
 reg[`DATAPATH_W-1:0]  op_data;
 
 // Caches //
@@ -222,20 +225,24 @@ wire csd, csi;   // Chip select signals for data and instruction caches
 wire sclk;       // Serial clock
 wire miso, mosi; // Master In Slave Out and Master Out Slave In
 
-assign csi  = uio_in[0];
-assign csd  = uio_in[1];
-assign mosi = uio_in[2];
+assign csi  = uio_in[1];
+assign csd  = uio_in[2];
+assign mosi = uio_in[3];
 
-assign uio_out[3] = clk;        // sclk to master (FPGA)
 assign uio_out[4] = sr_data[0]; // mosi
+assign uio_out[5] = clk;        // sclk to master
 
-assign uio_oe[2:0] = 4'b0; // csi, csd, mosi
-assign uio_oe[4:3] = 3'b1; // miso, sclk
+assign uio_oe[3:1] = 3'b0; // csi, csd, mosi
+assign uio_oe[5:4] = 2'b1; // miso, sclk
 
 // ...
-assign uio_oe[7:5] = 3'b0;
-assign uio_out[7:5] = 3'b0;
-assign uio_out[3:0] = 4'b0;
+assign uio_oe[7:6]  = 2'b0;
+assign uio_out[7:6] = 3'b0;
+
+// Master //
+wire master_en_proc = uio_in[0];
+wire master_wr      = (~csi | ~csd) & ~master_en_proc;
+assign uio_oe[0] = 1'b0; // proc_en
 
 // Control Signals //
 wire      ctrl_pc_sel;
@@ -261,6 +268,9 @@ control_logic control_logic_0 (
   .pc_in        (pc                    ),
   .alu_res_in   (alu_res               ),
 
+  .master_en_proc_in (master_en_proc),
+  .master_wr_in      (master_wr),
+
   .pc_sel_out   (ctrl_pc_sel),
   .pc_en_out    (ctrl_pc_en ),
   .pc_rst_out   (ctrl_pc_rst),
@@ -277,7 +287,7 @@ control_logic control_logic_0 (
 );
 
 shift_reg #(
-  .SIZE(`DATAPATH_W)
+  .SIZE(`DATAPATH_W + 4)
 )
 shift_reg_0(
   .sclk     (sclk),

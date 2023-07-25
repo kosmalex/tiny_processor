@@ -16,7 +16,7 @@ module adder_8bit(
   input wire[7:0] A_in, B_in,
   input wire      C_in,
 
-  output reg[7:0] S_out
+  output wire[7:0] S_out
 );
 
 wire[8:0] C;
@@ -44,7 +44,7 @@ module barrel_shift (
   output wire[7:0] res_out
 );
 
-wire[7:0] lvl[4];
+wire[7:0] lvl[0:3];
 generate
   genvar j;
   
@@ -114,7 +114,7 @@ barrel_shift barrel_shift_0 (
 );
 
 always @(*) begin
-  unique case (unit_sel_in)
+  case (unit_sel_in)
     3'b000: alu_res_out = add_res;
     3'b001: alu_res_out = op_sel_in ? ~and_res : and_res;
     3'b010: alu_res_out = shift_res;
