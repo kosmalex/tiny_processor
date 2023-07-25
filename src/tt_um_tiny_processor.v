@@ -45,7 +45,7 @@ endmodule
 module shift_reg #(
   parameter SIZE = 8
 )(
-  input wire sclk   ,  // Master clock (FPGA)
+  input wire clk,
   input wire sdata_in, // Serial data
   input wire en_in  ,  // Enable write and shift
 
@@ -59,13 +59,13 @@ generate
 
   for (i = SIZE-1; i > 0; i = i - 1) begin : shift_reg_SIZEm2_0
     if ( i == (SIZE-1) ) begin
-      always @(posedge sclk) begin
+      always @(posedge clk) begin
         if (en_in) begin
             register[i] <= sdata_in;
         end
       end
     end else begin
-      always @(posedge sclk) begin
+      always @(posedge clk) begin
         if (en_in) begin
           register[i-1] <= register[i];
         end
@@ -238,11 +238,13 @@ assign uio_oe[5:4] = 2'b1; // miso, sclk
 // ...
 assign uio_oe[7:6]  = 2'b0;
 assign uio_out[7:6] = 3'b0;
+assign uio_out[3:0] = 3'b0;
 
 // Master //
 wire master_en_proc = uio_in[0];
+assign uio_oe[0]    = 1'b0;
+
 wire master_wr      = (~csi | ~csd) & ~master_en_proc;
-assign uio_oe[0] = 1'b0; // proc_en
 
 // Control Signals //
 wire      ctrl_pc_sel;
@@ -289,10 +291,10 @@ control_logic control_logic_0 (
 shift_reg #(
   .SIZE(`DATAPATH_W + 4)
 )
-shift_reg_0(
-  .sclk     (sclk),
+buffer (
+  .clk      (clk),
   .sdata_in (mosi),
-  .en_in    (),
+  .en_in    (ctrl_buff_shen),
 
   .data_out (sr_data)
 );
