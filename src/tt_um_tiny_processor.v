@@ -33,7 +33,7 @@ reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
 always @(posedge clk) begin
   if (rst) begin
       {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 0;
-      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 0;
+      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14]} <= 0;
   end else begin
     if (en_in) mem[addr_in] <= data_in;
   end
@@ -57,17 +57,13 @@ reg[SIZE-1:0] register;
 generate
   genvar i;
 
-  for (i = SIZE-1; i > 0; i = i - 1) begin : shift_reg_SIZEm2_0
-    if ( i == (SIZE-1) ) begin
-      always @(posedge clk) begin
-        if (en_in) begin
-            register[i] <= sdata_in;
-        end
-      end
-    end else begin
-      always @(posedge clk) begin
-        if (en_in) begin
-          register[i-1] <= register[i];
+  for (i = 0; i < SIZE; i = i + 1) begin : shift_reg_SIZEm2_0
+    always @(posedge clk) begin
+      if (en_in) begin
+        if (i == 0) begin
+          register[SIZE - i - 1] <= sdata_in;
+        end else begin
+          register[SIZE - i - 2] <= register[SIZE - i - 1];
         end
       end
     end
@@ -215,7 +211,7 @@ wire[`DATAPATH_W-1:0] dcache_data;
 wire[`DATAPATH_W-1:0] icache_data;
 
 // Shift register (8bit data and 4bit address --> tot: 12bits) //
-wire[(`DATAPATH_W + 4)-1:0] sr_data;
+wire[(`DATAPATH_W + 4)-1:0] buff_data;
 
 /**
   SPI-interface: The slave is the processor. The master operates
@@ -229,8 +225,8 @@ assign csi  = uio_in[1];
 assign csd  = uio_in[2];
 assign mosi = uio_in[3];
 
-assign uio_out[4] = sr_data[0]; // mosi
-assign uio_out[5] = clk;        // sclk to master
+assign uio_out[4] = buff_data[0]; // mosi
+assign uio_out[5] = clk;          // sclk to master
 
 assign uio_oe[3:1] = 3'b0; // csi, csd, mosi
 assign uio_oe[5:4] = 2'b1; // miso, sclk
@@ -296,7 +292,7 @@ buffer (
   .sdata_in (mosi),
   .en_in    (ctrl_buff_shen),
 
-  .data_out (sr_data)
+  .data_out (buff_data)
 );
 
 cache #(
@@ -306,8 +302,8 @@ icache(
   .clk      (clk),
   .rst      (rst),
 
-  .data_in  (sr_data[11:4]),
-  .addr_in  (sr_data[3:0]),
+  .data_in  (buff_data[11:4]),
+  .addr_in  (buff_data[3:0]),
   .en_in    (ctrl2icache_wen),
 
   .data_out (icache_data)

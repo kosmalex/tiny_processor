@@ -53,6 +53,9 @@ def print_regs(_range:range, dut, mode = 1):
       reg = "[rs {}]: {}".format(j, dut.tt_um_tiny_processor.icache.mem[j].value)
     dut._log.info(reg)
 
+def print_info(dut):
+  dut._log.info("pc: {}".format(dut.tt_um_tiny_processor.pc.value))
+
 @cocotb.test()
 async def test_tproc(dut):
   clock = Clock(dut.clk, 10, units="us")
@@ -68,6 +71,12 @@ async def test_tproc(dut):
 
   for i in range(16):
     dut._log.info(f"------------ cc {i} ------------")
+
+    if i == 2:
+      dut.proc_en.value = 1
+
     await ClockCycles(dut.clk, 1)
+
+    print_info(dut)
 
   print_regs(range(15), dut)
