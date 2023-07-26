@@ -57,13 +57,13 @@ reg[SIZE-1:0] register;
 generate
   genvar i;
 
-  for (i = 0; i < SIZE; i = i + 1) begin : shift_reg_SIZEm2_0
+  for (i = 0; i < SIZE; i = i + 1) begin : bit
     always @(posedge clk) begin
       if (en_in) begin
         if (i == 0) begin
           register[SIZE - i - 1] <= sdata_in;
         end else begin
-          register[SIZE - i - 2] <= register[SIZE - i - 1];
+          register[SIZE - i - 1] <= register[SIZE - i];
         end
       end
     end
@@ -233,8 +233,8 @@ assign csi  = uio_in[1];
 assign csd  = uio_in[2];
 assign mosi = uio_in[3];
 
-assign uio_out[4] = buff_data[0]; // mosi
-assign uio_out[5] = clk;          // sclk to master
+assign uio_out[4] = 1'b0; // mosi
+assign uio_out[5] = clk;  // sclk to master
 
 assign uio_oe[3:1] = 3'b0; // csi, csd, mosi
 assign uio_oe[5:4] = 2'b1; // miso, sclk
