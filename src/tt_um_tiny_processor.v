@@ -58,14 +58,18 @@ generate
   genvar i;
 
   for (i = 0; i < SIZE; i = i + 1) begin : bit
-    always @(posedge clk) begin
-      if (en_in) begin
-        if (i == 0) begin
-          register[SIZE - i - 1] <= sdata_in;
-        end else begin
-          register[SIZE - i - 1] <= register[SIZE - i];
+    if (i == 0) begin
+      always @(posedge clk) begin
+        if (en_in) begin
+            register[SIZE - i - 1] <= sdata_in;
         end
       end
+    end else begin
+      always @(posedge clk) begin
+        if (en_in) begin
+            register[SIZE - i - 1] <= register[SIZE - i];
+        end
+      end      
     end
   end
 endgenerate
