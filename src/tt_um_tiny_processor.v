@@ -12,7 +12,7 @@
 `define DATAPATH_W 8
 `define INST_W     8
 `define IMEM_SZ    16
-`define DMEM_SZ    15
+`define DMEM_SZ    16
 
 module cache #(
   parameter SIZE = 8,
@@ -33,7 +33,7 @@ reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
 always @(posedge clk) begin
   if (rst) begin
       {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 0;
-      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14]} <= 0;
+      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 0;
   end else begin
     if (en_in) mem[addr_in] <= data_in;
   end
@@ -181,7 +181,7 @@ assign icache_addr_sel_out = ( st == WRITE );
 assign acc_wen_out = ~dcache_wen_out && ( st == EXEC );
 
 // Buffer shift register
-assign buff_shen_out = ( st == RECV );
+assign buff_shen_out = (st == RECV) & master_wr_in;
 endmodule
 
 module tt_um_tiny_processor (
@@ -209,6 +209,7 @@ wire[PC_W-1:0]  pc_next;
 wire[PC_W-1:0]  jmp;
 wire[RID_W-1:0] rs;
 wire[3:0]       imm;
+wire[3:0]       opcode;
 
 // ALU //
 wire[`DATAPATH_W-1:0] src;
@@ -252,7 +253,7 @@ assign uio_out[3:0] = 3'b0;
 wire master_proc_en = uio_in[0];
 assign uio_oe[0]    = 1'b0;
 
-wire master_wr      = (~csi | ~csd) & ~master_proc_en;
+wire master_wr = (~csi | ~csd) & ~master_proc_en;
 
 // Control Signals //
 wire      ctrl_pc_sel;
@@ -271,13 +272,15 @@ wire      ctrl_acc_wen;
 
 wire      ctrl_buff_shen;
 
+assign opcode = icache_data[3:0]; 
+
 control_logic control_logic_0 (
   .clk          (clk),
   .rst          (rst),
 
-  .opcode_in    (icache_data[OPC_W-1:0]),
-  .pc_in        (pc                    ),
-  .alu_res_in   (alu_res               ),
+  .opcode_in    (opcode ),
+  .pc_in        (pc     ),
+  .alu_res_in   (alu_res),
 
   .master2proc_en_in (master_proc_en),
   .master_wr_in      (master_wr),

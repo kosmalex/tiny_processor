@@ -2,6 +2,13 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, Timer, ClockCycles
 
+states = {
+  0 : "IDLE",
+  1 : "EXEC",
+  2 : "RECV",
+  3 : "WRITE",
+}
+
 segments = {
   0 : 0b0111111,
   1 : 0b0000110,
@@ -48,55 +55,138 @@ def print_regs(_range:range, dut, mode = 1):
   for j in _range:
     reg = ""
     if mode == 1:
-      reg = "[rs {}]: {}".format(j, dut.tt_um_tiny_processor.dcache.mem[j].value)
+      reg = "[rs {:0>2}]: 0b{:0>8}, {:0>3}".format(j, str(dut.tt_um_tiny_processor.dcache.mem[j].value), int(dut.tt_um_tiny_processor.dcache.mem[j].value))
     else:
-      reg = "[rs {}]: {}".format(j, dut.tt_um_tiny_processor.icache.mem[j].value)
+      reg = "[rs {:0>2}]: 0b{:0>8}, 0x{:0>2X}".format(j, str(dut.tt_um_tiny_processor.icache.mem[j].value), int(dut.tt_um_tiny_processor.icache.mem[j].value))
     dut._log.info(reg)
 
-def print_info(dut):
+def print_info(dut, mode = 0):
   dut._log.info("pc: {}".format(dut.tt_um_tiny_processor.pc.value))
-  dut._log.info("state: {}".format(dut.tt_um_tiny_processor.control_logic_0.st.value))
+  dut._log.info("state: {}".format(states[int(dut.tt_um_tiny_processor.control_logic_0.st.value)]))
+
+  if mode == 0:
+    dut._log.info("mosi: {}".format(dut.mosi.value))
+    dut._log.info("dbuf: {}".format(dut.tt_um_tiny_processor.buff_data.value))
+
+    dut._log.info(" -- fsm --")
+    dut._log.info("mstr_wr   : {}".format(dut.tt_um_tiny_processor.master_wr.value))
+    dut._log.info("fsmmstr_wr: {}".format(dut.tt_um_tiny_processor.control_logic_0.master_wr_in.value))
+
+    dut._log.info(" -- icache --")
+    dut._log.info("data_in: {}".format(dut.tt_um_tiny_processor.icache.data_in.value))
+    dut._log.info("addr_in: {}".format(dut.tt_um_tiny_processor.icache.addr_in.value))
+    dut._log.info("en_in: {}".format(dut.tt_um_tiny_processor.icache.en_in.value))
+  elif mode == 1:
+    dut._log.info("Inst: {}".format(insts[int(dut.tt_um_tiny_processor.opcode.value)]))
+    # dut._log.info(" Acc: {}".format(dut.tt_um_tiny_processor.acc.value))
+    # dut._log.info(" Src: {}".format(dut.tt_um_tiny_processor.src.value))
+    # dut._log.info(" Alu: {}".format(dut.tt_um_tiny_processor.alu_res.value))
+    dut._log.info(" Acc: {:d}".format(int(dut.tt_um_tiny_processor.acc.value)))
+    dut._log.info(" Src: {:d}".format(int(dut.tt_um_tiny_processor.src.value)))
+    dut._log.info(" Alu: {:d}".format(int(dut.tt_um_tiny_processor.alu_res.value)))
+
+
+def load_insts(file_name):
+  ''' Bit widths '''
+  PC_W     = 4  # Program counter 
+  BUFFER_W = 12 # Shift register
+
+  bit_matrix = []
+  with open(file_name, 'r') as f:
+    bit_strings = f.read().split('\n')
+    
+    for ind, bit_string in enumerate(bit_strings):
+      bit_list = []
+      
+      integer = int(bit_string, 2)
+      integer <<= PC_W
+      integer |= ind
+      
+      bi = BUFFER_W
+      while bi > 0:
+        bit = integer & 1
+        bit_list.append(bit)
+        integer >>= 1
+        bi -= 1
+      bit_matrix.append(bit_list)
+
+    f.close()
+
+  return bit_matrix
+
+async def serial_send(_dut, _cc, _bits):
+  nb = len(_bits)
   
-  dut._log.info("icache_data: {}".format(dut.tt_um_tiny_processor.icache_data.value))
-  
-  dut._log.info("acc: {}".format(dut.tt_um_tiny_processor.acc.value))
-  dut._log.info("src: {}".format(dut.tt_um_tiny_processor.src.value))
-  dut._log.info("ctrl_src_sel: {}".format(dut.tt_um_tiny_processor.ctrl_src_sel.value))
-  
-  dut._log.info("pc_sel: {}".format(dut.tt_um_tiny_processor.ctrl_pc_sel.value))
-  dut._log.info("isnotz: {}".format(dut.tt_um_tiny_processor.control_logic_0.is_not_zero.value))
+  data = _bits
+  cc   = _cc
+  dut  = _dut 
+
+  j = 0
+  for i in range(nb + 3):
+    # dut._log.info(f"------------ cc {cc} ------------")
+
+    if i == 0:
+      dut.csi.value = 0
+    elif i == (nb+1):
+      dut.csi.value = 1
+    elif j < nb:
+      dut.mosi.value = data[j]
+      j += 1 
+    else:
+      dut.mosi.value = 0
+
+    await FallingEdge(dut.clk)
+    # print_info(dut)
+    await RisingEdge(dut.clk)
+    cc += 1
+
+  return cc
 
 @cocotb.test()
 async def test_tproc(dut):
+  insts = load_insts('../compiler/popc.tx')
+
   clock = Clock(dut.clk, 10, units="us")
   cocotb.start_soon(clock.start())
   dut.rst_n.value   = 0
   dut.proc_en.value = 0
   dut.csi.value     = 1
   dut.csd.value     = 1
-  dut.mosi.value    = 0
+  dut.mosi.value    = 1
   await ClockCycles(dut.clk, 10)
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 1)
   cc = 0
   
-  for i in range(10):
+  for i in range(2):
     dut._log.info(f"------------ cc {cc} ------------")
 
-    if i == 2:
+    print_info(dut)
+    await ClockCycles(dut.clk, 1)
+    cc += 1
+
+  for inst in insts:
+    # dut._log.info('Sending: {}'.format(''.join(list(map(str, inst)))))
+    cc = await serial_send(dut, cc, inst)
+
+  for i in range(2):
+    dut._log.info(f"------------ cc {cc} ------------")
+
+    print_info(dut)
+    await ClockCycles(dut.clk, 1)
+    cc += 1
+
+  print_regs(range(16), dut, 0)
+  print_regs(range(15), dut, 1)
+
+  for i in range(80):
+    dut._log.info(f"------------ cc {cc} ------------")
+    if i == 0:
       dut.proc_en.value = 1
 
-    print_info(dut)
-    await ClockCycles(dut.clk, 1)
+    await FallingEdge(dut.clk)
+    print_info(dut, 1)
+    await RisingEdge(dut.clk)
     cc += 1
 
-  dut.proc_en.value = 0
-
-  for i in range(4):
-    dut._log.info(f"------------ cc {cc} ------------")
-
-    print_info(dut)
-    await ClockCycles(dut.clk, 1)
-    cc += 1
-
-  print_regs(range(15), dut)
+  print_regs(range(15), dut, 1)

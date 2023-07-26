@@ -27,11 +27,12 @@ insts = {
 def main():
   parser = argparse.ArgumentParser("Compiler for tiny processor")
   parser.add_argument("input", type=str, help="Input file")
-  parser.add_argument("-o", type=str, help="Output file", default="a.out")
+  parser.add_argument("-o", type=str, help="Output file", default="a.tex")
+  parser.add_argument("-f", type=str, help="Output format", default="hex")
   args = parser.parse_args()
 
   INFILE  = args.input
-  OUTFILE = args.o
+  OUTFILE = INFILE.split('/')[-1].split('.')[0] + ".tx"
 
   inst_list = []
   with open(INFILE, "r") as f:
@@ -88,7 +89,15 @@ def main():
         negop = (op ^ 15) + 1
         op = negop
 
-      inst = "{:X}{:X}".format(op, opcode)
+      if args.f == "hex":
+        inst = "{:X}{:X}".format(op, opcode)
+      elif args.f == "bin":
+        inst = "{:4b}{:4b}".format(op, opcode).replace(" ", "0")
+      elif args.f == "dec":
+        tot = op + opcode
+        inst = "{:0^3d}".format(tot)
+      else:
+        raise Exception(f"[FILE: {__file__}]: Format [{args}] not supported.")
       inst_list.append(inst)
     
     outf.write('\n'.join(inst_list))
