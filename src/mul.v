@@ -1,0 +1,75 @@
+module element(
+  input wire A, B, sel, //select between and(A, B) and nand(A, B)
+  input wire Sin, Cin,
+  
+  output wire Sout, Cout
+);
+
+wire op_AB = sel ? ~(A & B) : A & B;
+
+assign Sout = Sin ^ op_AB ^ Cin;
+assign Cout = (Sin ^ op_AB) ? Cin : Sin;
+
+endmodule
+
+module mul #(
+  parameter N_BIT = 4,
+  
+  parameter RES_SIZE = N_BIT << 1 
+)(
+  input wire[N_BIT-1:0] A, B,
+  input wire            mul_type,
+  
+  output wire[RES_SIZE-1:0] product
+);
+
+reg[N_BIT-1:0] Ci[0:N_BIT-1];
+reg[N_BIT-1:0] Si[0:N_BIT-1];
+
+reg S_ini[2:0], Sel_ini[2:0];
+always @(*) begin
+  //row 0
+  S_ini[0]   = 1'b0;
+  Sel_ini[0] = mul_type ? 1'b1 : 1'b0;
+  
+  //row 1
+  S_ini[1] = mul_type ? 1'b1 : 1'b0;
+  
+  //row N_BIT-1
+  Sel_ini[2] = 1'b0;
+  Sel_ini[1] = ~mul_type ? 1'b0 : 1'b1;
+  
+  //row N_BIT (the FA row)
+  S_ini[2] = ~mul_type ? 1'b0 : 1'b1;
+end
+
+generate
+  genvar row;
+  genvar col;
+  for(row=0; row<N_BIT; row++) begin
+    for(col=0; col<N_BIT; col++) begin
+      element element_0(
+      .A(A[row]),
+      .B(B[col]),
+      .Sin(
+        ((row==0) && (col==N_BIT-1)) ? S_ini[0] : 
+        ((row==1) && (col==N_BIT-1)) ? S_ini[1] : 
+        ((row==0) || (col==N_BIT-1)) ? 1'b0 : Si[row-1][col+1]
+        ),
+      .Cin((row==0) ? 1'b0 : Ci[row-1][col]),
+      .sel(
+        ((row==N_BIT-1) && row>col) ? Sel_ini[1] : 
+        ((col==N_BIT-1) && col>row) ? Sel_ini[0] : 
+        ((col==N_BIT-1) && (row==N_BIT-1)) ? Sel_ini[2] : 1'b0
+        ),
+      
+      .Sout(Si[row][col]),
+      .Cout(Ci[row][col])
+      );
+    end
+  end
+endgenerate
+
+assign product = Si;
+
+endmodule //mul

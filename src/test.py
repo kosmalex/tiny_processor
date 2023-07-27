@@ -33,9 +33,10 @@ insts = {
   0x4 : "sub"  ,
   0x8 : "addi" ,
   
-  0x1 : "and"  ,
-  0x5 : "nand" ,
-  0x9 : "andi" ,
+  0x1 : "mulu" ,
+  0x5 : "mul"  ,
+  
+  0x9 : "NaI" ,
   
   0x2 : "sll"  ,
   0xA : "slli" ,
@@ -47,7 +48,7 @@ insts = {
   
   0xC : "or"  ,
   0xD : "xor" ,
-  0xE : "mul" ,
+  0xE : "and" ,
   0xF : "bnez",
 }
 
@@ -78,12 +79,12 @@ def print_info(dut, mode = 0):
     dut._log.info("en_in: {}".format(dut.tt_um_tiny_processor.icache.en_in.value))
   elif mode == 1:
     dut._log.info("Inst: {}".format(insts[int(dut.tt_um_tiny_processor.opcode.value)]))
-    # dut._log.info(" Acc: {}".format(dut.tt_um_tiny_processor.acc.value))
-    # dut._log.info(" Src: {}".format(dut.tt_um_tiny_processor.src.value))
-    # dut._log.info(" Alu: {}".format(dut.tt_um_tiny_processor.alu_res.value))
-    dut._log.info(" Acc: {:d}".format(int(dut.tt_um_tiny_processor.acc.value)))
-    dut._log.info(" Src: {:d}".format(int(dut.tt_um_tiny_processor.src.value)))
-    dut._log.info(" Alu: {:d}".format(int(dut.tt_um_tiny_processor.alu_res.value)))
+    dut._log.info(" Acc: {}".format(dut.tt_um_tiny_processor.acc.value))
+    dut._log.info(" Src: {}".format(dut.tt_um_tiny_processor.src.value))
+    dut._log.info(" Alu: {}".format(dut.tt_um_tiny_processor.alu_res.value))
+    # dut._log.info(" Acc: {:d}".format(int(dut.tt_um_tiny_processor.acc.value)))
+    # dut._log.info(" Src: {:d}".format(int(dut.tt_um_tiny_processor.src.value)))
+    # dut._log.info(" Alu: {:d}".format(int(dut.tt_um_tiny_processor.alu_res.value)))
 
 
 def load_insts(file_name):
@@ -144,7 +145,7 @@ async def serial_send(_dut, _cc, _bits):
 
 @cocotb.test()
 async def test_tproc(dut):
-  insts = load_insts('../compiler/popc.tx')
+  insts = load_insts('../compiler/fact.tx')
 
   clock = Clock(dut.clk, 10, units="us")
   cocotb.start_soon(clock.start())

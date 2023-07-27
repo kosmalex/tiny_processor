@@ -101,7 +101,17 @@ adder_8bit adder_8bit_0 (
 );
 
 // LOGIC-AND //
-wire[7:0] and_res = acc_in & src_in;
+wire[7:0] mul_res;
+mul #(
+  .N_BIT    (8),
+  .RES_SIZE (8)
+) mul8bit (
+  .A        (acc_in),
+  .B        (src_in),
+  .mul_type (op_sel_in),
+
+  .product  (mul_res)
+);
 
 // SHIFTER //
 wire[7:0] shift_res;
@@ -116,13 +126,13 @@ barrel_shift barrel_shift_0 (
 always @(*) begin
   case (unit_sel_in)
     3'b000: alu_res_out = add_res;
-    3'b001: alu_res_out = op_sel_in ? ~and_res : and_res;
+    3'b001: alu_res_out = mul_res;
     3'b010: alu_res_out = shift_res;
     3'b011: alu_res_out = src_in;
     
     3'b100: alu_res_out = acc_in | src_in;
     3'b101: alu_res_out = acc_in ^ src_in;
-    // 3'b110: alu_res_out = acc_in * src_in;
+    3'b110: alu_res_out = acc_in & src_in;
     3'b111: alu_res_out = acc_in; // this is for bnez
   endcase
 end

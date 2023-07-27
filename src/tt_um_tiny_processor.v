@@ -231,27 +231,26 @@ wire[(`DATAPATH_W + 4)-1:0] buff_data;
     with the slaves clock freq.
  */
 wire csd, csi;   // Chip select signals for data and instruction caches
-wire sclk;       // Serial clock
 wire miso, mosi; // Master In Slave Out and Master Out Slave In
 
 assign csi  = uio_in[1];
 assign csd  = uio_in[2];
 assign mosi = uio_in[3];
 
-assign uio_out[4] = 1'b0; // mosi
-assign uio_out[5] = clk;  // sclk to master
+assign uio_out[4] = 1'b0; // miso
+assign uio_out[7] = clk;  // sclk to master
 
-assign uio_oe[3:1] = 3'b0; // csi, csd, mosi
-assign uio_oe[5:4] = 2'b1; // miso, sclk
+assign uio_oe[3:0] = 3'b0; // en(uio_oe[0]), csi, csd, mosi
+assign uio_oe[5:4] = 2'b1; // miso, done,
+assign uio_oe[7]   = 2'b1; // sclk
 
 // ...
-assign uio_oe[7:6]  = 2'b0;
-assign uio_out[7:6] = 2'b0;
+assign uio_oe [ 6 ] = 2'b0;
+assign uio_out[ 6 ] = 2'b0;
 assign uio_out[3:0] = 3'b0;
 
 // Master //
 wire master_proc_en = uio_in[0];
-assign uio_oe[0]    = 1'b0;
 
 wire master_wr = (~csi | ~csd) & ~master_proc_en;
 

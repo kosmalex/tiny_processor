@@ -6,9 +6,10 @@ insts = {
   "sub"  :0x4,
   "addi" :0x8,
 
-  "and"  :0x1,
-  "nand" :0x5,
-  "andi" :0x9,
+  "mulu" :0x1,
+  "mul"  :0x5,
+
+  "NaI"  :0x9,
 
   "sll"  :0x2,
   "slli" :0xA,
@@ -20,7 +21,7 @@ insts = {
   
   "or"  :0xC,
   "xor" :0xD,
-  "mul" :0xE,
+  "and" :0xE,
   "bnez":0xF
 }
 
