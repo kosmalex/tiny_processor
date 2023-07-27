@@ -66,10 +66,16 @@ generate
       .Sout(Si[row][col]),
       .Cout(Ci[row][col])
       );
-    end
-  end
+    end //for
+  end //for
 endgenerate
 
-assign product = Si;
+generate
+  genvar i;
+
+  for(i = 0; i < N_BIT; i++)
+    assign product[i] = Si[i];
+
+endgenerate
 
 endmodule //mul
