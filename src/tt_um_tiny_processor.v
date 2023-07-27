@@ -238,6 +238,7 @@ assign csd  = uio_in[2];
 assign mosi = uio_in[3];
 
 assign uio_out[4] = 1'b0; // miso
+assign uio_out[5] = 1'b0; // done
 assign uio_out[7] = clk;  // sclk to master
 
 assign uio_oe[3:0] = 3'b0; // en(uio_oe[0]), csi, csd, mosi
