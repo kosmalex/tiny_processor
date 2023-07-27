@@ -23,25 +23,23 @@ module mul #(
   output wire[RES_SIZE-1:0] product
 );
 
-reg[N_BIT-1:0] Ci[0:N_BIT-1];
-reg[N_BIT-1:0] Si[0:N_BIT-1];
+wire[N_BIT-1:0] Ci[0:N_BIT-1];
+wire[N_BIT-1:0] Si[0:N_BIT-1];
 
-reg S_ini[2:0], Sel_ini[2:0];
-always @(*) begin
-  //row 0
-  S_ini[0]   = 1'b0;
-  Sel_ini[0] = mul_type ? 1'b1 : 1'b0;
+wire S_ini[2:0], Sel_ini[2:0];
+//row 0
+assign S_ini[0]   = 1'b0;
+assign Sel_ini[0] = mul_type ? 1'b1 : 1'b0;
   
-  //row 1
-  S_ini[1] = mul_type ? 1'b1 : 1'b0;
+//row 1
+assign S_ini[1] = mul_type ? 1'b1 : 1'b0;
   
-  //row N_BIT-1
-  Sel_ini[2] = 1'b0;
-  Sel_ini[1] = ~mul_type ? 1'b0 : 1'b1;
+//row N_BIT-1
+assign Sel_ini[2] = 1'b0;
+assign Sel_ini[1] = ~mul_type ? 1'b0 : 1'b1;
   
-  //row N_BIT (the FA row)
-  S_ini[2] = ~mul_type ? 1'b0 : 1'b1;
-end
+//row N_BIT (the FA row)
+assign S_ini[2] = ~mul_type ? 1'b0 : 1'b1;
 
 generate
   genvar row;
