@@ -30,11 +30,21 @@ module tb ();
     wire csd;    
     wire mosi;   
 
+    wire display_on;
+    wire lsB;
+    wire[3:0] addr_in;
+
+    assign ui_in[0] = display_on;
+    assign ui_in[1] = lsB;
+    assign ui_in[5:2] = addr_in;
+
     assign uio_in[0] = proc_en;
     assign uio_in[1] = csi; 
     assign uio_in[2] = csd; 
     assign uio_in[3] = mosi;
-   
+    
+    wire done = uio_out[5];
+
     // wire up the inputs and outputs
     wire [6:0] segments = uo_out[6:0];
     wire       lsb      = uo_out[7];

@@ -80,12 +80,16 @@ endmodule
 module control_logic (
   input wire       clk, rst,
 
+  input wire       display_in,
+
   input wire[3:0]  opcode_in,
   input wire[3:0]  pc_in,
   input wire[7:0]  alu_res_in,
 
   input wire       master2proc_en_in,
   input wire       master_wr_in,
+
+  output wire      proc_done_out,
 
   output wire      pc_sel_out,
   output wire      pc_en_out,
@@ -98,20 +102,21 @@ module control_logic (
   output wire      dcache_wen_out,
   output wire      icache_wen_out,
   output wire      icache_addr_sel_out,
-
+  output wire      dcache_addr_sel_out,
 
   output wire      buff_shen_out,
 
-  output wire      acc_wen_out
+  output wire      acc_wen_out,
+
+  output wire      display_on_out
 );
 parameter IDLE  = 2'b00;
 parameter EXEC  = 2'b01;
 parameter RECV  = 2'b10;
 parameter WRITE = 2'b11;
 
-reg[1:0] st;
-
 // FSM //
+reg[1:0] st;
 always @(posedge clk) begin
   if (rst) begin
     st <= IDLE;
@@ -125,7 +130,7 @@ always @(posedge clk) begin
       end
 
       EXEC: begin
-        st <= master2proc_en_in ? EXEC : IDLE;
+        st <= (master2proc_en_in & pc_en_out) ? EXEC : IDLE;
       end
 
       RECV: begin
@@ -140,6 +145,9 @@ always @(posedge clk) begin
     endcase
   end
 end
+
+// Processor
+assign proc_done_out = ( st == IDLE );
 
 // Check if `bnez` branch is taken
 wire is_branch   = &opcode_in;
@@ -182,6 +190,9 @@ assign acc_wen_out = ~dcache_wen_out && ( st == EXEC );
 
 // Buffer shift register
 assign buff_shen_out = (st == RECV) & master_wr_in;
+
+// Seven segment
+assign display_on_out = (st == IDLE) & display_in;
 endmodule
 
 module tt_um_tiny_processor (
@@ -222,6 +233,7 @@ wire[`DATAPATH_W-1:0] dcache_data;
 wire[`DATAPATH_W-1:0] icache_data;
 
 wire[3:0] icache_addr;
+wire[3:0] dcache_addr;
 
 // Shift register (8bit data and 4bit address --> tot: 12bits) //
 wire[(`DATAPATH_W + 4)-1:0] buff_data;
@@ -233,29 +245,18 @@ wire[(`DATAPATH_W + 4)-1:0] buff_data;
 wire csd, csi;   // Chip select signals for data and instruction caches
 wire miso, mosi; // Master In Slave Out and Master Out Slave In
 
-assign csi  = uio_in[1];
-assign csd  = uio_in[2];
-assign mosi = uio_in[3];
-
-assign uio_out[4] = 1'b0; // miso
-assign uio_out[5] = 1'b0; // done
-assign uio_out[7] = clk;  // sclk to master
-
-assign uio_oe[3:0] = 3'b0; // en(uio_oe[0]), csi, csd, mosi
-assign uio_oe[5:4] = 2'b1; // miso, done,
-assign uio_oe[7]   = 2'b1; // sclk
-
-// ...
-assign uio_oe [ 6 ] = 2'b0;
-assign uio_out[ 6 ] = 2'b0;
-assign uio_out[3:0] = 3'b0;
-
 // Master //
 wire master_proc_en = uio_in[0];
 
 wire master_wr = (~csi | ~csd) & ~master_proc_en;
 
+// 7-seg
+wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
+wire[3:0] display_user_addr_in = ui_in[5:2];
+
 // Control Signals //
+wire      ctrl_proc_done;
+
 wire      ctrl_pc_sel;
 wire      ctrl_pc_en;
 wire      ctrl_pc_rst;
@@ -267,16 +268,39 @@ wire      ctrl_src_sel;
 wire      ctrl2dcache_wen;
 wire      ctrl2icache_wen;
 wire      ctrl_icache_addr_sel;
+wire      ctrl_dcache_addr_sel;
 
 wire      ctrl_acc_wen;
 
 wire      ctrl_buff_shen;
+
+wire      ctrl_display_on;
+
+// Signal renaming
+assign csi  = uio_in[1];
+assign csd  = uio_in[2];
+assign mosi = uio_in[3];
+
+assign uio_out[4] = 1'b0; // miso
+assign uio_out[5] = ctrl_proc_done; // done
+assign uio_out[7] = clk;  // sclk to master
+
+assign uio_oe[3:0] = 3'b0; // en(uio_oe[0]), csi, csd, mosi
+assign uio_oe[5:4] = 2'b1; // miso, done,
+assign uio_oe[7]   = 2'b1; // sclk
+
+// ...
+assign uio_oe [ 6 ] = 2'b0;
+assign uio_out[ 6 ] = 2'b0;
+assign uio_out[3:0] = 3'b0;
 
 assign opcode = icache_data[3:0]; 
 
 control_logic control_logic_0 (
   .clk          (clk),
   .rst          (rst),
+
+  .display_in   (display_on_off),
 
   .opcode_in    (opcode ),
   .pc_in        (pc     ),
@@ -285,6 +309,8 @@ control_logic control_logic_0 (
   .master2proc_en_in (master_proc_en),
   .master_wr_in      (master_wr),
 
+  .proc_done_out (ctrl_proc_done),
+  
   .pc_sel_out   (ctrl_pc_sel),
   .pc_en_out    (ctrl_pc_en ),
   .pc_rst_out   (ctrl_pc_rst),
@@ -296,9 +322,12 @@ control_logic control_logic_0 (
   .dcache_wen_out (ctrl2dcache_wen),
   .icache_wen_out (ctrl2icache_wen),
   .icache_addr_sel_out (ctrl_icache_addr_sel),
+  .dcache_addr_sel_out (ctrl_dcache_addr_sel),
   
   .buff_shen_out (ctrl_buff_shen),
-  .acc_wen_out   (ctrl_acc_wen  )
+  .acc_wen_out   (ctrl_acc_wen  ),
+
+  .display_on_out (ctrl_display_on)
 );
 
 shift_reg #(
@@ -327,6 +356,8 @@ icache(
   .data_out (icache_data)
 );
 
+
+assign dcache_addr = ctrl_display_on ? display_user_addr_in : rs;
 cache #(
   .SIZE(`DMEM_SZ)
 )
@@ -335,13 +366,13 @@ dcache(
   .rst      (rst),
 
   .data_in  (acc),
-  .addr_in  (rs),
+  .addr_in  (dcache_addr),
   .en_in    (ctrl2dcache_wen),
 
   .data_out (dcache_data)
 );
 
-assign jmp = icache_data[7:4];
+assign jmp = {icache_data[7:5], 1'b0};
 assign imm = icache_data[7:4];
 assign rs  = icache_data[7:4];
 
@@ -380,14 +411,12 @@ always @(posedge clk) begin : Accumulator
 end
 
 // Seven segment interface //
-reg[4:0] seg7In;
-always @(*) begin
-  case (ui_in[3:0])
-    4'hF: seg7In = {1'h1, pc};
-    default: seg7In = {1'h1, pc};
-  endcase
-end
+wire      msb;
+wire[3:0] value;
 
-seven_seg seven_seg_0 ( .in(seg7In), .out(uo_out) );
+assign msb   = ui_in[1];
+assign value = ctrl_display_on ? ( msb ? dcache_data[7:4] : dcache_data[3:0] ) : 4'h0;
+
+seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
 
 endmodule

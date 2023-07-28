@@ -86,7 +86,6 @@ def print_info(dut, mode = 0):
     # dut._log.info(" Src: {:d}".format(int(dut.tt_um_tiny_processor.src.value)))
     # dut._log.info(" Alu: {:d}".format(int(dut.tt_um_tiny_processor.alu_res.value)))
 
-
 def load_insts(file_name):
   ''' Bit widths '''
   PC_W     = 4  # Program counter 
@@ -143,6 +142,35 @@ async def serial_send(_dut, _cc, _bits):
 
   return cc
 
+async def show_reg(_dut, _cc, regidx):
+  dut = _dut
+  cc  = _cc
+
+  dut._log.info(f"------------ cc {cc} ------------")
+  dut.lsB.value = 0
+  dut.display_on.value = 1
+  dut.addr_in.value    = regidx
+  await Timer(2, units="us")
+    
+  dut._log.info("ctrl_disp_on {}".format(dut.tt_um_tiny_processor.ctrl_display_on.value))
+  dut._log.info("      lsByte {}".format(dut.lsB.value))
+  dut._log.info(" dcache_addr {}".format(dut.tt_um_tiny_processor.dcache_addr.value))
+  dut._log.info("       value {}".format(dut.tt_um_tiny_processor.value.value))
+  dut._log.info("    segments {}".format(dut.segments.value))
+  await Timer(2, units="us")
+
+  dut.lsB.value = 1
+  await Timer(2, units="us")
+  
+  dut._log.info("ctrl_disp_on {}".format(dut.tt_um_tiny_processor.ctrl_display_on.value))
+  dut._log.info("      lsByte {}".format(dut.lsB.value))
+  dut._log.info(" dcache_addr {}".format(dut.tt_um_tiny_processor.dcache_addr.value))
+  dut._log.info("       value {}".format(dut.tt_um_tiny_processor.value.value))
+  dut._log.info("    segments {}".format(dut.segments.value))
+  await Timer(2, units="us")
+  
+  return cc
+
 @cocotb.test()
 async def test_tproc(dut):
   insts = load_insts('../compiler/fact.tx')
@@ -154,6 +182,10 @@ async def test_tproc(dut):
   dut.csi.value     = 1
   dut.csd.value     = 1
   dut.mosi.value    = 1
+
+  dut.display_on.value = 0
+  dut.addr_in.value    = 0
+  dut.lsB.value        = 0
   await ClockCycles(dut.clk, 10)
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 1)
@@ -184,6 +216,8 @@ async def test_tproc(dut):
     dut._log.info(f"------------ cc {cc} ------------")
     if i == 0:
       dut.proc_en.value = 1
+    if (int(dut.done.value) == 1) and i > 1: # delay one cycle
+      dut.proc_en.value = 0
 
     await FallingEdge(dut.clk)
     print_info(dut, 1)
@@ -191,3 +225,7 @@ async def test_tproc(dut):
     cc += 1
 
   print_regs(range(15), dut, 1)
+
+  cc = await show_reg(dut, cc, 0)
+  cc = await show_reg(dut, cc, 1)
+  cc = await show_reg(dut, cc, 2)
