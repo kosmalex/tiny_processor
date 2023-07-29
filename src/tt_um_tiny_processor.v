@@ -185,9 +185,10 @@ assign unit_sel_0 = opcode_in[1:0]; /* Select between different ops in the categ
 
 assign unit_sel_out = {unit_sel_1, unit_sel_0};
 
-assign mul_seg_sel = opcode[3] & ~opcode[2] & ~opcode[1] & opcode[0];
+// Select the upper or lower segment of the mul result
+assign mul_seg_sel = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0];
 
-// Equivalent to `opcode_in == 4'h7`;
+// Equivalent to `opcode_in == 4'h7`
 assign dcache_wen_out = &opcode_in[2:0] && ( st == EXEC );
 
 assign icache_wen_out = ( st == WRITE );
