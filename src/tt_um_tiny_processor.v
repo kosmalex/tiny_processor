@@ -32,8 +32,8 @@ reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
 
 always @(posedge clk) begin
   if (rst) begin
-      {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 0;
-      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 0;
+      {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 8'b0;
+      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 8'b0;
   end else begin
     if (en_in) mem[addr_in] <= data_in;
   end
@@ -102,7 +102,6 @@ module control_logic (
   output wire      dcache_wen_out,
   output wire      icache_wen_out,
   output wire      icache_addr_sel_out,
-  output wire      dcache_addr_sel_out,
 
   output wire      buff_shen_out,
 
@@ -239,16 +238,17 @@ wire[3:0] dcache_addr;
 wire[(`DATAPATH_W + 4)-1:0] buff_data;
 
 /**
-  SPI-interface: The slave is the processor. The master operates
-    with the slaves clock freq.
+  SPI-interface: The slave is the processor.
  */
 wire csd, csi;   // Chip select signals for data and instruction caches
 wire miso, mosi; // Master In Slave Out and Master Out Slave In
 
 // Master //
-wire master_proc_en = uio_in[0];
+wire master_proc_en;
+wire master_wr;
 
-wire master_wr = (~csi | ~csd) & ~master_proc_en;
+assign master_proc_en = uio_in[0]; 
+assign master_wr      = (~csi | ~csd) & ~master_proc_en;
 
 // 7-seg
 wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
@@ -283,15 +283,13 @@ assign mosi = uio_in[3];
 
 assign uio_out[4] = 1'b0; // miso
 assign uio_out[5] = ctrl_proc_done; // done
-assign uio_out[7] = clk;  // sclk to master
 
 assign uio_oe[3:0] = 3'b0; // en(uio_oe[0]), csi, csd, mosi
-assign uio_oe[5:4] = 2'b1; // miso, done,
-assign uio_oe[7]   = 2'b1; // sclk
+assign uio_oe[5:4] = 2'h3; // miso, done
 
 // ...
-assign uio_oe [ 6 ] = 2'b0;
-assign uio_out[ 6 ] = 2'b0;
+assign uio_oe [7:6] = 2'b0;
+assign uio_out[7:6] = 2'b0;
 assign uio_out[3:0] = 3'b0;
 
 assign opcode = icache_data[3:0]; 
@@ -322,7 +320,6 @@ control_logic control_logic_0 (
   .dcache_wen_out (ctrl2dcache_wen),
   .icache_wen_out (ctrl2icache_wen),
   .icache_addr_sel_out (ctrl_icache_addr_sel),
-  .dcache_addr_sel_out (ctrl_dcache_addr_sel),
   
   .buff_shen_out (ctrl_buff_shen),
   .acc_wen_out   (ctrl_acc_wen  ),

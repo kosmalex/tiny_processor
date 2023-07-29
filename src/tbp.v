@@ -7,12 +7,12 @@ that can be driven / tested by the cocotb test.py
 */
 
 // testbench is controlled by test.py
-module tb ();
+module tbp ();
 
     // this part dumps the trace to a vcd file that can be viewed with GTKWave
     initial begin
-        $dumpfile ("tb.vcd");
-        $dumpvars (0, tb);
+        $dumpfile ("tbp.vcd");
+        $dumpvars (0, tbp);
         #1;
     end
 
@@ -25,6 +25,7 @@ module tb ();
     wire rst_n;
     wire ena;
 
+    // wire up the inputs and outputs
     wire proc_en;
     wire csi;    
     wire csd;    
@@ -45,11 +46,9 @@ module tb ();
     
     wire done = uio_out[5];
 
-    // wire up the inputs and outputs
     wire [6:0] segments = uo_out[6:0];
     wire       lsb      = uo_out[7];
 
-    // instantiate the DUT with lower MAX_COUNT for a faster sim
     tt_um_tiny_processor tt_um_tiny_processor (
         `ifdef GL_TEST
             .vccd1( 1'b1),

@@ -3,12 +3,11 @@ module cs_add(
 
   output wire s, c
 );
+wire sel;
 
-assign s = x ^ y ^ z;
-
-wire sel = x ^ y;
-
-assign c = (x ^ y) ? z : x;
+assign sel = x ^ y;
+assign s   = sel ^ z;
+assign c   = sel ? z : x;
 
 endmodule
 
