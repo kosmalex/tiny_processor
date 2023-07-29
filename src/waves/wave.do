@@ -23,7 +23,7 @@ add wave -noupdate -expand -group EXEC /tbq/tt_um_tiny_processor/alu_res
 add wave -noupdate -expand -group EXEC /tbq/tt_um_tiny_processor/dcache_data
 add wave -noupdate -expand -group Dcache -radix decimal -childformat {{{/tbq/tt_um_tiny_processor/dcache/mem[0]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[1]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[2]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[3]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[4]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[5]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[6]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[7]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[8]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[9]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[10]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[11]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[12]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[13]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[14]} -radix decimal} {{/tbq/tt_um_tiny_processor/dcache/mem[15]} -radix decimal}} -subitemconfig {{/tbq/tt_um_tiny_processor/dcache/mem[0]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[1]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[2]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[3]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[4]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[5]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[6]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[7]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[8]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[9]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[10]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[11]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[12]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[13]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[14]} {-height 15 -radix decimal} {/tbq/tt_um_tiny_processor/dcache/mem[15]} {-height 15 -radix decimal}} /tbq/tt_um_tiny_processor/dcache/mem
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2959113 ps} 0}
+WaveRestoreCursors {{Cursor 1} {5327399 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -39,4 +39,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {2235113 ps} {2504513 ps}
+WaveRestoreZoom {5259070 ps} {5528470 ps}

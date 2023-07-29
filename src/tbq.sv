@@ -42,34 +42,12 @@ module tbq;
   end
 
 ///////////////////////////////////////////////////
-  logic[7:0] insts[32];
+  logic[7:0] insts[100];
 
   initial begin
     RESET();
 
-    $readmemh("../compiler/mul.tx", insts);
-
-    for (int i = 0; i < 16; i++) begin
-      $display($time, " Writting: %h", insts[i]);
-      SPI_i({insts[i], i[3:0]});
-    end
-
-    proc_en <= 1'b1;
-    @(posedge clk);
-
-    @(posedge done) begin
-      proc_en <= 1'b0;
-    end
-
-    for (int i = 0; i < 16; i++) begin
-      $display($time, " Writting: %h", insts[16 + i]);
-      SPI_i({insts[16 + i], i[3:0]});
-    end
-
-    proc_en <= 1'b1;
-    @(posedge clk);
-
-    @(posedge done);
+    MULTIPLY();
 
     $stop();
   end
@@ -135,6 +113,70 @@ module tbq;
     @(posedge clk) begin
       csd  <= #5ns 1'b1;
     end
+
+    @(posedge done);
+  endtask
+
+  task MULTIPLY();
+    $readmemh("../compiler/mul.tx", insts);
+
+    for (int i = 0; i < 16; i++) begin
+      $display($time, " Writting: %h", insts[i]);
+      SPI_i({insts[i], i[3:0]});
+    end
+
+    proc_en <= 1'b1;
+    @(posedge clk);
+
+    @(posedge done) begin
+      proc_en <= 1'b0;
+    end
+
+    for (int i = 0; i < 16; i++) begin
+      $display($time, " Writting: %h", insts[16 + i]);
+      SPI_i({insts[16 + i], i[3:0]});
+    end
+
+    proc_en <= 1'b1;
+    @(posedge clk);
+
+    @(posedge done);
+  endtask
+
+  task VEC_ADD();
+    $readmemh("../compiler/vec_add.tx", insts);
+
+    for (int i = 0; i < 10; i++) begin
+      $display($time, " Writting: %h", insts[i]);
+      SPI_i({insts[i], i[3:0]});
+    end
+
+    proc_en <= 1'b1;
+    @(posedge clk);
+
+    @(posedge done) begin
+      proc_en <= 1'b0;
+    end
+
+    for (int i = 0; i < 10; i++) begin
+      $display($time, " Writting: %h", insts[10 + i]);
+      SPI_i({insts[10 + i], i[3:0]});
+    end
+
+    proc_en <= 1'b1;
+    @(posedge clk);
+
+    @(posedge done) begin
+      proc_en <= 1'b0;
+    end
+
+    for (int i = 0; i < 15; i++) begin
+      $display($time, " Writting: %h", insts[20 + i]);
+      SPI_i({insts[20 + i], i[3:0]});
+    end
+
+    proc_en <= 1'b1;
+    @(posedge clk);
 
     @(posedge done);
   endtask
