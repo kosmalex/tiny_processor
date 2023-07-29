@@ -77,17 +77,18 @@ def print_info(dut, mode = 0):
     dut._log.info("addr_in: {}".format(dut.tt_um_tiny_processor.icache.addr_in.value))
     dut._log.info("en_in: {}".format(dut.tt_um_tiny_processor.icache.en_in.value))
   elif mode == 1:
+    dut._log.info("         opcode: {}".format(dut.tt_um_tiny_processor.opcode.value))
     dut._log.info("           Inst: {}".format(insts[int(dut.tt_um_tiny_processor.opcode.value)]))
-    # dut._log.info("            Acc: {}".format(dut.tt_um_tiny_processor.acc.value))
-    # dut._log.info("            Src: {}".format(dut.tt_um_tiny_processor.src.value))
-    # dut._log.info("            Alu: {}".format(dut.tt_um_tiny_processor.alu_res.value))
-    # dut._log.info("    dcache_addr: {}".format(dut.tt_um_tiny_processor.dcache_addr.value))
-    # dut._log.info("dcache_addr_sel: {}".format(dut.tt_um_tiny_processor.ctrl_dcache_addr_sel.value))
-    # dut._log.info("   ctrl_src_sel: {}".format(dut.tt_um_tiny_processor.ctrl_src_sel.value))
-    # dut._log.info("    dcache_data: {}".format(dut.tt_um_tiny_processor.dcache_data.value))
-    dut._log.info(" Acc: {:d}".format(int(dut.tt_um_tiny_processor.acc.value)))
-    dut._log.info(" Src: {:d}".format(int(dut.tt_um_tiny_processor.src.value)))
-    dut._log.info(" Alu: {:d}".format(int(dut.tt_um_tiny_processor.alu_res.value)))
+    dut._log.info("            Acc: {}".format(dut.tt_um_tiny_processor.acc.value))
+    dut._log.info("            Src: {}".format(dut.tt_um_tiny_processor.src.value))
+    dut._log.info("            Alu: {}".format(dut.tt_um_tiny_processor.alu_res.value))
+    dut._log.info("    dcache_addr: {}".format(dut.tt_um_tiny_processor.dcache_addr.value))
+    dut._log.info("dcache_addr_sel: {}".format(dut.tt_um_tiny_processor.ctrl_dcache_addr_sel.value))
+    dut._log.info("   ctrl_src_sel: {}".format(dut.tt_um_tiny_processor.ctrl_src_sel.value))
+    dut._log.info("    dcache_data: {}".format(dut.tt_um_tiny_processor.dcache_data.value))
+    # dut._log.info(" Acc: {:d}".format(int(dut.tt_um_tiny_processor.acc.value)))
+    # dut._log.info(" Src: {:d}".format(int(dut.tt_um_tiny_processor.src.value)))
+    # dut._log.info(" Alu: {:d}".format(int(dut.tt_um_tiny_processor.alu_res.value)))
 
 def load_insts(file_name):
   ''' Bit widths '''
@@ -103,7 +104,7 @@ def load_insts(file_name):
       
       integer = int(bit_string, 2)
       integer <<= PC_W
-      integer |= ind
+      integer |= (ind % 16)
       
       bi = BUFFER_W
       while bi > 0:
@@ -175,7 +176,7 @@ async def show_reg(_dut, _cc, regidx):
 
 @cocotb.test()
 async def test_tproc(dut):
-  insts = load_insts('../compiler/mul.tx')
+  insts = load_insts('../compiler/vec_add.tx')
 
   clock = Clock(dut.clk, 10, units="us")
   cocotb.start_soon(clock.start())
@@ -192,24 +193,34 @@ async def test_tproc(dut):
   dut.rst_n.value = 1
   await ClockCycles(dut.clk, 1)
   cc = 0
-  
-  for i in range(2):
-    dut._log.info(f"------------ cc {cc} ------------")
 
-    print_info(dut)
-    await ClockCycles(dut.clk, 1)
-    cc += 1
-
-  # inst = [1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1]
-  # cc = await serial_send(dut, cc, inst)
-  for inst in insts:
+  for inst in insts[0:16]:
     # dut._log.info('Sending: {}'.format(''.join(list(map(str, inst)))))
     cc = await serial_send(dut, cc, inst)
 
   print_regs(range(16), dut, 0)
+
+  for i in range(100):
+    dut._log.info(f"------------ cc {cc} ------------")
+    if i == 0:
+      dut.proc_en.value = 1
+    if (int(dut.done.value) == 1) and i > 1: # delay one cycle
+      dut.proc_en.value = 0
+
+    await FallingEdge(dut.clk)
+    # print_info(dut, 1)
+    await RisingEdge(dut.clk)
+    cc += 1
+
   print_regs(range(16), dut, 1)
 
-  for i in range(40):
+  for inst in insts[16:32]:
+    dut._log.info('Sending: {}'.format(''.join(list(map(str, inst)))))
+    cc = await serial_send(dut, cc, inst)
+    
+  print_regs(range(16), dut, 0)
+
+  for i in range(100):
     dut._log.info(f"------------ cc {cc} ------------")
     if i == 0:
       dut.proc_en.value = 1
@@ -221,7 +232,27 @@ async def test_tproc(dut):
     await RisingEdge(dut.clk)
     cc += 1
 
-  print_regs(range(15), dut, 1)
+  print_regs(range(16), dut, 1)
+
+  for inst in insts[32:36]:
+    dut._log.info('Sending: {}'.format(''.join(list(map(str, inst)))))
+    cc = await serial_send(dut, cc, inst)
+
+  print_regs(range(16), dut, 0)
+
+  for i in range(100):
+    dut._log.info(f"------------ cc {cc} ------------")
+    if i == 0:
+      dut.proc_en.value = 1
+    if (int(dut.done.value) == 1) and i > 1: # delay one cycle
+      dut.proc_en.value = 0
+
+    await FallingEdge(dut.clk)
+    print_info(dut, 1)
+    await RisingEdge(dut.clk)
+    cc += 1
+
+  print_regs(range(16), dut, 1)
 
   # cc = await show_reg(dut, cc, 0)
   # cc = await show_reg(dut, cc, 1)

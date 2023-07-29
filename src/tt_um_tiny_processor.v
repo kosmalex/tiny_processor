@@ -106,6 +106,7 @@ module control_logic (
 
   output wire      dcache_wen_out,
   output wire      icache_wen_out,
+  output wire      icache_rst_out,
   output wire      icache_addr_sel_out,
   output wire      dcache_addr_sel_out,
   output wire      dcache_data_in_sel_out,
@@ -157,6 +158,9 @@ always @(posedge clk) begin
   end
 end
 
+wire is_idle = ( st == IDLE );
+wire is_exec = ( st == EXEC );
+
 // Processor
 assign proc_done_out = ( st == IDLE );
 
@@ -170,13 +174,14 @@ assign pc_sel_out = is_taken;
 /** If the last instruction is not a branch or is a not taken branch -->
     the programm has terminated --> freeze `pc`.
  */
-assign pc_en_out  = ~( &pc_in & (~is_branch | ~is_taken) );
+wire pc_last_val = &pc_in;
+assign pc_en_out  = ~( pc_last_val & (~is_branch | ~is_taken) );
 
-assign pc_rst_out = ( st != EXEC );
+assign pc_rst_out = ~is_exec;
 
 /**
   op_sel_out: Used to distinguish between addition-subtraction, 
-              left-right shift, `and` and `nand` logic ops.
+              left-right shift, signed/unsigned multiply.
   src_sel_out: Operand select -> RS or SEXT immediate.
  */
 assign op_sel_out  = opcode_in[2];
@@ -195,23 +200,26 @@ assign unit_sel_out = {unit_sel_1, unit_sel_0};
 // Select the upper or lower segment of the mul result
 assign mul_seg_sel = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0];
 
-assign icache_wen_out = ( st == IRECV ) & csi;
+assign icache_wen_out      = ( st == IRECV ) & csi;
 assign icache_addr_sel_out = icache_wen_out;
+assign icache_rst_out      = proc_done_out & pc_last_val; 
 
 // Equivalent to `opcode_in == 4'h7`
-wire temp = ( st == DRECV ) & csd;
-assign dcache_wen_out = temp | ( &opcode_in[2:0] && ( st == EXEC ) );
+wire temp;
+assign temp = ( st == DRECV ) & csd;
+
+assign dcache_wen_out = temp | ( &opcode_in[2:0] & is_exec);
 assign dcache_addr_sel_out = temp;
 assign dcache_data_in_sel_out = dcache_addr_sel_out;
 
 // When storing, don't write accumulator register
-assign acc_wen_out = ~dcache_wen_out && ( st == EXEC );
+assign acc_wen_out = ~dcache_wen_out & is_exec;
 
 // Buffer shift register
 assign buff_shen_out = master_wr;
 
 // Seven segment
-assign display_on_out = (st == IDLE) & display_in;
+assign display_on_out = is_idle & display_in;
 endmodule
 
 module tt_um_tiny_processor (
@@ -287,6 +295,7 @@ wire      ctrl2alu_mul_seg_sel;
 
 wire      ctrl2dcache_wen;
 wire      ctrl2icache_wen;
+wire      ctrl2icache_rst;
 wire      ctrl_icache_addr_sel;
 wire      ctrl_dcache_addr_sel;
 wire      ctrl_dcache_data_in_sel;
@@ -342,6 +351,7 @@ control_logic control_logic_0 (
 
   .dcache_wen_out         (ctrl2dcache_wen),
   .icache_wen_out         (ctrl2icache_wen),
+  .icache_rst_out         (ctrl2icache_rst),
   .icache_addr_sel_out    (ctrl_icache_addr_sel),
   .dcache_addr_sel_out    (ctrl_dcache_addr_sel),
   .dcache_data_in_sel_out (ctrl_dcache_data_in_sel),
@@ -371,7 +381,7 @@ cache #(
 )
 icache(
   .clk      (clk),
-  .rst      (rst),
+  .rst      (rst | ctrl2icache_rst),
 
   .data_in  (buff_data[11:4]),
   .addr_in  (icache_addr),

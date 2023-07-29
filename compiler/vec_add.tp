@@ -8,7 +8,6 @@ li 6
 sa x3
 li -3
 sa x4
-
 li -4
 sa x5
 li 2
@@ -19,7 +18,6 @@ li 4
 sa x8
 li 1
 sa x9
-
 la x0
 add x5
 sa x0
