@@ -177,10 +177,10 @@ assign pc_rst_out = ( st != EXEC );
 /**
   op_sel_out: Used to distinguish between addition-subtraction, 
               left-right shift, `and` and `nand` logic ops.
-  src_sel_out: Operand select -> RS or SEXT immediate
+  src_sel_out: Operand select -> RS or SEXT immediate.
  */
 assign op_sel_out  = opcode_in[2];
-assign src_sel_out = opcode_in[3] & ~opcode_in[2];
+assign src_sel_out = opcode_in[3] & ~opcode_in[2] & ~mul_seg_sel;
 
 wire unit_sel_1;
 assign unit_sel_1 = &opcode_in[3:2]; /* Divides units into 2 categories:
@@ -202,6 +202,7 @@ assign icache_addr_sel_out = icache_wen_out;
 wire temp = ( st == DRECV ) & csd;
 assign dcache_wen_out = temp | ( &opcode_in[2:0] && ( st == EXEC ) );
 assign dcache_addr_sel_out = temp;
+assign dcache_data_in_sel_out = dcache_addr_sel_out;
 
 // When storing, don't write accumulator register
 assign acc_wen_out = ~dcache_wen_out && ( st == EXEC );

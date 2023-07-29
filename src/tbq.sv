@@ -42,22 +42,35 @@ module tbq;
   end
 
 ///////////////////////////////////////////////////
-  logic[7:0] insts[16];
+  logic[7:0] insts[32];
 
   initial begin
     RESET();
 
-    $readmemh("../compiler/fact.tx", insts);
+    $readmemh("../compiler/mul.tx", insts);
 
     for (int i = 0; i < 16; i++) begin
-      $display($time, "Writting: %h", insts[i]);
-      SPI({insts[i], i[3:0]});
+      $display($time, " Writting: %h", insts[i]);
+      SPI_i({insts[i], i[3:0]});
+    end
+
+    proc_en <= 1'b1;
+    @(posedge clk);
+
+    @(posedge done) begin
+      proc_en <= 1'b0;
+    end
+
+    for (int i = 0; i < 16; i++) begin
+      $display($time, " Writting: %h", insts[16 + i]);
+      SPI_i({insts[16 + i], i[3:0]});
     end
 
     proc_en <= 1'b1;
     @(posedge clk);
 
     @(posedge done);
+
     $stop();
   end
 ///////////////////////////////////////////////////
@@ -88,7 +101,7 @@ module tbq;
     @(posedge clk);
   endtask
 
-  task SPI(logic[11:0] data);
+  task SPI_i(logic[11:0] data);
     @(posedge clk) begin
       csi  <= #5ns 1'b0;
       mosi <= #5ns data[0]; 
@@ -102,6 +115,25 @@ module tbq;
 
     @(posedge clk) begin
       csi  <= #5ns 1'b1;
+    end
+
+    @(posedge done);
+  endtask
+
+  task SPI_d(logic[11:0] data);
+    @(posedge clk) begin
+      csd  <= #5ns 1'b0;
+      mosi <= #5ns data[0]; 
+    end
+
+    for (int i = 1; i < 12; i++) begin
+      @(posedge clk) begin
+        mosi <= data[i]; 
+      end
+    end
+
+    @(posedge clk) begin
+      csd  <= #5ns 1'b1;
     end
 
     @(posedge done);

@@ -8,6 +8,6 @@ vlog *.v *.sv
 vsim -novopt tbq
 
 log -r /*
-do ./waves/Iwrite.do
+do ./waves/wave.do
 
 run -all

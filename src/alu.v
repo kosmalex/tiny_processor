@@ -69,8 +69,9 @@ generate
   assign lvl[3][0] = amnt_in[2] ? 1'b0 : lvl[2][0];
   assign lvl[3][1] = amnt_in[2] ? 1'b0 : lvl[2][1];
   assign lvl[3][2] = amnt_in[2] ? 1'b0 : lvl[2][2];
-  for (j = 3; j < 8; j = j + 1) begin
-    assign lvl[3][j] = amnt_in[2] ? lvl[2][j-3] : lvl[2][j];
+  assign lvl[3][3] = amnt_in[2] ? 1'b0 : lvl[2][3];
+  for (j = 4; j < 8; j = j + 1) begin
+    assign lvl[3][j] = amnt_in[2] ? lvl[2][j-4] : lvl[2][j];
   end
 
   // Reverse bits again
