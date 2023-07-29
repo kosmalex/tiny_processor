@@ -68,15 +68,6 @@ generate
   end //for
 endgenerate
 
-generate
-  genvar i;
-
-  for(i = 0; i < N_BIT; i = i + 1) begin
-    assign product[i] = Si[i];
-  end
-
-endgenerate
-
 wire[N_BIT-1:0] Cj;
 generate
   genvar i;
