@@ -3,10 +3,11 @@ file delete -force work
 
 vlib work
 
-vlog *.v
+vlog *.v *.sv
 
-vsim -novopt tb
+vsim -novopt tbq
 
 log -r /*
+do ./waves/Iwrite.do
 
 run -all

@@ -44,8 +44,8 @@ assign S_ini[2] = ~mul_type ? 1'b0 : 1'b1;
 generate
   genvar row;
   genvar col;
-  for(row=0; row<N_BIT; row++) begin
-    for(col=0; col<N_BIT; col++) begin
+  for(row = 0; row < N_BIT; row = row + 1) begin
+    for(col = 0; col < N_BIT; col = col + 1) begin
       element element_0(
       .A(A[row]),
       .B(B[col]),
@@ -71,8 +71,9 @@ endgenerate
 generate
   genvar i;
 
-  for(i = 0; i < N_BIT; i++)
+  for(i = 0; i < N_BIT; i = i + 1) begin
     assign product[i] = Si[i];
+  end
 
 endgenerate
 

@@ -45,9 +45,9 @@ endmodule
 module shift_reg #(
   parameter SIZE = 8
 )(
-  input wire clk,
+  input wire clk, rst,
   input wire sdata_in, // Serial data
-  input wire en_in  ,  // Enable write and shift
+  input wire en_in   ,  // Enable write and shift
 
   output wire[SIZE-1:0] data_out //parallel data output
 );
@@ -60,14 +60,18 @@ generate
   for (i = 0; i < SIZE; i = i + 1) begin
     if (i == 0) begin
       always @(posedge clk) begin
-        if (en_in) begin
-            register[SIZE - i - 1] <= sdata_in;
+        if (rst) begin
+          register[SIZE - i - 1] <= 0;
+        end else if (en_in) begin
+          register[SIZE - i - 1] <= sdata_in;
         end
       end
     end else begin
       always @(posedge clk) begin
-        if (en_in) begin
-            register[SIZE - i - 1] <= register[SIZE - i];
+        if (rst) begin
+          register[SIZE - i - 1] <= 0;
+        end else if (en_in) begin
+          register[SIZE - i - 1] <= register[SIZE - i];
         end
       end
     end
@@ -170,11 +174,13 @@ assign pc_rst_out = ( st != EXEC );
 assign op_sel_out  = opcode_in[2];
 assign src_sel_out = opcode_in[3] & ~opcode_in[2];
 
-wire unit_sel_1 = &opcode_in[3:2]; /* Divides units into 2 categories:
+wire unit_sel_1;
+assign unit_sel_1 = &opcode_in[3:2]; /* Divides units into 2 categories:
                                      1> Those that do operate with immediates
                                      2> And those that do not */
 
-wire[1:0] unit_sel_0 = opcode_in[1:0]; /* Select between different ops in the category */
+wire[1:0] unit_sel_0;
+assign unit_sel_0 = opcode_in[1:0]; /* Select between different ops in the category */
 
 assign unit_sel_out = {unit_sel_1, unit_sel_0};
 
@@ -188,7 +194,7 @@ assign icache_addr_sel_out = ( st == WRITE );
 assign acc_wen_out = ~dcache_wen_out && ( st == EXEC );
 
 // Buffer shift register
-assign buff_shen_out = (st == RECV) & master_wr_in;
+assign buff_shen_out = master_wr_in;
 
 // Seven segment
 assign display_on_out = (st == IDLE) & display_in;
@@ -225,7 +231,6 @@ wire[3:0]       opcode;
 wire[`DATAPATH_W-1:0] src;
 reg[`DATAPATH_W-1:0]  acc;
 wire[`DATAPATH_W-1:0] alu_res;
-reg[`DATAPATH_W-1:0]  op_data;
 
 // Caches //
 wire[`DATAPATH_W-1:0] dcache_data;
@@ -332,6 +337,8 @@ shift_reg #(
 )
 buffer (
   .clk      (clk),
+  .rst      (rst),
+
   .sdata_in (mosi),
   .en_in    (ctrl_buff_shen),
 

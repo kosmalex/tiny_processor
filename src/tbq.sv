@@ -2,24 +2,24 @@
 `timescale 1ns/1ps
 
 module tbq;
-  wire [7:0] uo_out;
-  wire [7:0] ui_in;
-  wire [7:0] uio_out;
-  wire [7:0] uio_in;
-  wire [7:0] uio_oe;
-  wire clk;
-  wire rst_n;
-  wire ena;
+  logic [7:0] uo_out;
+  logic [7:0] ui_in;
+  logic [7:0] uio_out;
+  logic [7:0] uio_in;
+  logic [7:0] uio_oe;
+  logic clk;
+  logic rst_n;
+  logic ena;
 
   // wire up the inputs and outputs
-  wire proc_en;
-  wire csi;    
-  wire csd;    
-  wire mosi;   
+  logic proc_en;
+  logic csi;    
+  logic csd;    
+  logic mosi;   
 
-  wire display_on;
-  wire lsB;
-  wire[3:0] addr_in;
+  logic display_on;
+  logic lsB;
+  logic[3:0] addr_in;
 
   assign ui_in[0] = display_on;
   assign ui_in[1] = lsB;
@@ -30,21 +30,37 @@ module tbq;
   assign uio_in[2] = csd; 
   assign uio_in[3] = mosi;
   
-  wire done = uio_out[5];
+  logic done;
+  assign done = uio_out[5];
 
-  wire [6:0] segments = uo_out[6:0];
-  wire       lsb      = uo_out[7];
+  logic [6:0] segments = uo_out[6:0];
+  logic       lsb      = uo_out[7];
 
   initial begin
     clk = 0;
     forever #5ns clk = ~clk;
   end
 
+///////////////////////////////////////////////////
+  logic[7:0] insts[16];
+
   initial begin
     RESET();
-  
+
+    $readmemh("../compiler/fact.tx", insts);
+
+    for (int i = 0; i < 16; i++) begin
+      $display($time, "Writting: %h", insts[i]);
+      SPI({insts[i], i[3:0]});
+    end
+
+    proc_en <= 1'b1;
+    @(posedge clk);
+
+    @(posedge done);
     $stop();
   end
+///////////////////////////////////////////////////
 
   tt_um_tiny_processor tt_um_tiny_processor (
     .ui_in      (ui_in),    // Dedicated inputs
@@ -58,7 +74,7 @@ module tbq;
   );
 
   task RESET();
-    rst_n   = 1;
+    rst_n   = 0;
     proc_en = 0;
     csi     = 1;
     csd     = 1;
@@ -68,9 +84,26 @@ module tbq;
     addr_in    = 0;
     lsB        = 0;
     repeat(10) @(posedge clk);
-    rst_n = 0;
+    rst_n = 1;
     @(posedge clk);
-
   endtask
 
+  task SPI(logic[11:0] data);
+    @(posedge clk) begin
+      csi  <= #5ns 1'b0;
+      mosi <= #5ns data[0]; 
+    end
+
+    for (int i = 1; i < 12; i++) begin
+      @(posedge clk) begin
+        mosi <= data[i]; 
+      end
+    end
+
+    @(posedge clk) begin
+      csi  <= #5ns 1'b1;
+    end
+
+    @(posedge done);
+  endtask
 endmodule
