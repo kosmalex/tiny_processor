@@ -8,8 +8,7 @@ insts = {
 
   "mulu" :0x1,
   "mul"  :0x5,
-
-  "NaI"  :0x9,
+  "mulh"  :0x9,
 
   "sll"  :0x2,
   "slli" :0xA,
