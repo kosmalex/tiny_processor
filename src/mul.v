@@ -77,4 +77,24 @@ generate
 
 endgenerate
 
-endmodule //mul
+wire[N_BIT-1:0] Cj;
+generate
+  genvar i;
+
+  for(i = 0; i < N_BIT; i = i + 1) begin
+    assign product[i] = Si[i];
+    
+    element element_1(
+      .A(Ci[N_BIT-1][i]),
+      .B(Ci[N_BIT-1][i]),
+      .Cin((i==0) ? 1'b0 : Cj[i-1]),
+      .Sin((i==N_BIT-1) ? S_ini[2] : Si[N_BIT-1][i+1]),
+      .sel(1'b0),
+      
+      .Sout(product[i + (RES_SIZE >> 1)]),
+      .Cout(Cj[i])
+    );
+  end
+endgenerate
+
+endmodule

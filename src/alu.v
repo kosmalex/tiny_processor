@@ -83,6 +83,7 @@ endmodule
 module alu (
   input wire[2:0] unit_sel_in,
   input wire      op_sel_in,
+  input wire      mul_seg_sel,
 
   input wire[7:0] acc_in, src_in,
   
@@ -100,17 +101,19 @@ adder_8bit adder_8bit_0 (
 );
 
 // LOGIC-AND //
-wire[7:0] mul_res;
+wire[15:0] imul_res;
+wire[7:0]  mul_res;
 mul #(
-  .N_BIT    (8),
-  .RES_SIZE (8)
+  .N_BIT    (8 ),
+  .RES_SIZE (16)
 ) mul8bit (
   .A        (acc_in),
   .B        (src_in),
   .mul_type (op_sel_in),
 
-  .product  (mul_res)
+  .product  (imul_res)
 );
+assign mul_res = mul_seg_sel ? imul_res[15:8] : imul_res[7:0];
 
 // SHIFTER //
 wire[7:0] shift_res;

@@ -102,6 +102,7 @@ module control_logic (
   output wire[2:0] unit_sel_out,
   output wire      op_sel_out,
   output wire      src_sel_out,
+  output wire      mul_seg_sel,
 
   output wire      dcache_wen_out,
   output wire      icache_wen_out,
@@ -183,6 +184,8 @@ wire[1:0] unit_sel_0;
 assign unit_sel_0 = opcode_in[1:0]; /* Select between different ops in the category */
 
 assign unit_sel_out = {unit_sel_1, unit_sel_0};
+
+assign mul_seg_sel = opcode[3] & ~opcode[2] & ~opcode[1] & opcode[0];
 
 // Equivalent to `opcode_in == 4'h7`;
 assign dcache_wen_out = &opcode_in[2:0] && ( st == EXEC );
@@ -269,6 +272,7 @@ wire      ctrl_pc_rst;
 wire[2:0] ctrl2alu_unit_sel;
 wire      ctrl2alu_op_sel;
 wire      ctrl_src_sel;
+wire      ctrl2alu_mul_seg_sel;
 
 wire      ctrl2dcache_wen;
 wire      ctrl2icache_wen;
@@ -321,6 +325,7 @@ control_logic control_logic_0 (
   .unit_sel_out (ctrl2alu_unit_sel),
   .op_sel_out   (ctrl2alu_op_sel  ),
   .src_sel_out  (ctrl_src_sel     ),
+  .mul_seg_sel  (ctrl2alu_mul_seg_sel),
 
   .dcache_wen_out (ctrl2dcache_wen),
   .icache_wen_out (ctrl2icache_wen),
@@ -399,6 +404,7 @@ assign src = ctrl_src_sel ? sext_imm : dcache_data;
 alu alu_0 (
   .unit_sel_in (ctrl2alu_unit_sel),
   .op_sel_in   (ctrl2alu_op_sel),
+  .mul_seg_sel (ctrl2alu_mul_seg_sel),
 
   .acc_in      (acc),
   .src_in      (src),
