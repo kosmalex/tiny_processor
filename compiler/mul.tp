@@ -1,42 +1,15 @@
 li 5
 sa x0
-li 13
+li 7
 mul x0
 sa x0
-
-li -10
+li -8
 sa x1
-li 13
+li 7
 mul x1
 sa x1
-
-li 56
+li -1
 sa x2
 li -3
 mul x2
 sa x2
-
-li 5
-sa x3
-li 13
-mulu x3
-sa x3
-
-li -10
-sa x4
-li 13
-mulu x4
-sa x4
-
-li 56
-sa x10
-li -3
-mulu x10
-sa x10
-
-li 56
-sa x14
-li -5
-mulh x14
-sa x14
-

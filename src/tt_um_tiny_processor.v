@@ -32,8 +32,8 @@ reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
 
 always @(posedge clk) begin
   if (rst) begin
-      {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 8'b0;
-      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 8'b0;
+      {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 0;
+      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 0;
   end else begin
     if (en_in) mem[addr_in] <= data_in;
   end
@@ -91,7 +91,7 @@ module control_logic (
   input wire[7:0]  alu_res_in,
 
   input wire       master2proc_en_in,
-  input wire       master_wr_in,
+  input wire       csi, csd,
 
   output wire      proc_done_out,
 
@@ -107,6 +107,8 @@ module control_logic (
   output wire      dcache_wen_out,
   output wire      icache_wen_out,
   output wire      icache_addr_sel_out,
+  output wire      dcache_addr_sel_out,
+  output wire      dcache_data_in_sel_out,
 
   output wire      buff_shen_out,
 
@@ -114,10 +116,13 @@ module control_logic (
 
   output wire      display_on_out
 );
-parameter IDLE  = 2'b00;
-parameter EXEC  = 2'b01;
-parameter RECV  = 2'b10;
-parameter WRITE = 2'b11;
+parameter IDLE   = 2'b00;
+parameter EXEC   = 2'b01;
+parameter IRECV  = 2'b10;
+parameter DRECV  = 2'b11;
+
+wire master_wr;
+assign master_wr = (~csi | ~csd) & ~master2proc_en_in;
 
 // FSM //
 reg[1:0] st;
@@ -129,20 +134,22 @@ always @(posedge clk) begin
       IDLE: begin
         if (master2proc_en_in)
           st <= EXEC;
-        else if (master_wr_in)
-          st <= RECV;
+        else if (~csi)
+          st <= IRECV;
+        else if (~csd)
+          st <= DRECV;
       end
 
       EXEC: begin
         st <= (master2proc_en_in & pc_en_out) ? EXEC : IDLE;
       end
 
-      RECV: begin
-        st <= master_wr_in ? RECV : WRITE;
+      IRECV: begin
+        st <= ~csi ? IRECV : IDLE;
       end
 
-      WRITE: begin
-        st <= IDLE;
+      DRECV: begin
+        st <= ~csd ? DRECV : IDLE;
       end
 
       default: st <= IDLE;
@@ -188,17 +195,19 @@ assign unit_sel_out = {unit_sel_1, unit_sel_0};
 // Select the upper or lower segment of the mul result
 assign mul_seg_sel = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0];
 
-// Equivalent to `opcode_in == 4'h7`
-assign dcache_wen_out = &opcode_in[2:0] && ( st == EXEC );
+assign icache_wen_out = ( st == IRECV ) & csi;
+assign icache_addr_sel_out = icache_wen_out;
 
-assign icache_wen_out = ( st == WRITE );
-assign icache_addr_sel_out = ( st == WRITE );
+// Equivalent to `opcode_in == 4'h7`
+wire temp = ( st == DRECV ) & csd;
+assign dcache_wen_out = temp | ( &opcode_in[2:0] && ( st == EXEC ) );
+assign dcache_addr_sel_out = temp;
 
 // When storing, don't write accumulator register
 assign acc_wen_out = ~dcache_wen_out && ( st == EXEC );
 
 // Buffer shift register
-assign buff_shen_out = master_wr_in;
+assign buff_shen_out = master_wr;
 
 // Seven segment
 assign display_on_out = (st == IDLE) & display_in;
@@ -243,6 +252,8 @@ wire[`DATAPATH_W-1:0] icache_data;
 wire[3:0] icache_addr;
 wire[3:0] dcache_addr;
 
+wire[`DATAPATH_W-1:0] dcache_data_in;
+
 // Shift register (8bit data and 4bit address --> tot: 12bits) //
 wire[(`DATAPATH_W + 4)-1:0] buff_data;
 
@@ -254,10 +265,8 @@ wire miso, mosi; // Master In Slave Out and Master Out Slave In
 
 // Master //
 wire master_proc_en;
-wire master_wr;
 
 assign master_proc_en = uio_in[0]; 
-assign master_wr      = (~csi | ~csd) & ~master_proc_en;
 
 // 7-seg
 wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
@@ -279,6 +288,7 @@ wire      ctrl2dcache_wen;
 wire      ctrl2icache_wen;
 wire      ctrl_icache_addr_sel;
 wire      ctrl_dcache_addr_sel;
+wire      ctrl_dcache_data_in_sel;
 
 wire      ctrl_acc_wen;
 
@@ -315,7 +325,8 @@ control_logic control_logic_0 (
   .alu_res_in   (alu_res),
 
   .master2proc_en_in (master_proc_en),
-  .master_wr_in      (master_wr),
+  .csi               (csi),
+  .csd               (csd),
 
   .proc_done_out (ctrl_proc_done),
   
@@ -328,10 +339,12 @@ control_logic control_logic_0 (
   .src_sel_out  (ctrl_src_sel     ),
   .mul_seg_sel  (ctrl2alu_mul_seg_sel),
 
-  .dcache_wen_out (ctrl2dcache_wen),
-  .icache_wen_out (ctrl2icache_wen),
-  .icache_addr_sel_out (ctrl_icache_addr_sel),
-  
+  .dcache_wen_out         (ctrl2dcache_wen),
+  .icache_wen_out         (ctrl2icache_wen),
+  .icache_addr_sel_out    (ctrl_icache_addr_sel),
+  .dcache_addr_sel_out    (ctrl_dcache_addr_sel),
+  .dcache_data_in_sel_out (ctrl_dcache_data_in_sel),
+
   .buff_shen_out (ctrl_buff_shen),
   .acc_wen_out   (ctrl_acc_wen  ),
 
@@ -366,8 +379,9 @@ icache(
   .data_out (icache_data)
 );
 
-
-assign dcache_addr = ctrl_display_on ? display_user_addr_in : rs;
+assign dcache_addr    = ctrl_dcache_addr_sel ? buff_data[3:0] : 
+                                               (ctrl_display_on ? display_user_addr_in : rs);
+assign dcache_data_in = ctrl_dcache_data_in_sel ? buff_data[11:4] : acc;
 cache #(
   .SIZE(`DMEM_SZ)
 )
@@ -375,7 +389,7 @@ dcache(
   .clk      (clk),
   .rst      (rst),
 
-  .data_in  (acc),
+  .data_in  (dcache_data_in),
   .addr_in  (dcache_addr),
   .en_in    (ctrl2dcache_wen),
 
