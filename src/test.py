@@ -7,8 +7,6 @@ states = {
   1 : "EXEC",
   2 : "IRECV",
   3 : "DRECV",
-  4 : "IWRITE",
-  5 : "DWRITE",
 }
 
 segments = {
@@ -37,8 +35,7 @@ insts = {
   
   0x1 : "mulu" ,
   0x5 : "mul"  ,
-  
-  0x9 : "NaI" ,
+  0x9 : "mulh" ,
   
   0x2 : "sll"  ,
   0xA : "slli" ,
@@ -81,16 +78,16 @@ def print_info(dut, mode = 0):
     dut._log.info("en_in: {}".format(dut.tt_um_tiny_processor.icache.en_in.value))
   elif mode == 1:
     dut._log.info("           Inst: {}".format(insts[int(dut.tt_um_tiny_processor.opcode.value)]))
-    dut._log.info("            Acc: {}".format(dut.tt_um_tiny_processor.acc.value))
-    dut._log.info("            Src: {}".format(dut.tt_um_tiny_processor.src.value))
-    dut._log.info("            Alu: {}".format(dut.tt_um_tiny_processor.alu_res.value))
-    dut._log.info("    dcache_addr: {}".format(dut.tt_um_tiny_processor.dcache_addr.value))
-    dut._log.info("dcache_addr_sel: {}".format(dut.tt_um_tiny_processor.ctrl_dcache_addr_sel.value))
-    dut._log.info("   ctrl_src_sel: {}".format(dut.tt_um_tiny_processor.ctrl_src_sel.value))
-    dut._log.info("    dcache_data: {}".format(dut.tt_um_tiny_processor.dcache_data.value))
-    # dut._log.info(" Acc: {:d}".format(int(dut.tt_um_tiny_processor.acc.value)))
-    # dut._log.info(" Src: {:d}".format(int(dut.tt_um_tiny_processor.src.value)))
-    # dut._log.info(" Alu: {:d}".format(int(dut.tt_um_tiny_processor.alu_res.value)))
+    # dut._log.info("            Acc: {}".format(dut.tt_um_tiny_processor.acc.value))
+    # dut._log.info("            Src: {}".format(dut.tt_um_tiny_processor.src.value))
+    # dut._log.info("            Alu: {}".format(dut.tt_um_tiny_processor.alu_res.value))
+    # dut._log.info("    dcache_addr: {}".format(dut.tt_um_tiny_processor.dcache_addr.value))
+    # dut._log.info("dcache_addr_sel: {}".format(dut.tt_um_tiny_processor.ctrl_dcache_addr_sel.value))
+    # dut._log.info("   ctrl_src_sel: {}".format(dut.tt_um_tiny_processor.ctrl_src_sel.value))
+    # dut._log.info("    dcache_data: {}".format(dut.tt_um_tiny_processor.dcache_data.value))
+    dut._log.info(" Acc: {:d}".format(int(dut.tt_um_tiny_processor.acc.value)))
+    dut._log.info(" Src: {:d}".format(int(dut.tt_um_tiny_processor.src.value)))
+    dut._log.info(" Alu: {:d}".format(int(dut.tt_um_tiny_processor.alu_res.value)))
 
 def load_insts(file_name):
   ''' Bit widths '''
