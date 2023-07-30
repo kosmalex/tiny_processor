@@ -26,10 +26,8 @@ module tbp ();
     wire ena;
 
     // wire up the inputs and outputs
-    wire proc_en;
-    wire csi;    
-    wire csd;    
-    wire mosi;   
+    wire[1:0] mode;
+    wire      mosi;   
 
     wire display_on;
     wire lsB;
@@ -39,12 +37,10 @@ module tbp ();
     assign ui_in[1] = lsB;
     assign ui_in[5:2] = addr_in;
 
-    assign uio_in[0] = proc_en;
-    assign uio_in[1] = csi; 
-    assign uio_in[2] = csd; 
-    assign uio_in[3] = mosi;
+    assign uio_in[1:0] = mode;
+    assign uio_in[2]   = mosi;
     
-    wire done = uio_out[5];
+    wire done = uio_out[3];
 
     wire [6:0] segments = uo_out[6:0];
     wire       lsb      = uo_out[7];

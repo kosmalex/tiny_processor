@@ -129,12 +129,12 @@ async def serial_send(_dut, _cc, _bits):
     dut._log.info(f"------------ cc {cc} ------------")
 
     if i == 0:
-      dut.csi.value = 0
+      dut.mode.value = 3
       dut.mosi.value = data[0]
     elif i < nb:
       dut.mosi.value = data[i]
     elif i == nb:
-      dut.csi.value = 1
+      dut.mode.value = 0
     else:
       dut.mosi.value = 0
 
@@ -180,11 +180,9 @@ async def test_tproc(dut):
 
   clock = Clock(dut.clk, 10, units="us")
   cocotb.start_soon(clock.start())
-  dut.rst_n.value   = 0
-  dut.proc_en.value = 0
-  dut.csi.value     = 1
-  dut.csd.value     = 1
-  dut.mosi.value    = 1
+  dut.rst_n.value = 0
+  dut.mode.value  = 0
+  dut.mosi.value  = 1
 
   dut.display_on.value = 0
   dut.addr_in.value    = 0
@@ -203,9 +201,9 @@ async def test_tproc(dut):
   for i in range(100):
     dut._log.info(f"------------ cc {cc} ------------")
     if i == 0:
-      dut.proc_en.value = 1
+      dut.mode.value = 3
     if (int(dut.done.value) == 1) and i > 1: # delay one cycle
-      dut.proc_en.value = 0
+      dut.mode.value = 0
 
     await FallingEdge(dut.clk)
     # print_info(dut, 1)
@@ -223,9 +221,9 @@ async def test_tproc(dut):
   for i in range(100):
     dut._log.info(f"------------ cc {cc} ------------")
     if i == 0:
-      dut.proc_en.value = 1
+      dut.mode.value = 3
     if (int(dut.done.value) == 1) and i > 1: # delay one cycle
-      dut.proc_en.value = 0
+      dut.mode.value = 0
 
     await FallingEdge(dut.clk)
     print_info(dut, 1)
@@ -243,9 +241,9 @@ async def test_tproc(dut):
   for i in range(100):
     dut._log.info(f"------------ cc {cc} ------------")
     if i == 0:
-      dut.proc_en.value = 1
+      dut.mode.value = 3
     if (int(dut.done.value) == 1) and i > 1: # delay one cycle
-      dut.proc_en.value = 0
+      dut.mode.value = 0
 
     await FallingEdge(dut.clk)
     print_info(dut, 1)

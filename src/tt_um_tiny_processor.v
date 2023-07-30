@@ -274,8 +274,7 @@ wire miso, mosi; // Master In Slave Out and Master Out Slave In
 
 // Master //
 wire master_proc_en;
-
-assign master_proc_en = uio_in[0]; 
+assign master_proc_en = uio_in[1] & uio_in[0]; 
 
 // 7-seg
 wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
@@ -307,20 +306,19 @@ wire      ctrl_buff_shen;
 wire      ctrl_display_on;
 
 // Signal renaming
-assign csi  = uio_in[1];
-assign csd  = uio_in[2];
-assign mosi = uio_in[3];
+assign csi  = ~(~uio_in[1] & uio_in[0]);
+assign csd  = ~(uio_in[1] & ~uio_in[0]);
+assign mosi = uio_in[2];
 
-assign uio_out[4] = 1'b0; // miso
-assign uio_out[5] = ctrl_proc_done; // done
-
-assign uio_oe[3:0] = 3'b0; // en(uio_oe[0]), csi, csd, mosi
-assign uio_oe[5:4] = 2'h3; // miso, done
-
-// ...
-assign uio_oe [7:6] = 2'b0;
-assign uio_out[7:6] = 2'b0;
+assign uio_out[3]   = ctrl_proc_done;
 assign uio_out[3:0] = 3'b0;
+
+// Inputs
+assign uio_oe[2:0] = 3'b0; // en, csi, csd, mosi
+
+// Outputs
+assign uio_oe[5:3] = 2'h7; // done(uio_oe[3]), hsync, vsync
+assign uio_oe[7:6] = 2'h3; // color_sel
 
 assign opcode = icache_data[3:0]; 
 
@@ -390,8 +388,8 @@ icache(
   .data_out (icache_data)
 );
 
-assign dcache_addr    = ctrl_dcache_addr_sel ? buff_data[3:0] : 
-                                               (ctrl_display_on ? display_user_addr_in : rs);
+assign dcache_addr = ctrl_dcache_addr_sel ? buff_data[3:0] : 
+                                            (ctrl_display_on ? display_user_addr_in : rs);
 assign dcache_data_in = ctrl_dcache_data_in_sel ? buff_data[11:4] : acc;
 cache #(
   .SIZE(`DMEM_SZ)
