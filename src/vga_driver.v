@@ -6,14 +6,14 @@ module vga_driver(
   output wire color_en_out
 );
 
-reg[9:0] hcnt;
+reg[10:0] hcnt;
 reg[9:0] vcnt;
 
 always @(posedge clk) begin
   if (rst) begin
     hcnt <= 0;
   end else begin
-    hcnt <= (hcnt == 9'd1039) ? 0 : hcnt + 1;
+    hcnt <= (hcnt == 11'd1039) ? 0 : hcnt + 1;
   end
 end
 
@@ -21,7 +21,7 @@ always @(posedge clk) begin
   if (rst) begin
     vcnt <= 0;
   end else begin
-    vcnt <= (vcnt == 9'd665) ? 0 : vcnt + 1;
+    vcnt <= (vcnt == 10'd665) ? 0 : vcnt + 1;
   end
 end
 

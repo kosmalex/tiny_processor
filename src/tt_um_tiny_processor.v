@@ -317,6 +317,7 @@ assign uio_out[3]   = ctrl_proc_done;
 assign uio_out[2:0] = 3'b0;
 
 assign uio_out[7] = vga_color_en;
+assign uio_out[6] = 0;
 
 // Inputs
 assign uio_oe[2:0] = 3'b0; // en, csi, csd, mosi
