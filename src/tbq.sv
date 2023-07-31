@@ -12,10 +12,8 @@ module tbq;
   logic ena;
 
   // wire up the inputs and outputs
-  logic proc_en;
-  logic csi;    
-  logic csd;    
-  logic mosi;   
+  logic[1:0] mode;
+  logic      mosi;   
 
   logic display_on;
   logic lsB;
@@ -25,13 +23,11 @@ module tbq;
   assign ui_in[1] = lsB;
   assign ui_in[5:2] = addr_in;
 
-  assign uio_in[0] = proc_en;
-  assign uio_in[1] = csi; 
-  assign uio_in[2] = csd; 
-  assign uio_in[3] = mosi;
+  assign uio_in[1:0] = mode;
+  assign uio_in[2]   = mosi;
   
   logic done;
-  assign done = uio_out[5];
+  assign done = uio_out[3];
 
   logic [6:0] segments = uo_out[6:0];
   logic       lsb      = uo_out[7];
@@ -65,11 +61,9 @@ module tbq;
   );
 
   task RESET();
-    rst_n   = 0;
-    proc_en = 0;
-    csi     = 1;
-    csd     = 1;
-    mosi    = 0;
+    rst_n = 0;
+    mode  = 0;
+    mosi  = 0;
 
     display_on = 0;
     addr_in    = 0;
@@ -81,7 +75,7 @@ module tbq;
 
   task SPI_i(logic[11:0] data);
     @(posedge clk) begin
-      csi  <= #5ns 1'b0;
+      mode  <= #5ns 2'b01;
       mosi <= #5ns data[0]; 
     end
 
@@ -92,7 +86,7 @@ module tbq;
     end
 
     @(posedge clk) begin
-      csi  <= #5ns 1'b1;
+      mode  <= #5ns 2'b00;
     end
 
     @(posedge done);
@@ -100,7 +94,7 @@ module tbq;
 
   task SPI_d(logic[11:0] data);
     @(posedge clk) begin
-      csd  <= #5ns 1'b0;
+      mode  <= #5ns 2'b10;
       mosi <= #5ns data[0]; 
     end
 
@@ -111,7 +105,7 @@ module tbq;
     end
 
     @(posedge clk) begin
-      csd  <= #5ns 1'b1;
+      mode  <= #5ns 2'b00;
     end
 
     @(posedge done);
@@ -125,11 +119,11 @@ module tbq;
       SPI_i({insts[i], i[3:0]});
     end
 
-    proc_en <= 1'b1;
+    mode <= 2'b11;
     @(posedge clk);
 
     @(posedge done) begin
-      proc_en <= 1'b0;
+      mode <= 2'b0;
     end
 
     for (int i = 0; i < 16; i++) begin
@@ -137,7 +131,7 @@ module tbq;
       SPI_i({insts[16 + i], i[3:0]});
     end
 
-    proc_en <= 1'b1;
+    mode <= 2'b11;
     @(posedge clk);
 
     @(posedge done);
@@ -151,11 +145,11 @@ module tbq;
       SPI_i({insts[i], i[3:0]});
     end
 
-    proc_en <= 1'b1;
+    mode <= 2'b11;
     @(posedge clk);
 
     @(posedge done) begin
-      proc_en <= 1'b0;
+      mode <= 2'b0;
     end
 
     for (int i = 0; i < 10; i++) begin
@@ -163,11 +157,11 @@ module tbq;
       SPI_i({insts[10 + i], i[3:0]});
     end
 
-    proc_en <= 1'b1;
+    mode <= 2'b11;
     @(posedge clk);
 
     @(posedge done) begin
-      proc_en <= 1'b0;
+      mode <= 2'b0;
     end
 
     for (int i = 0; i < 15; i++) begin
@@ -175,7 +169,7 @@ module tbq;
       SPI_i({insts[20 + i], i[3:0]});
     end
 
-    proc_en <= 1'b1;
+    mode <= 2'b11;
     @(posedge clk);
 
     @(posedge done);

@@ -162,7 +162,7 @@ wire is_idle = ( st == IDLE );
 wire is_exec = ( st == EXEC );
 
 // Processor
-assign proc_done_out = ( st == IDLE );
+assign proc_done_out = is_idle;
 
 // Check if `bnez` branch is taken
 wire is_branch   = &opcode_in;
@@ -276,9 +276,12 @@ wire miso, mosi; // Master In Slave Out and Master Out Slave In
 wire master_proc_en;
 assign master_proc_en = uio_in[1] & uio_in[0]; 
 
-// 7-seg
+// 7-seg //
 wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
 wire[3:0] display_user_addr_in = ui_in[5:2];
+
+// Vga //
+wire vga_color_en;
 
 // Control Signals //
 wire      ctrl_proc_done;
@@ -311,7 +314,9 @@ assign csd  = ~(uio_in[1] & ~uio_in[0]);
 assign mosi = uio_in[2];
 
 assign uio_out[3]   = ctrl_proc_done;
-assign uio_out[3:0] = 3'b0;
+assign uio_out[2:0] = 3'b0;
+
+assign uio_out[7] = vga_color_en;
 
 // Inputs
 assign uio_oe[2:0] = 3'b0; // en, csi, csd, mosi
@@ -452,5 +457,16 @@ assign msb   = ui_in[1];
 assign value = ctrl_display_on ? ( msb ? dcache_data[7:4] : dcache_data[3:0] ) : 4'h0;
 
 seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
+
+// VGA driver //
+vga_driver vga_driver_0 (
+  .clk (clk),
+  .rst (rst),
+
+  .hsync_out (uio_out[4]),
+  .vsync_out (uio_out[5]),
+  
+  .color_en_out (vga_color_en)
+);
 
 endmodule

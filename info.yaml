@@ -11,6 +11,7 @@ project:
 #  top_module:  "tt_um_example"      # Put the name of your top module here, must start with "tt_um_". Make it unique by including your github username
   source_files:
     - seven_seg.v
+    - vga_driver.v
     - mul.v
     - alu.v
     - tt_um_tiny_processor.v

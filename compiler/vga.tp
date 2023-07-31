@@ -1,0 +1,46 @@
+x15 <- 1
+x14 <- 0
+x0  <- 9A
+x1  <- 2
+x2  <- 10
+x3  <- 4
+x4  <- 56
+x5  <- 120
+x6  <- 64
+x7  <- 37
+x8  <- 6
+x9  <- 23
+
+main:
+  vsync:
+    
+    set x15
+    lfa x0
+    sfa x10
+    c788:
+      lfa x10
+      addi -1
+      sfa x10
+    bnez c788
+    
+    set x14
+    la x4
+    sa x10
+    c56:
+      la x10
+      addi -1
+      sa x10
+    bnez c56
+    
+    hset 0
+    set x14
+    la x4
+    sa x10
+    c56:
+      la x10
+      addi -1
+      sa x10
+    bnez c56
+
+  bnez vsync
+bnez main
