@@ -19,7 +19,7 @@ insts = {
   "li"   :0xB,
   
   "or"  :0xC,
-  "xor" :0xD,
+  "slt" :0xD,
   "and" :0xE,
   "bnez":0xF
 }
@@ -100,8 +100,23 @@ def main():
         raise Exception(f"[FILE: {__file__}]: Format [{args}] not supported.")
       inst_list.append(inst)
     
-    outf.write('\n'.join(inst_list))
+    nInsts = len(inst_list)
+    nEmpty = 16 - nInsts
+    while nEmpty > 0:
+      inst = ""
+      if args.f == "hex":
+        inst = "{:X}{:X}".format(0, 0)
+      elif args.f == "bin":
+        inst = "{:4b}{:4b}".format(0, 0).replace(" ", "0")
+      elif args.f == "dec":
+        inst = "{:0^3d}".format(0)
+      else:
+        raise Exception(f"[FILE: {__file__}]: Format [{args}] not supported.")
+      inst_list.append(inst)
+      nEmpty -= 1
 
+    outf.write('\n'.join(inst_list))
+    
     outf.close()
     f.close()
 

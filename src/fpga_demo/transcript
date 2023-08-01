@@ -1,0 +1,87 @@
+# Reading D:/questasim64_10.4e/tcl/vsim/pref.tcl
+# //  Questa Sim-64
+# //  Version 10.4e win64 Apr  9 2016
+# //
+# //  Copyright 1991-2016 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  THIS WORK CONTAINS TRADE SECRET AND PROPRIETARY INFORMATION
+# //  WHICH IS THE PROPERTY OF MENTOR GRAPHICS CORPORATION OR ITS
+# //  LICENSORS AND IS SUBJECT TO LICENSE TERMS.
+# //  THIS DOCUMENT CONTAINS TRADE SECRETS AND COMMERCIAL OR FINANCIAL
+# //  INFORMATION THAT ARE PRIVILEGED, CONFIDENTIAL, AND EXEMPT FROM
+# //  DISCLOSURE UNDER THE FREEDOM OF INFORMATION ACT, 5 U.S.C. SECTION 552.
+# //  FURTHERMORE, THIS INFORMATION IS PROHIBITED FROM DISCLOSURE UNDER
+# //  THE TRADE SECRETS ACT, 18 U.S.C. SECTION 1905.
+# //
+# vsim -gui . 
+# Start time: 14:22:51 on Aug 01,2023
+# ** Error (suppressible): (vsim-19) Failed to access library '' at "".
+# 
+# Invalid argument. (errno = EINVAL)
+# Error loading design
+# End time: 14:22:51 on Aug 01,2023, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+vlog demo_top.sv
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 14:23:10 on Aug 01,2023
+# vlog -reportprogress 300 demo_top.sv 
+# -- Compiling module demo_top
+# 
+# Top level modules:
+# 	demo_top
+# End time: 14:23:10 on Aug 01,2023, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+vsim demo_top
+# vsim demo_top 
+# Start time: 14:23:20 on Aug 01,2023
+# ** Note: (vsim-3812) Design is being optimized...
+# 
+# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# ** Warning: ../mul.v(81): (vopt-2576) [BSOB] - Bit-select into 'Cj' is out of bounds.
+# 
+# ** Warning: ../mul.v(82): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
+# 
+# Loading sv_std.std
+# Loading work.demo_top(fast)
+# Loading work.tt_um_tiny_processor(fast)
+vsim demo_top -novopt
+# End time: 14:23:42 on Aug 01,2023, Elapsed time: 0:00:22
+# Errors: 0, Warnings: 10
+# vsim demo_top -novopt 
+# Start time: 14:23:42 on Aug 01,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.demo_top
+# Loading sv_std.std
+# Loading work.demo_top
+# Loading work.driver
+# Loading work.tt_um_tiny_processor
+# Loading work.control_logic
+# Loading work.shift_reg
+# Loading work.cache
+# Loading work.alu
+# Loading work.adder_8bit
+# Loading work.mul
+# Loading work.barrel_shift
+# Loading work.seven_seg
+# Loading work.vga_driver
+# Loading work.cs_add
+# Loading work.element
+# End time: 14:23:53 on Aug 01,2023, Elapsed time: 0:00:11
+# Errors: 0, Warnings: 1

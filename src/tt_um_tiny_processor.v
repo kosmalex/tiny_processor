@@ -317,13 +317,13 @@ assign uio_out[3]   = ctrl_proc_done;
 assign uio_out[2:0] = 3'b0;
 
 assign uio_out[7] = vga_color_en;
-assign uio_out[6] = 0;
+assign uio_out[6] = vga_color_en;
 
 // Inputs
 assign uio_oe[2:0] = 3'b0; // en, csi, csd, mosi
 
 // Outputs
-assign uio_oe[5:3] = 2'h7; // done(uio_oe[3]), hsync, vsync
+assign uio_oe[5:3] = 3'h7; // done(uio_oe[3]), hsync, vsync
 assign uio_oe[7:6] = 2'h3; // color_sel
 
 assign opcode = icache_data[3:0]; 
@@ -411,7 +411,7 @@ dcache(
   .data_out (dcache_data)
 );
 
-assign jmp = {icache_data[7:5], 1'b0};
+assign jmp = icache_data[7:4];
 assign imm = icache_data[7:4];
 assign rs  = icache_data[7:4];
 
