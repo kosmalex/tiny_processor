@@ -54,7 +54,7 @@ initial begin
   RESET();
 
   drive <= 1'b1;
-  @(posedge clk); 
+  repeat (100) @(posedge clk);
 
   $stop;
 end

@@ -88,7 +88,7 @@ module alu (
 
   input wire[7:0] acc_in, src_in,
   
-  output reg[7:0] alu_res_out
+  output wire[7:0] alu_res_out
 );
 
 // Addition-Subtraction //
@@ -126,18 +126,23 @@ barrel_shift barrel_shift_0 (
   .res_out   (shift_res)
 );
 
+reg[7:0] alu_res;
 always @(*) begin
   case (unit_sel_in)
-    3'b000: alu_res_out = add_res;
-    3'b001: alu_res_out = mul_res;
-    3'b010: alu_res_out = shift_res;
-    3'b011: alu_res_out = src_in;
+    3'b000: alu_res = add_res;
+    3'b001: alu_res = mul_res;
+    3'b010: alu_res = shift_res;
+    3'b011: alu_res = src_in;
     
-    3'b100: alu_res_out = acc_in | src_in;
-    3'b101: alu_res_out[0] = acc_in < src_in;
-    3'b110: alu_res_out = acc_in & src_in;
-    3'b111: alu_res_out = acc_in; // this is for bnez
+    3'b100: alu_res = acc_in | src_in;
+    3'b101: alu_res = acc_in < src_in;
+    3'b110: alu_res = acc_in & src_in;
+    3'b111: alu_res = acc_in; // this is for bnez
+    
+    default: alu_res = acc_in;
   endcase
 end
+
+assign alu_res_out = alu_res;
 
 endmodule

@@ -15,73 +15,495 @@
 # //  THE TRADE SECRETS ACT, 18 U.S.C. SECTION 1905.
 # //
 # vsim -gui . 
-# Start time: 14:22:51 on Aug 01,2023
+# Start time: 15:57:33 on Aug 01,2023
 # ** Error (suppressible): (vsim-19) Failed to access library '' at "".
 # 
 # Invalid argument. (errno = EINVAL)
 # Error loading design
-# End time: 14:22:51 on Aug 01,2023, Elapsed time: 0:00:00
+# End time: 15:57:33 on Aug 01,2023, Elapsed time: 0:00:00
 # Errors: 1, Warnings: 0
-vlog demo_top.sv
+do run.do
 # QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
-# Start time: 14:23:10 on Aug 01,2023
-# vlog -reportprogress 300 demo_top.sv 
+# Start time: 15:57:45 on Aug 01,2023
+# vlog -reportprogress 300 demo_top.sv driver.sv tb.sv ../alu.v ../cells.v ../mul.v ../seven_seg.v ../tbp.v ../tt_um_tiny_processor.v ../vga_driver.v 
 # -- Compiling module demo_top
+# -- Compiling module driver
+# -- Compiling module tb
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
 # 
 # Top level modules:
 # 	demo_top
-# End time: 14:23:10 on Aug 01,2023, Elapsed time: 0:00:00
+# 	tb
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# End time: 15:57:45 on Aug 01,2023, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
-vsim demo_top
-# vsim demo_top 
-# Start time: 14:23:20 on Aug 01,2023
-# ** Note: (vsim-3812) Design is being optimized...
-# 
-# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# ** Warning: ../mul.v(55): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# ** Warning: ../mul.v(81): (vopt-2576) [BSOB] - Bit-select into 'Cj' is out of bounds.
-# 
-# ** Warning: ../mul.v(82): (vopt-2576) [BSOB] - Bit-select into 'Si' is out of bounds.
-# 
-# Loading sv_std.std
-# Loading work.demo_top(fast)
-# Loading work.tt_um_tiny_processor(fast)
-vsim demo_top -novopt
-# End time: 14:23:42 on Aug 01,2023, Elapsed time: 0:00:22
-# Errors: 0, Warnings: 10
-# vsim demo_top -novopt 
-# Start time: 14:23:42 on Aug 01,2023
+# vsim tb -novopt 
+# Start time: 15:57:45 on Aug 01,2023
 # ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
 # 
-# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.demo_top
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tb
 # Loading sv_std.std
-# Loading work.demo_top
+# Loading work.tb
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.driver
 # Loading work.driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tt_um_tiny_processor
 # Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.control_logic
 # Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.shift_reg
 # Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cache
 # Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.alu
 # Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.adder_8bit
 # Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.mul
 # Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.barrel_shift
 # Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.seven_seg
 # Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.vga_driver
 # Loading work.vga_driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cs_add
 # Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.element
 # Loading work.element
-# End time: 14:23:53 on Aug 01,2023, Elapsed time: 0:00:11
-# Errors: 0, Warnings: 1
+# ** Error: (vish-4014) No objects found matching '/tb/dut/eff_clk_n'.
+# Executing ONERROR command at macro ./wave.do line 9
+# ** Warning: (vsim-7) Failed to open readmem file "../../compiler/fact.tx" in read mode.
+# 
+# No such file or directory. (errno = ENOENT)    : tb.sv(51)
+#    Time: 0 ps  Iteration: 0  Instance: /tb
+# ** Note: $stop    : tb.sv(59)
+#    Time: 155 ns  Iteration: 1  Instance: /tb
+# Break in Module tb at tb.sv line 59
+run 100us
+run 100us
+do run.do
+# End time: 16:00:23 on Aug 01,2023, Elapsed time: 0:02:38
+# Errors: 3, Warnings: 2
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 16:00:23 on Aug 01,2023
+# vlog -reportprogress 300 demo_top.sv driver.sv tb.sv ../alu.v ../cells.v ../mul.v ../seven_seg.v ../tbp.v ../tt_um_tiny_processor.v ../vga_driver.v 
+# -- Compiling module demo_top
+# -- Compiling module driver
+# -- Compiling module tb
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# 
+# Top level modules:
+# 	demo_top
+# 	tb
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# End time: 16:00:23 on Aug 01,2023, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim tb -novopt 
+# Start time: 16:00:23 on Aug 01,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tb
+# Loading sv_std.std
+# Loading work.tb
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.driver
+# Loading work.driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.vga_driver
+# Loading work.vga_driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.element
+# Loading work.element
+# ** Error: (vish-4014) No objects found matching '/tb/dut/eff_clk_n'.
+# Executing ONERROR command at macro ./wave.do line 9
+# ** Warning: (vsim-7) Failed to open readmem file "../../compiler/fact.tx" in read mode.
+# 
+# No such file or directory. (errno = ENOENT)    : tb.sv(51)
+#    Time: 0 ps  Iteration: 0  Instance: /tb
+# ** Note: $stop    : tb.sv(59)
+#    Time: 1145 ns  Iteration: 1  Instance: /tb
+# Break in Module tb at tb.sv line 59
+run 100us
+add wave -position insertpoint  \
+sim:/tb/tt_um_tiny_processor/dcache/mem
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/wave.do
+do run.do
+# End time: 16:01:46 on Aug 01,2023, Elapsed time: 0:01:23
+# Errors: 3, Warnings: 2
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 16:01:46 on Aug 01,2023
+# vlog -reportprogress 300 demo_top.sv driver.sv tb.sv ../alu.v ../cells.v ../mul.v ../seven_seg.v ../tbp.v ../tt_um_tiny_processor.v ../vga_driver.v 
+# -- Compiling module demo_top
+# -- Compiling module driver
+# -- Compiling module tb
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# 
+# Top level modules:
+# 	demo_top
+# 	tb
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# End time: 16:01:46 on Aug 01,2023, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim tb -novopt 
+# Start time: 16:01:47 on Aug 01,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tb
+# Loading sv_std.std
+# Loading work.tb
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.driver
+# Loading work.driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.vga_driver
+# Loading work.vga_driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.element
+# Loading work.element
+# ** Warning: (vsim-7) Failed to open readmem file "../../compiler/fact.tx" in read mode.
+# 
+# No such file or directory. (errno = ENOENT)    : tb.sv(51)
+#    Time: 0 ps  Iteration: 0  Instance: /tb
+# ** Note: $stop    : tb.sv(59)
+#    Time: 1145 ns  Iteration: 1  Instance: /tb
+# Break in Module tb at tb.sv line 59
+run 100us
+do run.do
+# End time: 16:09:14 on Aug 01,2023, Elapsed time: 0:07:27
+# Errors: 0, Warnings: 2
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 16:09:14 on Aug 01,2023
+# vlog -reportprogress 300 demo_top.sv driver.sv tb.sv ../alu.v ../cells.v ../mul.v ../seven_seg.v ../tbp.v ../tt_um_tiny_processor.v ../vga_driver.v 
+# -- Compiling module demo_top
+# -- Compiling module driver
+# -- Compiling module tb
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# ** Error: ../tt_um_tiny_processor.v(355): (vlog-2892) Net type of 'ctrl2icache_rst' must be explicitly declared.
+# 
+# -- Compiling module vga_driver
+# End time: 16:09:14 on Aug 01,2023, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+# ** Error: D:/questasim64_10.4e/win64/vlog failed.
+# Error in macro ./run.do line 4
+# D:/questasim64_10.4e/win64/vlog failed.
+#     while executing
+# "vlog *.sv ../*.v"
+do run.do
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 16:09:28 on Aug 01,2023
+# vlog -reportprogress 300 demo_top.sv driver.sv tb.sv ../alu.v ../cells.v ../mul.v ../seven_seg.v ../tbp.v ../tt_um_tiny_processor.v ../vga_driver.v 
+# -- Compiling module demo_top
+# -- Compiling module driver
+# -- Compiling module tb
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# 
+# Top level modules:
+# 	demo_top
+# 	tb
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# 	vga_driver
+# End time: 16:09:28 on Aug 01,2023, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim tb -novopt 
+# Start time: 16:09:28 on Aug 01,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tb
+# Loading sv_std.std
+# Loading work.tb
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.driver
+# Loading work.driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.element
+# Loading work.element
+# ** Warning: (vsim-7) Failed to open readmem file "../../compiler/fact.tx" in read mode.
+# 
+# No such file or directory. (errno = ENOENT)    : tb.sv(51)
+#    Time: 0 ps  Iteration: 0  Instance: /tb
+# ** Note: $stop    : tb.sv(59)
+#    Time: 1145 ns  Iteration: 1  Instance: /tb
+# Break in Module tb at tb.sv line 59
+run 10us
+do run.do
+# End time: 16:11:06 on Aug 01,2023, Elapsed time: 0:01:38
+# Errors: 0, Warnings: 2
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 16:11:06 on Aug 01,2023
+# vlog -reportprogress 300 demo_top.sv driver.sv tb.sv ../alu.v ../cells.v ../mul.v ../seven_seg.v ../tbp.v ../tt_um_tiny_processor.v ../vga_driver.v 
+# -- Compiling module demo_top
+# -- Compiling module driver
+# -- Compiling module tb
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# 
+# Top level modules:
+# 	demo_top
+# 	tb
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# 	vga_driver
+# End time: 16:11:06 on Aug 01,2023, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim tb -novopt 
+# Start time: 16:11:06 on Aug 01,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tb
+# Loading sv_std.std
+# Loading work.tb
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.driver
+# Loading work.driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/fpga_demo/work.element
+# Loading work.element
+# ** Warning: (vsim-7) Failed to open readmem file "../../compiler/fact.tx" in read mode.
+# 
+# No such file or directory. (errno = ENOENT)    : tb.sv(51)
+#    Time: 0 ps  Iteration: 0  Instance: /tb
+# ** Note: $stop    : tb.sv(59)
+#    Time: 1145 ns  Iteration: 1  Instance: /tb
+# Break in Module tb at tb.sv line 59
+run 5us
+# Causality operation skipped due to absence of debug database file
+# End time: 16:13:20 on Aug 01,2023, Elapsed time: 0:02:14
+# Errors: 0, Warnings: 3

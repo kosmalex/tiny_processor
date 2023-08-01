@@ -6,7 +6,6 @@ add wave -noupdate -expand -group Driver /tb/dut/st
 add wave -noupdate -expand -group Driver /tb/dut/drive
 add wave -noupdate -expand -group Driver /tb/dut/done_in
 add wave -noupdate -expand -group Driver /tb/dut/sclk_out
-add wave -noupdate -expand -group Driver /tb/dut/eff_clk_n
 add wave -noupdate -expand -group Driver /tb/dut/rst_n_out
 add wave -noupdate -expand -group Driver /tb/dut/mosi_out
 add wave -noupdate -expand -group Driver /tb/dut/mode_out
@@ -23,8 +22,9 @@ add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/control_log
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/control_logic_0/csi
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/control_logic_0/st
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/control_logic_0/master_wr
+add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/dcache/mem
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {154692 ps} 0}
+WaveRestoreCursors {{Cursor 1} {5192455 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -40,4 +40,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {70519 ps} {377009 ps}
+WaveRestoreZoom {5140961 ps} {5447451 ps}

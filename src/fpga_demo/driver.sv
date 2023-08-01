@@ -1,36 +1,3 @@
-module button (
-  input logic clk, rst,
-  input logic in,
-  output logic out
-);
-
-typedef enum logic[2:0] { I = 0, D[3], U } state_t;
-state_t st;
-always_ff @(posedge clk) begin
-  if (rst) begin
-  end else begin
-    case (st)
-      I: st <= in ? D0 : U;
-      D0: begin
-        st <= in ? D1 : D0;
-      end
-      D1: begin
-        st <= in ? D2 : D1;
-      end
-      D2: begin
-        st <= in ? D2 : U;
-      end
-      U : begin
-        st <= I;
-      end
-      default: st <= I;
-    endcase
-  end
-end
-assign out = (st == U);
-
-endmodule
-
 module driver (
   input logic clk, rst,
 
@@ -45,7 +12,9 @@ module driver (
   output logic[1:0] mode_out
 );
 
+
 logic[7:0] mem[16];
+initial $readmemh("../../compiler/fact.mem", mem);
 
 logic[12:0] data;
 

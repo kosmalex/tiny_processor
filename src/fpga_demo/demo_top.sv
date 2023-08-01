@@ -49,5 +49,5 @@ tt_um_tiny_processor tt_um_tiny_processor_0 (
 );
 
 assign leds = sw;
-assign an = 8'h01;
+assign an = 8'hFE;
 endmodule

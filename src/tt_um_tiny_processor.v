@@ -29,11 +29,18 @@ module cache #(
 );
 
 reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
+initial $readmemh("./init.mem", mem);
 
 always @(posedge clk) begin
   if (rst) begin
-      {mem[0], mem[1], mem[2], mem[3], mem[4], mem[5], mem[6], mem[7]} <= 0;
-      {mem[8], mem[9], mem[10], mem[11], mem[12], mem[13], mem[14], mem[15]} <= 0;
+      mem[0] <= 0; mem[8]  <= 0;
+      mem[1] <= 0; mem[9]  <= 0;
+      mem[2] <= 0; mem[10] <= 0;
+      mem[3] <= 0; mem[11] <= 0;
+      mem[4] <= 0; mem[12] <= 0;
+      mem[5] <= 0; mem[13] <= 0;
+      mem[6] <= 0; mem[14] <= 0;
+      mem[7] <= 0; mem[15] <= 0;
   end else begin
     if (en_in) mem[addr_in] <= data_in;
   end
@@ -106,7 +113,6 @@ module control_logic (
 
   output wire      dcache_wen_out,
   output wire      icache_wen_out,
-  output wire      icache_rst_out,
   output wire      icache_addr_sel_out,
   output wire      dcache_addr_sel_out,
   output wire      dcache_data_in_sel_out,
@@ -202,7 +208,6 @@ assign mul_seg_sel = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0]
 
 assign icache_wen_out      = ( st == IRECV ) & csi;
 assign icache_addr_sel_out = icache_wen_out;
-assign icache_rst_out      = proc_done_out & pc_last_val; 
 
 // Equivalent to `opcode_in == 4'h7`
 wire temp;
@@ -297,7 +302,6 @@ wire      ctrl2alu_mul_seg_sel;
 
 wire      ctrl2dcache_wen;
 wire      ctrl2icache_wen;
-wire      ctrl2icache_rst;
 wire      ctrl_icache_addr_sel;
 wire      ctrl_dcache_addr_sel;
 wire      ctrl_dcache_data_in_sel;
@@ -355,7 +359,6 @@ control_logic control_logic_0 (
 
   .dcache_wen_out         (ctrl2dcache_wen),
   .icache_wen_out         (ctrl2icache_wen),
-  .icache_rst_out         (ctrl2icache_rst),
   .icache_addr_sel_out    (ctrl_icache_addr_sel),
   .dcache_addr_sel_out    (ctrl_dcache_addr_sel),
   .dcache_data_in_sel_out (ctrl_dcache_data_in_sel),
@@ -379,13 +382,13 @@ buffer (
   .data_out (buff_data)
 );
 
-assign icache_addr = ctrl_icache_addr_sel ? buff_data[3:0] : pc;
+assign icache_addr = ctrl_icache_addr_sel ? buff_data[3:0] : (ctrl_display_on ? display_user_addr_in : pc);
 cache #(
   .SIZE(`IMEM_SZ)
 )
 icache(
   .clk      (clk),
-  .rst      (rst | ctrl2icache_rst),
+  .rst      (rst),
 
   .data_in  (buff_data[11:4]),
   .addr_in  (icache_addr),
@@ -453,21 +456,28 @@ end
 // Seven segment interface //
 wire      msb;
 wire[3:0] value;
+wire      view_sel;
+wire[7:0] view_data;
+
+assign view_sel  = ui_in[6];
+assign view_data = view_sel ? icache_data : dcache_data;
 
 assign msb   = ui_in[1];
-assign value = ctrl_display_on ? ( msb ? dcache_data[7:4] : dcache_data[3:0] ) : 4'h0;
+assign value = ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0;
 
 seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
 
 // VGA driver //
-vga_driver vga_driver_0 (
-  .clk (clk),
-  .rst (rst),
+// vga_driver vga_driver_0 (
+//   .clk (clk),
+//   .rst (rst),
 
-  .hsync_out (uio_out[4]),
-  .vsync_out (uio_out[5]),
+//   .hsync_out (uio_out[4]),
+//   .vsync_out (uio_out[5]),
   
-  .color_en_out (vga_color_en)
-);
+//   .color_en_out (vga_color_en)
+// );
+assign uio_out[4] = 0;
+assign uio_out[5] = 0;
 
 endmodule
