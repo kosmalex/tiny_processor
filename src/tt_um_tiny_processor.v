@@ -29,7 +29,10 @@ module cache #(
 );
 
 reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
-initial $readmemh("./init.mem", mem);
+
+`ifdef FPGA_demo
+  initial $readmemh("./init.mem", mem);
+`endif FPGA_demo
 
 always @(posedge clk) begin
   if (rst) begin
