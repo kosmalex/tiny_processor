@@ -289,7 +289,7 @@ wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 
 wire[3:0] display_user_addr_in = ui_in[5:2];
 
 // Vga //
-wire vga_color_en;
+// wire vga_color_en;
 
 // Control Signals //
 wire      ctrl_proc_done;
@@ -323,8 +323,8 @@ assign mosi = uio_in[2];
 assign uio_out[3]   = ctrl_proc_done;
 assign uio_out[2:0] = 3'b0;
 
-assign uio_out[7] = vga_color_en;
-assign uio_out[6] = vga_color_en;
+assign uio_out[7] = 1'b0; //vga_color_en;
+assign uio_out[6] = 1'b0; //vga_color_en;
 
 // Inputs
 assign uio_oe[2:0] = 3'b0; // en, csi, csd, mosi
@@ -482,5 +482,6 @@ seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
 // );
 assign uio_out[4] = 0;
 assign uio_out[5] = 0;
+// assign vga_color_en = 0;
 
 endmodule
