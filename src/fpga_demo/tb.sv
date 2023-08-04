@@ -38,14 +38,14 @@ assign uio_in[2]   = mosi_out;
 driver dut (.*);
 
 tt_um_tiny_processor tt_um_tiny_processor (
-  .ui_in      (ui_in),    // Dedicated inputs
-  .uo_out     (uo_out),   // Dedicated outputs
-  .uio_in     (uio_in),   // IOs: Input path
-  .uio_out    (uio_out),  // IOs: Output path
-  .uio_oe     (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
-  .ena        (1'b1),     // enable - goes high when design is selected
-  .clk        (sclk_out),      // clock
-  .rst_n      (rst_n_out)     // not reset
+  .ui_in   (ui_in),    // Dedicated inputs
+  .uo_out  (uo_out),   // Dedicated outputs
+  .uio_in  (uio_in),   // IOs: Input path
+  .uio_out (uio_out),  // IOs: Output path
+  .uio_oe  (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
+  .ena     (1'b1),     // enable - goes high when design is selected
+  .clk     (sclk_out), // clock
+  .rst_n   (rst_n_out) // not reset
 );
 
 initial $readmemh("../../compiler/fact.tx", dut.mem);

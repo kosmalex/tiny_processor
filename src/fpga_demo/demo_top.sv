@@ -38,16 +38,16 @@ assign s7 = ~s7_n;
 driver driver_0 (.*);
 
 tt_um_tiny_processor tt_um_tiny_processor_0 (
-  .ui_in      (sw[7:0]),    // Dedicated inputs
-  .uo_out     (s7_n),   // Dedicated outputs
-  .uio_in     (uio_in),   // IOs: Input path
-  .uio_out    (uio_out),  // IOs: Output path
-  .uio_oe     (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
-  .ena        (1'b1),     // enable - goes high when design is selected
-  .clk        (sclk_out),      // clock
-  .rst_n      (rst_n_out)     // not reset
+  .ui_in   (sw[7:0]),  // Dedicated inputs
+  .uo_out  (s7_n),     // Dedicated outputs
+  .uio_in  (uio_in),   // IOs: Input path
+  .uio_out (uio_out),  // IOs: Output path
+  .uio_oe  (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
+  .ena     (1'b1),     // enable - goes high when design is selected
+  .clk     (sclk_out), // clock
+  .rst_n   (rst_n_out) // not reset
 );
 
 assign leds = sw;
-assign an = 8'hFE;
+assign an   = 8'hFE;
 endmodule

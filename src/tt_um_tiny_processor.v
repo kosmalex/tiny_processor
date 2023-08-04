@@ -231,20 +231,22 @@ assign display_on_out = is_idle & display_in;
 endmodule
 
 module tt_um_tiny_processor (
-  input  wire [7:0] ui_in,    // Dedicated inputs - connected to the input switches
-  output wire [7:0] uo_out,   // Dedicated outputs - connected to the 7 segment display
+  input  wire[7:0] ui_in,   // Dedicated inputs - connected to the input switches
+  output wire[7:0] uo_out,  // Dedicated outputs - connected to the 7 segment display
 
-  input  wire [7:0] uio_in,   // IOs: Bidirectional Input path
-  output wire [7:0] uio_out,  // IOs: Bidirectional Output path
-  output wire [7:0] uio_oe,   // IOs: Bidirectional Enable path (active high: 0=input, 1=output)
+  input  wire[7:0] uio_in,  // IOs: Bidirectional Input path
+  output wire[7:0] uio_out, // IOs: Bidirectional Output path
+  output wire[7:0] uio_oe,  // IOs: Bidirectional Enable path (active high: 0=input, 1=output)
 
-  input  wire       ena,      // will go high when the design is enabled
-  input  wire       clk,      // clock
-  input  wire       rst_n     // reset_n - low to reset
+  input  wire      ena,     // will go high when the design is enabled
+  input  wire      clk,     // clock
+  input  wire      rst_n    // reset_n - low to reset
 );
 localparam PC_W  = `CLOG2(`IMEM_SZ);
 localparam RID_W = `CLOG2(`DMEM_SZ);
 localparam OPC_W = 4;
+
+// 
 
 // Processor global //
 wire rst = ~rst_n;
@@ -288,9 +290,6 @@ assign master_proc_en = uio_in[1] & uio_in[0];
 wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
 wire[3:0] display_user_addr_in = ui_in[5:2];
 
-// Vga //
-// wire vga_color_en;
-
 // Control Signals //
 wire      ctrl_proc_done;
 
@@ -321,17 +320,17 @@ assign csd  = ~(uio_in[1] & ~uio_in[0]);
 assign mosi = uio_in[2];
 
 assign uio_out[3]   = ctrl_proc_done;
-assign uio_out[2:0] = 3'b0;
 
-assign uio_out[7] = 1'b0; //vga_color_en;
-assign uio_out[6] = 1'b0; //vga_color_en;
+// Ground unused
+assign uio_out[2:0] = 3'b0; 
+assign uio_out[7:4] = 1'b0;
 
 // Inputs
 assign uio_oe[2:0] = 3'b0; // en, csi, csd, mosi
 
 // Outputs
-assign uio_oe[5:3] = 3'h7; // done(uio_oe[3]), hsync, vsync
-assign uio_oe[7:6] = 2'h3; // color_sel
+assign uio_oe[3]   = 3'h7; // done(uio_oe[3])
+assign uio_oe[7:4] = 4'hF; // unsused
 
 assign opcode = icache_data[3:0]; 
 
@@ -346,8 +345,8 @@ control_logic control_logic_0 (
   .alu_res_in   (alu_res),
 
   .master2proc_en_in (master_proc_en),
-  .csi               (csi),
-  .csd               (csd),
+  .csi               (csi           ),
+  .csd               (csd           ),
 
   .proc_done_out (ctrl_proc_done),
   
@@ -355,15 +354,15 @@ control_logic control_logic_0 (
   .pc_en_out    (ctrl_pc_en ),
   .pc_rst_out   (ctrl_pc_rst),
 
-  .unit_sel_out (ctrl2alu_unit_sel),
-  .op_sel_out   (ctrl2alu_op_sel  ),
-  .src_sel_out  (ctrl_src_sel     ),
+  .unit_sel_out (ctrl2alu_unit_sel   ),
+  .op_sel_out   (ctrl2alu_op_sel     ),
+  .src_sel_out  (ctrl_src_sel        ),
   .mul_seg_sel  (ctrl2alu_mul_seg_sel),
 
-  .dcache_wen_out         (ctrl2dcache_wen),
-  .icache_wen_out         (ctrl2icache_wen),
-  .icache_addr_sel_out    (ctrl_icache_addr_sel),
-  .dcache_addr_sel_out    (ctrl_dcache_addr_sel),
+  .dcache_wen_out         (ctrl2dcache_wen        ),
+  .icache_wen_out         (ctrl2icache_wen        ),
+  .icache_addr_sel_out    (ctrl_icache_addr_sel   ),
+  .dcache_addr_sel_out    (ctrl_dcache_addr_sel   ),
   .dcache_data_in_sel_out (ctrl_dcache_data_in_sel),
 
   .buff_shen_out (ctrl_buff_shen),
@@ -469,19 +468,4 @@ assign msb   = ui_in[1];
 assign value = ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0;
 
 seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
-
-// VGA driver //
-// vga_driver vga_driver_0 (
-//   .clk (clk),
-//   .rst (rst),
-
-//   .hsync_out (uio_out[4]),
-//   .vsync_out (uio_out[5]),
-  
-//   .color_en_out (vga_color_en)
-// );
-assign uio_out[4] = 0;
-assign uio_out[5] = 0;
-// assign vga_color_en = 0;
-
 endmodule

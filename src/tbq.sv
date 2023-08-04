@@ -94,7 +94,7 @@ module tbq;
 
   task SPI_d(logic[11:0] data);
     @(posedge clk) begin
-      mode  <= #5ns 2'b10;
+      mode <= #5ns 2'b10;
       mosi <= #5ns data[0]; 
     end
 
