@@ -35,18 +35,7 @@ reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
 `endif
 
 always @(posedge clk) begin
-  if (rst) begin
-      mem[0] <= 0; mem[8]  <= 0;
-      mem[1] <= 0; mem[9]  <= 0;
-      mem[2] <= 0; mem[10] <= 0;
-      mem[3] <= 0; mem[11] <= 0;
-      mem[4] <= 0; mem[12] <= 0;
-      mem[5] <= 0; mem[13] <= 0;
-      mem[6] <= 0; mem[14] <= 0;
-      mem[7] <= 0; mem[15] <= 0;
-  end else begin
-    if (en_in) mem[addr_in] <= data_in;
-  end
+  if (en_in) mem[addr_in] <= data_in;
 end
 
 assign data_out = mem[addr_in];
