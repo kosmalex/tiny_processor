@@ -315,8 +315,8 @@ wire      ctrl_buff_shen;
 wire      ctrl_display_on;
 
 // Signal renaming
-assign csi  = ~(~uio_in[1] & uio_in[0]);
-assign csd  = ~(uio_in[1] & ~uio_in[0]);
+assign csi  = ~(~uio_in[1] &  uio_in[0]);
+assign csd  = ~( uio_in[1] & ~uio_in[0]);
 assign mosi = uio_in[2];
 
 assign uio_out[3]   = ctrl_proc_done;
