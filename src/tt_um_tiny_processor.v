@@ -384,7 +384,7 @@ buffer (
   .data_out (buff_data)
 );
 
-assign icache_addr = ctrl_icache_addr_sel ? buff_data[3:0] : (ctrl_display_on ? display_user_addr_in : pc);
+assign icache_addr = ctrl_icache_addr_sel ? buff_data[3:0] : pc; //(ctrl_display_on ? display_user_addr_in : pc);
 cache #(
   .SIZE(`IMEM_SZ)
 )
@@ -458,14 +458,14 @@ end
 // Seven segment interface //
 wire      msb;
 wire[3:0] value;
-wire      view_sel;
-wire[7:0] view_data;
+// wire      view_sel;
+// wire[7:0] view_data;
 
-assign view_sel  = ui_in[6];
-assign view_data = view_sel ? icache_data : dcache_data;
+// assign view_sel  = ui_in[6];
+// assign view_data = view_sel ? icache_data : dcache_data;
 
 assign msb   = ui_in[1];
-assign value = ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0;
+assign value = ctrl_display_on ? ( msb ? dcache_data[7:4] : dcache_data[3:0] ) : 4'h0;
 
 seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
 endmodule
