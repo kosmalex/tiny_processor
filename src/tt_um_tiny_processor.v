@@ -11,8 +11,8 @@
 
 `define DATAPATH_W 8
 `define INST_W     8
-`define IMEM_SZ    8
-`define DMEM_SZ    16
+`define IMEM_SZ    16
+`define DMEM_SZ    13
 
 module cache #(
   parameter SIZE = 8,
