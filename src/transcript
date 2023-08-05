@@ -14,298 +14,22 @@
 # //  FURTHERMORE, THIS INFORMATION IS PROHIBITED FROM DISCLOSURE UNDER
 # //  THE TRADE SECRETS ACT, 18 U.S.C. SECTION 1905.
 # //
-ls
-# Makefile  cells.v  config.tcl  seven_seg.v  tb.v  test.py  transcript  tt_um_tiny_processor.v      
-cd
-dir
-#  Volume in drive C has no label.
-#  Volume Serial Number is 02E2-0780
+# vsim -gui . 
+# Start time: 19:38:03 on Aug 04,2023
+# ** Error (suppressible): (vsim-19) Failed to access library '' at "".
 # 
-#  Directory of C:\Users\kosma
-# 
-# 18/07/2023  12:35 ãæ    <DIR>          .
-# 01/03/2023  05:09 ææ    <DIR>          ..
-# 26/12/2022  05:22 ææ    <DIR>          .aws
-# 26/12/2022  05:22 ææ    <DIR>          .azure
-# 25/10/2022  01:15 ææ                56 .bash_history
-# 28/03/2023  05:03 ææ    <DIR>          .cargo
-# 13/01/2023  02:25 ãæ    <DIR>          .config
-# 26/12/2022  05:31 ææ    <DIR>          .docker
-# 22/02/2023  05:29 ææ               158 .gitconfig
-# 19/01/2023  01:19 ãæ    <DIR>          .ipython
-# 17/07/2023  12:46 ãæ                20 .lesshst
-# 02/11/2022  01:24 ãæ    <DIR>          .matplotlib
-# 13/01/2023  02:25 ãæ    <DIR>          .mozilla
-# 26/10/2022  02:12 ææ    <DIR>          .oracle_jre_usage
-# 28/03/2023  04:06 ææ    <DIR>          .rustup
-# 25/05/2023  11:56 ææ    <DIR>          .ssh
-# 13/07/2023  02:35 ææ    <DIR>          .VirtualBox
-# 09/06/2023  11:23 ãæ    <DIR>          .vscode
-# 13/01/2023  02:25 ãæ    <DIR>          .Xilinx
-# 18/07/2023  12:35 ãæ    <DIR>          ansel
-# 06/11/2022  12:21 ææ             1.116 bin.png
-# 01/03/2023  05:47 ææ    <DIR>          Contacts
-# 06/11/2022  12:21 ææ             1.109 d4a.png
-# 06/11/2022  12:21 ææ             1.109 d4w.png
-# 06/12/2022  11:16 ææ             6.307 default-1-2-0-0.ses
-# 18/07/2023  10:58 ææ    <DIR>          Desktop
-# 16/07/2023  10:49 ææ    <DIR>          Documents
-# 18/07/2023  08:30 ææ    <DIR>          Downloads
-# 21/02/2023  01:04 ææ    <DIR>          Dropbox
-# 01/03/2023  05:47 ææ    <DIR>          Favorites
-# 26/12/2022  05:28 ææ    <DIR>          getting-started
-# 01/03/2023  05:47 ææ    <DIR>          Links
-# 06/11/2022  12:21 ææ            57.945 medianB.png
-# 06/11/2022  12:21 ææ           222.608 medianBlured.npy
-# 01/03/2023  05:47 ææ    <DIR>          Music
-# 01/03/2023  07:43 ææ    <DIR>          OneDrive
-# 02/11/2022  01:20 ãæ    <DIR>          OpenVPN
-# 01/03/2023  05:47 ææ    <DIR>          Pictures
-# 04/11/2022  03:11 ãæ               230 quartus2.qreg
-# 01/03/2023  05:47 ææ    <DIR>          Saved Games
-# 01/03/2023  05:55 ææ    <DIR>          Searches
-# 09/11/2022  04:31 ææ    <DIR>          source
-# 24/10/2022  01:17 ãæ    <DIR>          Tracing
-# 20/03/2023  03:00 ææ             3.223 transcript
-# 23/06/2023  12:59 ææ    <DIR>          Videos
-# 25/12/2022  12:47 ææ    <DIR>          VirtualBox VMs
-# 13/07/2023  02:17 ææ    <DIR>          Zotero
-#               11 File(s)        293.881 bytes
-#               36 Dir(s)  30.025.928.704 bytes free
-cd Desktop/tiny_processor
-dir
-#  Volume in drive C has no label.
-#  Volume Serial Number is 02E2-0780
-# 
-#  Directory of C:\Users\kosma\Desktop\tiny_processor
-# 
-# 18/07/2023  10:58 ææ    <DIR>          .
-# 18/07/2023  10:58 ææ    <DIR>          ..
-# 18/07/2023  10:58 ææ    <DIR>          .github
-# 18/07/2023  10:58 ææ               125 .gitignore
-# 18/07/2023  10:58 ææ    <DIR>          compiler
-# 18/07/2023  10:58 ææ             3.303 info.yaml
-# 18/07/2023  10:58 ææ            11.558 LICENSE
-# 18/07/2023  10:58 ææ             1.569 README.md
-# 18/07/2023  10:59 ææ    <DIR>          src
-#                4 File(s)         16.555 bytes
-#                5 Dir(s)  30.029.795.328 bytes free
-cd src
-clear
-# invalid command name "clear"
-vlib work
-vlog *.v
-# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
-# Start time: 23:00:16 on Jul 18,2023
-# vlog -reportprogress 300 cells.v seven_seg.v tb.v tt_um_tiny_processor.v 
-# -- Compiling module buffer_cell
-# -- Compiling module and_cell
-# -- Compiling module or_cell
-# -- Compiling module xor_cell
-# -- Compiling module nand_cell
-# -- Compiling module not_cell
-# -- Compiling module mux_cell
-# -- Compiling module dff_cell
-# -- Compiling module dffsr_cell
-# -- Compiling module seven_seg
-# -- Compiling module tb
-# ** Error: tb.v(20): (vlog-2730) Undefined variable: 'uo_out'.
-# 
-# ** Error (suppressible): tb.v(23): (vlog-2388) 'uo_out' already declared in this scope (tb).
-# 
-# -- Compiling module tt_um_tiny_processor
-# ** Error: tt_um_tiny_processor.v(31): Single value range only allowed in SystemVerilog.
-# ** Error: tt_um_tiny_processor.v(32): Single value range only allowed in SystemVerilog.
-# ** Error: (vlog-13027) tt_um_tiny_processor.v(56): near "i": Syntax error. 'for' loop variable declaration only allowed in SystemVerilog.
-# 
-# ** Error: tt_um_tiny_processor.v(56): (vlog-2730) Undefined variable: 'i'.
-# 
-# ** Error: (vlog-13036) tt_um_tiny_processor.v(56): near "++": Operator only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(56): near ")": syntax error, unexpected ')', expecting ';'.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(59): near "else": syntax error, unexpected else.
-# 
-# ** Error: tt_um_tiny_processor.v(66): (vlog-2730) Undefined variable: 'inst'.
-# 
-# ** Error: (vlog-13027) tt_um_tiny_processor.v(136): near "i": Syntax error. 'for' loop variable declaration only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13036) tt_um_tiny_processor.v(136): near "++": Operator only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(136): near ")": syntax error, unexpected ')', expecting ';'.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(139): near "else": syntax error, unexpected else.
-# 
-# ** Error: tt_um_tiny_processor.v(147): (vlog-2730) Undefined variable: 'seg7In'.
-# 
-# End time: 23:00:16 on Jul 18,2023, Elapsed time: 0:00:00
-# Errors: 15, Warnings: 0
-# D:/questasim64_10.4e/win64/vlog failed.
-vlog *.v
-# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
-# Start time: 23:01:02 on Jul 18,2023
-# vlog -reportprogress 300 cells.v seven_seg.v tb.v tt_um_tiny_processor.v 
-# -- Compiling module buffer_cell
-# -- Compiling module and_cell
-# -- Compiling module or_cell
-# -- Compiling module xor_cell
-# -- Compiling module nand_cell
-# -- Compiling module not_cell
-# -- Compiling module mux_cell
-# -- Compiling module dff_cell
-# -- Compiling module dffsr_cell
-# -- Compiling module seven_seg
-# -- Compiling module tb
-# ** Error: tb.v(20): (vlog-2730) Undefined variable: 'uo_out'.
-# 
-# ** Error (suppressible): tb.v(23): (vlog-2388) 'uo_out' already declared in this scope (tb).
-# 
-# -- Compiling module tt_um_tiny_processor
-# ** Error: tt_um_tiny_processor.v(31): Single value range only allowed in SystemVerilog.
-# ** Error: tt_um_tiny_processor.v(32): Single value range only allowed in SystemVerilog.
-# ** Error: (vlog-13027) tt_um_tiny_processor.v(56): near "i": Syntax error. 'for' loop variable declaration only allowed in SystemVerilog.
-# 
-# ** Error: tt_um_tiny_processor.v(56): (vlog-2730) Undefined variable: 'i'.
-# 
-# ** Error: (vlog-13036) tt_um_tiny_processor.v(56): near "++": Operator only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(56): near ")": syntax error, unexpected ')', expecting ';'.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(59): near "else": syntax error, unexpected else.
-# 
-# ** Error: tt_um_tiny_processor.v(66): (vlog-2730) Undefined variable: 'inst'.
-# 
-# ** Error: (vlog-13027) tt_um_tiny_processor.v(136): near "i": Syntax error. 'for' loop variable declaration only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13036) tt_um_tiny_processor.v(136): near "++": Operator only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(136): near ")": syntax error, unexpected ')', expecting ';'.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(139): near "else": syntax error, unexpected else.
-# 
-# ** Error: tt_um_tiny_processor.v(147): (vlog-2730) Undefined variable: 'seg7In'.
-# 
-# End time: 23:01:02 on Jul 18,2023, Elapsed time: 0:00:00
-# Errors: 15, Warnings: 0
-# D:/questasim64_10.4e/win64/vlog failed.
-vlog *.v
-# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
-# Start time: 23:01:13 on Jul 18,2023
-# vlog -reportprogress 300 cells.v seven_seg.v tb.v tt_um_tiny_processor.v 
-# -- Compiling module buffer_cell
-# -- Compiling module and_cell
-# -- Compiling module or_cell
-# -- Compiling module xor_cell
-# -- Compiling module nand_cell
-# -- Compiling module not_cell
-# -- Compiling module mux_cell
-# -- Compiling module dff_cell
-# -- Compiling module dffsr_cell
-# -- Compiling module seven_seg
-# -- Compiling module tb
-# ** Error: tb.v(20): (vlog-2730) Undefined variable: 'uo_out'.
-# 
-# ** Error (suppressible): tb.v(23): (vlog-2388) 'uo_out' already declared in this scope (tb).
-# 
-# -- Compiling module tt_um_tiny_processor
-# ** Error: tt_um_tiny_processor.v(31): Single value range only allowed in SystemVerilog.
-# ** Error: (vlog-13027) tt_um_tiny_processor.v(56): near "i": Syntax error. 'for' loop variable declaration only allowed in SystemVerilog.
-# 
-# ** Error: tt_um_tiny_processor.v(56): (vlog-2730) Undefined variable: 'i'.
-# 
-# ** Error: (vlog-13036) tt_um_tiny_processor.v(56): near "++": Operator only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(56): near ")": syntax error, unexpected ')', expecting ';'.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(59): near "else": syntax error, unexpected else.
-# 
-# ** Error: tt_um_tiny_processor.v(66): (vlog-2730) Undefined variable: 'inst'.
-# 
-# ** Error: (vlog-13027) tt_um_tiny_processor.v(136): near "i": Syntax error. 'for' loop variable declaration only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13036) tt_um_tiny_processor.v(136): near "++": Operator only allowed in SystemVerilog.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(136): near ")": syntax error, unexpected ')', expecting ';'.
-# 
-# ** Error: (vlog-13069) tt_um_tiny_processor.v(139): near "else": syntax error, unexpected else.
-# 
-# ** Error: tt_um_tiny_processor.v(147): (vlog-2730) Undefined variable: 'seg7In'.
-# 
-# End time: 23:01:13 on Jul 18,2023, Elapsed time: 0:00:00
-# Errors: 14, Warnings: 0
-# D:/questasim64_10.4e/win64/vlog failed.
-vlog *.v
-# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
-# Start time: 23:03:33 on Jul 18,2023
-# vlog -reportprogress 300 cells.v seven_seg.v tb.v tt_um_tiny_processor.v 
-# -- Compiling module buffer_cell
-# -- Compiling module and_cell
-# -- Compiling module or_cell
-# -- Compiling module xor_cell
-# -- Compiling module nand_cell
-# -- Compiling module not_cell
-# -- Compiling module mux_cell
-# -- Compiling module dff_cell
-# -- Compiling module dffsr_cell
-# -- Compiling module seven_seg
-# -- Compiling module tb
-# ** Error: tb.v(20): (vlog-2730) Undefined variable: 'uo_out'.
-# 
-# ** Error (suppressible): tb.v(23): (vlog-2388) 'uo_out' already declared in this scope (tb).
-# 
-# -- Compiling module tt_um_tiny_processor
-# ** Error: tt_um_tiny_processor.v(120): Register is illegal in left-hand side of continuous assignment
-# End time: 23:03:33 on Jul 18,2023, Elapsed time: 0:00:00
-# Errors: 3, Warnings: 0
-# D:/questasim64_10.4e/win64/vlog failed.
-vlog *.v
-# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
-# Start time: 23:04:35 on Jul 18,2023
-# vlog -reportprogress 300 cells.v seven_seg.v tb.v tt_um_tiny_processor.v 
-# -- Compiling module buffer_cell
-# -- Compiling module and_cell
-# -- Compiling module or_cell
-# -- Compiling module xor_cell
-# -- Compiling module nand_cell
-# -- Compiling module not_cell
-# -- Compiling module mux_cell
-# -- Compiling module dff_cell
-# -- Compiling module dffsr_cell
-# -- Compiling module seven_seg
-# -- Compiling module tb
-# ** Error: tb.v(20): (vlog-2730) Undefined variable: 'uo_out'.
-# 
-# ** Error (suppressible): tb.v(22): (vlog-2388) 'uo_out' already declared in this scope (tb).
-# 
-# -- Compiling module tt_um_tiny_processor
-# ** Error: tt_um_tiny_processor.v(120): Register is illegal in left-hand side of continuous assignment
-# End time: 23:04:35 on Jul 18,2023, Elapsed time: 0:00:00
-# Errors: 3, Warnings: 0
-# D:/questasim64_10.4e/win64/vlog failed.
-vlog *.v
-# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
-# Start time: 23:05:03 on Jul 18,2023
-# vlog -reportprogress 300 cells.v seven_seg.v tb.v tt_um_tiny_processor.v 
-# -- Compiling module buffer_cell
-# -- Compiling module and_cell
-# -- Compiling module or_cell
-# -- Compiling module xor_cell
-# -- Compiling module nand_cell
-# -- Compiling module not_cell
-# -- Compiling module mux_cell
-# -- Compiling module dff_cell
-# -- Compiling module dffsr_cell
-# -- Compiling module seven_seg
-# -- Compiling module tb
-# -- Compiling module tt_um_tiny_processor
-# ** Error: tt_um_tiny_processor.v(120): Register is illegal in left-hand side of continuous assignment
-# End time: 23:05:03 on Jul 18,2023, Elapsed time: 0:00:00
+# Invalid argument. (errno = EINVAL)
+# Error loading design
+# End time: 19:38:04 on Aug 04,2023, Elapsed time: 0:00:01
 # Errors: 1, Warnings: 0
-# D:/questasim64_10.4e/win64/vlog failed.
-vlog *.v
+do run.do
 # QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
-# Start time: 23:05:28 on Jul 18,2023
-# vlog -reportprogress 300 cells.v seven_seg.v tb.v tt_um_tiny_processor.v 
+# Start time: 19:38:20 on Aug 04,2023
+# vlog -reportprogress 300 alu.v cells.v mul.v seven_seg.v tbp.v tt_um_tiny_processor.v vga_driver.v tbq.sv 
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
 # -- Compiling module buffer_cell
 # -- Compiling module and_cell
 # -- Compiling module or_cell
@@ -315,9 +39,16 @@ vlog *.v
 # -- Compiling module mux_cell
 # -- Compiling module dff_cell
 # -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
 # -- Compiling module seven_seg
-# -- Compiling module tb
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
 # -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# -- Compiling module tbq
 # 
 # Top level modules:
 # 	buffer_cell
@@ -329,6 +60,74 @@ vlog *.v
 # 	mux_cell
 # 	dff_cell
 # 	dffsr_cell
-# 	tb
-# End time: 23:05:28 on Jul 18,2023, Elapsed time: 0:00:00
+# 	tbp
+# 	vga_driver
+# 	tbq
+# End time: 19:38:20 on Aug 04,2023, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
+# vsim -novopt tbq 
+# Start time: 19:38:20 on Aug 04,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tbq
+# Loading sv_std.std
+# Loading work.tbq
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.element
+# Loading work.element
+# ** Warning: (vsim-PLI-3406) Too many digits (8) in data on line 1 of file "../compiler/mul.tx". (Max is 2.)    : tbq.sv(115)
+#    Time: 105 ns  Iteration: 1  Instance: /tbq
+#                  105 Writting: xx
+#                  245 Writting: xx
+#                  385 Writting: xx
+#                  525 Writting: xx
+#                  665 Writting: xx
+#                  805 Writting: xx
+#                  945 Writting: xx
+#                 1085 Writting: xx
+#                 1225 Writting: xx
+#                 1365 Writting: xx
+#                 1505 Writting: xx
+#                 1645 Writting: xx
+#                 1785 Writting: xx
+#                 1925 Writting: xx
+#                 2065 Writting: xx
+#                 2205 Writting: xx
+#                 2515 Writting: xx
+#                 2655 Writting: xx
+#                 2795 Writting: xx
+#                 2935 Writting: xx
+#                 3075 Writting: xx
+#                 3215 Writting: xx
+#                 3355 Writting: xx
+#                 3495 Writting: xx
+#                 3635 Writting: xx
+#                 3775 Writting: xx
+#                 3915 Writting: xx
+#                 4055 Writting: xx
+#                 4195 Writting: xx
+#                 4335 Writting: xx
+#                 4475 Writting: xx
+#                 4615 Writting: xx
+# ** Note: $stop    : tbq.sv(48)
+#    Time: 4925 ns  Iteration: 2  Instance: /tbq
+# Break in Module tbq at tbq.sv line 48
