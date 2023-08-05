@@ -28,7 +28,7 @@ yaml_version: 4
 # Here is a great example: https://github.com/davidsiaw/tt02-davidsiaw-stackcalc/blob/38c5647f83aad2aec675d566aa3d67b98f0aac81/info.yaml
 documentation: 
   author:       "Kosmas Alexandridis"                # Your name
-  title:        "tiny processor"                     # Project title
+  title:        "Tiny processor"                     # Project title
   language:     "Verilog"                            # other examples include Verilog, Amaranth, VHDL, etc
   description:  "A processor with an 8-bit datapath" # Short description of what your project does
 
