@@ -11,13 +11,13 @@
 */
 
 module seven_seg (
-  input wire [4:0] in,
+  input wire [4:0] value_in,
   
   output reg [7:0] out
 );
 
 always @(*) begin
-  case(in[3:0])
+  case(value_in[3:0])
     //                 7654321
     0 :  out[6:0] = 7'b0111111;
     1 :  out[6:0] = 7'b0000110;
@@ -42,7 +42,7 @@ always @(*) begin
       out[6:0] = 7'b0000000;
   endcase
 
-  out[7] = in[4];
+  out[7] = value_in[4];
 end
 
 endmodule

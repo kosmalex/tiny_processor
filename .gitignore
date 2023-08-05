@@ -2,9 +2,14 @@
 .idea
 .vscode
 *.vcd
+*.bak
 runs
 src/sim_build
 src/__pycache__/
 src/results.xml
 src/user_config.tcl
-compiler/*.out
+src/log
+compiler/*.tx
+work/
+*.wlf
+transcript

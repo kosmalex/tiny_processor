@@ -1,0 +1,516 @@
+# Reading D:/questasim64_10.4e/tcl/vsim/pref.tcl
+# //  Questa Sim-64
+# //  Version 10.4e win64 Apr  9 2016
+# //
+# //  Copyright 1991-2016 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  THIS WORK CONTAINS TRADE SECRET AND PROPRIETARY INFORMATION
+# //  WHICH IS THE PROPERTY OF MENTOR GRAPHICS CORPORATION OR ITS
+# //  LICENSORS AND IS SUBJECT TO LICENSE TERMS.
+# //  THIS DOCUMENT CONTAINS TRADE SECRETS AND COMMERCIAL OR FINANCIAL
+# //  INFORMATION THAT ARE PRIVILEGED, CONFIDENTIAL, AND EXEMPT FROM
+# //  DISCLOSURE UNDER THE FREEDOM OF INFORMATION ACT, 5 U.S.C. SECTION 552.
+# //  FURTHERMORE, THIS INFORMATION IS PROHIBITED FROM DISCLOSURE UNDER
+# //  THE TRADE SECRETS ACT, 18 U.S.C. SECTION 1905.
+# //
+# vsim -gui . 
+# Start time: 17:46:53 on Jul 31,2023
+# ** Error (suppressible): (vsim-19) Failed to access library '' at "".
+# 
+# Invalid argument. (errno = EINVAL)
+# Error loading design
+# End time: 17:46:53 on Jul 31,2023, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+dir
+#  Volume in drive C has no label.
+#  Volume Serial Number is 02E2-0780
+# 
+#  Directory of C:\Users\kosma\Desktop\tiny_processor
+# 
+# 30/07/2023  05:38 ææ    <DIR>          .
+# 30/07/2023  05:59 ææ    <DIR>          ..
+# 29/07/2023  07:38 ææ    <DIR>          .github
+# 29/07/2023  07:38 ææ               170 .gitignore
+# 30/07/2023  06:13 ææ    <DIR>          compiler
+# 31/07/2023  05:07 ææ             3.349 info.yaml
+# 29/07/2023  07:38 ææ            11.558 LICENSE
+# 29/07/2023  07:38 ææ             1.569 README.md
+# 31/07/2023  05:14 ææ    <DIR>          src
+# 31/07/2023  05:46 ææ               936 transcript
+#                5 File(s)         17.582 bytes
+#                5 Dir(s)  25.979.826.176 bytes free
+cd src
+dor 
+# invalid command name "dor"
+do run.do
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 17:47:12 on Jul 31,2023
+# vlog -reportprogress 300 alu.v cells.v mul.v seven_seg.v tbp.v tt_um_tiny_processor.v vga_driver.v tbq.sv 
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# -- Compiling module tbq
+# 
+# Top level modules:
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# 	tbq
+# End time: 17:47:12 on Jul 31,2023, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -novopt tbq 
+# Start time: 17:47:12 on Jul 31,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tbq
+# Loading sv_std.std
+# Loading work.tbq
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.vga_driver
+# Loading work.vga_driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.element
+# Loading work.element
+#                  105 Writting: 5b
+#                  245 Writting: 07
+#                  385 Writting: 7b
+#                  525 Writting: 05
+#                  665 Writting: 07
+#                  805 Writting: 8b
+#                  945 Writting: 17
+#                 1085 Writting: 7b
+#                 1225 Writting: 15
+#                 1365 Writting: 17
+#                 1505 Writting: 4b
+#                 1645 Writting: 27
+#                 1785 Writting: 9b
+#                 1925 Writting: 25
+#                 2065 Writting: 27
+#                 2205 Writting: 4b
+#                 2515 Writting: 4a
+#                 2655 Writting: 37
+#                 2795 Writting: 5b
+#                 2935 Writting: 3c
+#                 3075 Writting: 37
+#                 3215 Writting: 7b
+#                 3355 Writting: 4a
+#                 3495 Writting: 47
+#                 3635 Writting: 6b
+#                 3775 Writting: 4c
+#                 3915 Writting: 39
+#                 4055 Writting: a7
+#                 4195 Writting: xx
+#                 4335 Writting: xx
+#                 4475 Writting: xx
+#                 4615 Writting: xx
+# ** Note: $stop    : tbq.sv(48)
+#    Time: 4925 ns  Iteration: 2  Instance: /tbq
+# Break in Module tbq at tbq.sv line 48
+add wave -position insertpoint  \
+sim:/tbq/tt_um_tiny_processor/vga_driver_0/hsync_out \
+sim:/tbq/tt_um_tiny_processor/vga_driver_0/vsync_out
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/Users/kosma/Desktop/tiny_processor/src/waves/wave.do
+add wave -position insertpoint  \
+sim:/tbq/tt_um_tiny_processor/vga_driver_0/hcnt \
+sim:/tbq/tt_um_tiny_processor/vga_driver_0/vcnt
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/Users/kosma/Desktop/tiny_processor/src/waves/wave.do
+clear
+# invalid command name "clear"
+do run.do
+# End time: 17:49:37 on Jul 31,2023, Elapsed time: 0:02:25
+# Errors: 1, Warnings: 1
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 17:49:38 on Jul 31,2023
+# vlog -reportprogress 300 alu.v cells.v mul.v seven_seg.v tbp.v tt_um_tiny_processor.v vga_driver.v tbq.sv 
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# -- Compiling module tbq
+# 
+# Top level modules:
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# 	tbq
+# End time: 17:49:38 on Jul 31,2023, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -novopt tbq 
+# Start time: 17:49:38 on Jul 31,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tbq
+# Loading sv_std.std
+# Loading work.tbq
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.vga_driver
+# Loading work.vga_driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.element
+# Loading work.element
+#                  105 Writting: 5b
+#                  245 Writting: 07
+#                  385 Writting: 7b
+#                  525 Writting: 05
+#                  665 Writting: 07
+#                  805 Writting: 8b
+#                  945 Writting: 17
+#                 1085 Writting: 7b
+#                 1225 Writting: 15
+#                 1365 Writting: 17
+#                 1505 Writting: 4b
+#                 1645 Writting: 27
+#                 1785 Writting: 9b
+#                 1925 Writting: 25
+#                 2065 Writting: 27
+#                 2205 Writting: 4b
+#                 2515 Writting: 4a
+#                 2655 Writting: 37
+#                 2795 Writting: 5b
+#                 2935 Writting: 3c
+#                 3075 Writting: 37
+#                 3215 Writting: 7b
+#                 3355 Writting: 4a
+#                 3495 Writting: 47
+#                 3635 Writting: 6b
+#                 3775 Writting: 4c
+#                 3915 Writting: 39
+#                 4055 Writting: a7
+#                 4195 Writting: xx
+#                 4335 Writting: xx
+#                 4475 Writting: xx
+#                 4615 Writting: xx
+# ** Note: $stop    : tbq.sv(48)
+#    Time: 4925 ns  Iteration: 2  Instance: /tbq
+# Break in Module tbq at tbq.sv line 48
+run 1000ns
+run 1000ns
+run 1000ns
+
+run 1000ns
+
+run 1000ns
+
+run 1000ns
+run 1000ns
+do run.do
+# End time: 17:51:50 on Jul 31,2023, Elapsed time: 0:02:12
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 17:51:50 on Jul 31,2023
+# vlog -reportprogress 300 alu.v cells.v mul.v seven_seg.v tbp.v tt_um_tiny_processor.v vga_driver.v tbq.sv 
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# -- Compiling module tbq
+# 
+# Top level modules:
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# 	tbq
+# End time: 17:51:51 on Jul 31,2023, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# vsim -novopt tbq 
+# Start time: 17:51:51 on Jul 31,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tbq
+# Loading sv_std.std
+# Loading work.tbq
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.vga_driver
+# Loading work.vga_driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.element
+# Loading work.element
+#                  105 Writting: 5b
+#                  245 Writting: 07
+#                  385 Writting: 7b
+#                  525 Writting: 05
+#                  665 Writting: 07
+#                  805 Writting: 8b
+#                  945 Writting: 17
+#                 1085 Writting: 7b
+#                 1225 Writting: 15
+#                 1365 Writting: 17
+#                 1505 Writting: 4b
+#                 1645 Writting: 27
+#                 1785 Writting: 9b
+#                 1925 Writting: 25
+#                 2065 Writting: 27
+#                 2205 Writting: 4b
+#                 2515 Writting: 4a
+#                 2655 Writting: 37
+#                 2795 Writting: 5b
+#                 2935 Writting: 3c
+#                 3075 Writting: 37
+#                 3215 Writting: 7b
+#                 3355 Writting: 4a
+#                 3495 Writting: 47
+#                 3635 Writting: 6b
+#                 3775 Writting: 4c
+#                 3915 Writting: 39
+#                 4055 Writting: a7
+#                 4195 Writting: xx
+#                 4335 Writting: xx
+#                 4475 Writting: xx
+#                 4615 Writting: xx
+# ** Note: $stop    : tbq.sv(48)
+#    Time: 4925 ns  Iteration: 2  Instance: /tbq
+# Break in Module tbq at tbq.sv line 48
+run 50000ns
+run 50000ns
+do run.do
+# End time: 17:53:21 on Jul 31,2023, Elapsed time: 0:01:30
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 10.4e Compiler 2016.04 Apr  9 2016
+# Start time: 17:53:21 on Jul 31,2023
+# vlog -reportprogress 300 alu.v cells.v mul.v seven_seg.v tbp.v tt_um_tiny_processor.v vga_driver.v tbq.sv 
+# -- Compiling module cs_add
+# -- Compiling module adder_8bit
+# -- Compiling module barrel_shift
+# -- Compiling module alu
+# -- Compiling module buffer_cell
+# -- Compiling module and_cell
+# -- Compiling module or_cell
+# -- Compiling module xor_cell
+# -- Compiling module nand_cell
+# -- Compiling module not_cell
+# -- Compiling module mux_cell
+# -- Compiling module dff_cell
+# -- Compiling module dffsr_cell
+# -- Compiling module element
+# -- Compiling module mul
+# -- Compiling module seven_seg
+# -- Compiling module tbp
+# -- Compiling module cache
+# -- Compiling module shift_reg
+# -- Compiling module control_logic
+# -- Compiling module tt_um_tiny_processor
+# -- Compiling module vga_driver
+# -- Compiling module tbq
+# 
+# Top level modules:
+# 	buffer_cell
+# 	and_cell
+# 	or_cell
+# 	xor_cell
+# 	nand_cell
+# 	not_cell
+# 	mux_cell
+# 	dff_cell
+# 	dffsr_cell
+# 	tbp
+# 	tbq
+# End time: 17:53:22 on Jul 31,2023, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# vsim -novopt tbq 
+# Start time: 17:53:22 on Jul 31,2023
+# ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
+# 
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tbq
+# Loading sv_std.std
+# Loading work.tbq
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.tt_um_tiny_processor
+# Loading work.tt_um_tiny_processor
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.control_logic
+# Loading work.control_logic
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.shift_reg
+# Loading work.shift_reg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cache
+# Loading work.cache
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.alu
+# Loading work.alu
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.adder_8bit
+# Loading work.adder_8bit
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.mul
+# Loading work.mul
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.barrel_shift
+# Loading work.barrel_shift
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.seven_seg
+# Loading work.seven_seg
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.vga_driver
+# Loading work.vga_driver
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.cs_add
+# Loading work.cs_add
+# Refreshing C:/Users/kosma/Desktop/tiny_processor/src/work.element
+# Loading work.element
+#                  105 Writting: 5b
+#                  245 Writting: 07
+#                  385 Writting: 7b
+#                  525 Writting: 05
+#                  665 Writting: 07
+#                  805 Writting: 8b
+#                  945 Writting: 17
+#                 1085 Writting: 7b
+#                 1225 Writting: 15
+#                 1365 Writting: 17
+#                 1505 Writting: 4b
+#                 1645 Writting: 27
+#                 1785 Writting: 9b
+#                 1925 Writting: 25
+#                 2065 Writting: 27
+#                 2205 Writting: 4b
+#                 2515 Writting: 4a
+#                 2655 Writting: 37
+#                 2795 Writting: 5b
+#                 2935 Writting: 3c
+#                 3075 Writting: 37
+#                 3215 Writting: 7b
+#                 3355 Writting: 4a
+#                 3495 Writting: 47
+#                 3635 Writting: 6b
+#                 3775 Writting: 4c
+#                 3915 Writting: 39
+#                 4055 Writting: a7
+#                 4195 Writting: xx
+#                 4335 Writting: xx
+#                 4475 Writting: xx
+#                 4615 Writting: xx
+# ** Note: $stop    : tbq.sv(48)
+#    Time: 4925 ns  Iteration: 2  Instance: /tbq
+# Break in Module tbq at tbq.sv line 48
+run 100000ns
+run 1000000us
+# Break key hit
+# Break in Module vga_driver at vga_driver.v line 13
+run
+run -continue
+run 1000000us
+# Break key hit
+# Break in Module tbq at tbq.sv line 37
+# End time: 18:30:49 on Jul 31,2023, Elapsed time: 0:37:27
+# Errors: 0, Warnings: 1

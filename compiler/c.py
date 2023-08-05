@@ -3,30 +3,36 @@ import re
 
 insts = {
   "add"  :0x0,
-  "sub"  :0x1,
-  "sll"  :0x2,
-  "bnez" :0x3,
-  "srl"  :0x4,
-  "mul"  :0x5,
-  "nand" :0x6,
-  "xor"  :0x7,
+  "sub"  :0x4,
   "addi" :0x8,
-  "li"   :0x9,
-  "slli" :0x10,
+
+  "mulu" :0x1,
+  "mul"  :0x5,
+  "mulh"  :0x9,
+
+  "sll"  :0x2,
+  "slli" :0xA,
+  "srl"  :0x6,
+
+  "la"   :0x3,
+  "sa"   :0x7,
+  "li"   :0xB,
   
-  "rst"  :0xd,
-  "la"   :0xe,
-  "sa"   :0xf
+  "or"  :0xC,
+  "slt" :0xD,
+  "and" :0xE,
+  "bnez":0xF
 }
 
 def main():
   parser = argparse.ArgumentParser("Compiler for tiny processor")
   parser.add_argument("input", type=str, help="Input file")
-  parser.add_argument("-o", type=str, help="Output file", default="a.out")
+  parser.add_argument("-o", type=str, help="Output file", default="a.tex")
+  parser.add_argument("-f", type=str, help="Output format", default="hex")
   args = parser.parse_args()
 
   INFILE  = args.input
-  OUTFILE = args.o
+  OUTFILE = INFILE.split('/')[-1].split('.')[0] + ".tx"
 
   inst_list = []
   with open(INFILE, "r") as f:
@@ -83,11 +89,34 @@ def main():
         negop = (op ^ 15) + 1
         op = negop
 
-      inst = "{:X}{:X}".format(op, opcode)
+      if args.f == "hex":
+        inst = "{:X}{:X}".format(op, opcode)
+      elif args.f == "bin":
+        inst = "{:4b}{:4b}".format(op, opcode).replace(" ", "0")
+      elif args.f == "dec":
+        tot = op + opcode
+        inst = "{:0^3d}".format(tot)
+      else:
+        raise Exception(f"[FILE: {__file__}]: Format [{args}] not supported.")
       inst_list.append(inst)
     
-    outf.write('\n'.join(inst_list))
+    nInsts = len(inst_list)
+    nEmpty = 16 - nInsts
+    while nEmpty > 0:
+      inst = ""
+      if args.f == "hex":
+        inst = "{:X}{:X}".format(0, 0)
+      elif args.f == "bin":
+        inst = "{:4b}{:4b}".format(0, 0).replace(" ", "0")
+      elif args.f == "dec":
+        inst = "{:0^3d}".format(0)
+      else:
+        raise Exception(f"[FILE: {__file__}]: Format [{args}] not supported.")
+      inst_list.append(inst)
+      nEmpty -= 1
 
+    outf.write('\n'.join(inst_list))
+    
     outf.close()
     f.close()
 
