@@ -12,7 +12,7 @@
 `define DATAPATH_W 8
 `define INST_W     8
 `define IMEM_SZ    16
-`define DMEM_SZ    13
+`define DMEM_SZ    8
 
 module cache #(
   parameter SIZE = 8,
@@ -45,7 +45,7 @@ module shift_reg #(
   parameter SIZE = 8
 )(
   input wire clk, rst,
-  input wire sdata_in, // Serial data
+  input wire sdata_in,  // Serial data
   input wire en_in   ,  // Enable write and shift
 
   output wire[SIZE-1:0] data_out //parallel data output
