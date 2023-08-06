@@ -34,7 +34,6 @@ assign ui_in[5:2] = addr_in;
 assign uio_in[1:0] = mode_out;
 assign uio_in[2]   = mosi_out;
 
-
 driver dut (.*);
 
 tt_um_tiny_processor tt_um_tiny_processor (
@@ -47,8 +46,6 @@ tt_um_tiny_processor tt_um_tiny_processor (
   .clk     (sclk_out), // clock
   .rst_n   (rst_n_out) // not reset
 );
-
-initial $readmemh("../../compiler/fact.tx", dut.mem);
 
 initial begin
   RESET();

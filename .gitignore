@@ -9,7 +9,8 @@ src/__pycache__/
 src/results.xml
 src/user_config.tcl
 src/log
-compiler/*.tx
+**/*.mem
+**/work/
 work/
 *.wlf
-transcript
+**transcript

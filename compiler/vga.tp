@@ -1,7 +1,0 @@
-main:
-  la x1
-  slt x15
-  sa x13
-  la x1
-  addi 1
-bnez main

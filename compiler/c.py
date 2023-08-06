@@ -27,12 +27,12 @@ insts = {
 def main():
   parser = argparse.ArgumentParser("Compiler for tiny processor")
   parser.add_argument("input", type=str, help="Input file")
-  parser.add_argument("-o", type=str, help="Output file", default="a.tex")
+  parser.add_argument("-o", type=str, help="Output file", default="a.mem")
   parser.add_argument("-f", type=str, help="Output format", default="hex")
   args = parser.parse_args()
 
   INFILE  = args.input
-  OUTFILE = INFILE.split('/')[-1].split('.')[0] + ".tx"
+  OUTFILE = INFILE.split('/')[-1].split('.')[0] + ".mem"
 
   inst_list = []
   with open(INFILE, "r") as f:
@@ -68,6 +68,8 @@ def main():
       raw_cmds.append(cmd)
 
     outf = open(OUTFILE, "w")
+
+    print(raw_cmds)
 
     """ Make numbers out of them """
     for cmd in raw_cmds:

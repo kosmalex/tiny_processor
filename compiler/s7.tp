@@ -1,0 +1,13 @@
+main:
+  la x12
+  bnez skip
+    la x1
+    bnez skip_init
+      li 1
+      sa x1
+    skip_init:
+    slli 1
+    sa x1
+  skip:
+  la x0
+bnez main

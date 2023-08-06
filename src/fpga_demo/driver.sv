@@ -12,11 +12,13 @@ module driver (
   output logic[1:0] mode_out
 );
 
-
-logic[7:0] mem[16];
-initial $readmemh("../../compiler/fact.mem", mem);
+logic[7:0] imem[16];
+logic[7:0] dmem[16];
+initial $readmemh("./s7.mem   ", imem);
+initial $readmemh("./dummy.mem", dmem);
 
 logic[12:0] data;
+logic[7:0]  src;
 
 logic eff_clk;
 always @(posedge clk) begin
@@ -44,7 +46,7 @@ logic      bytes_sent_en;
 logic      bytes_sent_rst;
 logic[3:0] bytes_sent;
 always_ff @(posedge clk) begin
-  if (rst | bytes_sent_rst ) begin
+  if ( rst | bytes_sent_rst ) begin
     bytes_sent <= 0;
   end else if (bytes_sent_en & eff_clk) begin
     bytes_sent <= bytes_sent + 1;
@@ -52,7 +54,7 @@ always_ff @(posedge clk) begin
 end
 
 // FSMD //
-typedef enum logic[2:0] { IDLE, SEND, DONE, STALL, FIN } state_t;
+typedef enum logic[2:0] { IDLE, SENDi, DONEi, SENDd, DONEd, STALL, FIN } state_t;
 state_t st;
 always @(posedge clk) begin
   if (rst) begin
@@ -60,15 +62,23 @@ always @(posedge clk) begin
   end else begin
     case (st)
       IDLE: begin
-        st <= drive ? SEND : IDLE;
+        st <= drive ? SENDi : IDLE;
       end
 
-      SEND: begin
-        st <= (bits_sent == 4'd12) ? DONE : SEND;
+      SENDi: begin
+        st <= (bits_sent == 4'd12) ? DONEi : SENDi;
       end
 
-      DONE: begin
-        st <= ( (bytes_sent == 4'd15) & done_in ) ? STALL : SEND;
+      DONEi: begin
+        st <= ( (bytes_sent == 4'd15) & done_in ) ? SENDd : SENDi;
+      end
+    
+      SENDd: begin
+        st <= (bits_sent == 4'd12) ? DONEd : SENDd;
+      end
+
+      DONEd: begin
+        st <= ( (bytes_sent == 4'd15) & done_in ) ? STALL : SENDd;
       end
 
       STALL: begin
@@ -84,19 +94,23 @@ always @(posedge clk) begin
   end
 end
 
-assign bits_sent_en  = (st == SEND);
-assign bytes_sent_en = (st == DONE);
+assign bits_sent_en  = ( st == SENDi ) || ( st == SENDd);
+assign bytes_sent_en = ( st == DONEi ) || ( st == DONEd);
 
-assign bytes_sent_rst = (&bytes_sent & (st == FIN));
+assign bytes_sent_rst = ( &bytes_sent & (st == FIN) );
 
-assign data = {1'b0, mem[bytes_sent], bytes_sent};
+assign src = ( st == SENDi ) ? imem[bytes_sent] : dmem[bytes_sent];
+
+assign data = {1'b0, src, bytes_sent};
 assign mosi_out = data[bits_sent];
 
 always_comb begin
   case (st)
     IDLE : mode_out = 2'b00;
-    SEND : mode_out = (bits_sent == 4'd12) ? 2'b00 : 2'b01;
-    DONE : mode_out = 2'b00;
+    SENDi: mode_out = (bits_sent == 4'd12) ? 2'b00 : 2'b01;
+    DONEi: mode_out = 2'b00;
+    SENDd: mode_out = (bits_sent == 4'd12) ? 2'b00 : 2'b10;
+    DONEd: mode_out = 2'b00;
     STALL: mode_out = 2'b11;
     FIN  : mode_out = done_in ? 2'b00 : 2'b11;
     
