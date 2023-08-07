@@ -17,6 +17,9 @@ logic [7:0] uio_oe;
 
 logic display_on;
 logic lsB;
+logic view_sel;
+logic anim_en;
+
 logic[3:0] addr_in;
 
 logic [6:0] segments = uo_out[6:0];
@@ -26,10 +29,12 @@ logic drive, done_in;
 logic sclk_out, rst_n_out, mosi_out;
 logic[1:0] mode_out;
 
-assign done_in = uio_out[3];
-assign ui_in[0] = display_on;
-assign ui_in[1] = lsB;
+assign done_in    = uio_out[3];
+assign ui_in[0]   = display_on;
+assign ui_in[1]   = lsB;
 assign ui_in[5:2] = addr_in;
+assign ui_in[6]   = view_sel;
+assign ui_in[7]   = anim_en;
 
 assign uio_in[1:0] = mode_out;
 assign uio_in[2]   = mosi_out;
@@ -59,6 +64,7 @@ end
 task RESET();
   rst <= 1'b1;
   drive <= 1'b0;
+  anim_en <= 1'b1;
   repeat(10) @(posedge clk);
   rst <= 1'b0;
   repeat( 5) @(posedge clk);

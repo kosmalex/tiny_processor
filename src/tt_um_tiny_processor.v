@@ -67,7 +67,8 @@ module cache #(
   input wire[SIZE_W-1:0]      addr_in,
   input wire                  en_in,
 
-  output wire[`DATAPATH_W-1:0] data_out
+  output wire[`DATAPATH_W-1:0] data_out,
+  output wire[`DATAPATH_W-1:0] anim_reg_out
 );
 
 reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
@@ -81,6 +82,7 @@ always @(posedge clk) begin
 end
 
 assign data_out = mem[addr_in];
+assign anim_reg_out = mem[1];
 endmodule
 
 module shift_reg #(
@@ -160,8 +162,8 @@ module control_logic (
 
   output wire[3:0] frame_cntr_dst_sel_out,
   output wire      frame_cntr_wen_out,
-  output wire      frame_cntr_rst,
-  output wire      frame_cntr_reg_sel,
+  output wire      frame_cntr_rst_out,
+  output wire      frame_cntr_reg_sel_out,
 
   output wire      display_on_out
 );
@@ -169,6 +171,8 @@ parameter IDLE  = 2'b00;
 parameter EXEC  = 2'b01;
 parameter IRECV = 2'b10;
 parameter DRECV = 2'b11;
+
+reg is_rid_12;
 
 wire master_wr;
 assign master_wr = (~csi | ~csd) & ~master2proc_en_in;
@@ -274,9 +278,13 @@ assign frame_cntr_dst_sel_out[3] = frame_cntr_reg_addr_in[3] & ~frame_cntr_reg_a
 
 assign frame_cntr_wen_out = temp;
 
-assign frame_cntr_rst = (is_exec & is_branch & ~is_taken) | ( is_idle & master2proc_en_in);
+assign frame_cntr_rst_out = (is_exec & is_branch & ~is_taken & is_rid_12) | ( is_idle & master2proc_en_in);
 
-assign frame_cntr_reg_sel = rs_in[3] & rs_in[2] & ~rs_in[1] & ~rs_in[0];
+assign frame_cntr_reg_sel_out = rs_in[3] & rs_in[2] & ~rs_in[1] & ~rs_in[0];
+
+always @(posedge clk) begin
+  is_rid_12 <= frame_cntr_reg_sel_out;
+end
 
 // When storing, don't write accumulator register
 assign acc_wen_out = ~dcache_wen_out & is_exec;
@@ -347,7 +355,12 @@ wire frame_cntr_reg_val;
 
 // 7-seg //
 wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
+wire      msb                  = ui_in[1];  
 wire[3:0] display_user_addr_in = ui_in[5:2];
+wire      view_sel             = ui_in[6];
+wire      anim_en              = ui_in[7];
+
+wire[`DATAPATH_W-1:0] anim_reg;
 
 // Control Signals //
 wire      ctrl_proc_done;
@@ -378,7 +391,7 @@ wire      ctrl2frame_cntr_wen;
 wire      ctrl2frame_cntr_rst;
 wire      ctrl_frame_cntr_reg_sel;
 
-// Signal renaming
+// SPI
 assign csi  = ~( ~uio_in[1] &  uio_in[0] );
 assign csd  = ~(  uio_in[1] & ~uio_in[0] );
 assign mosi = uio_in[2];
@@ -437,8 +450,8 @@ control_logic control_logic_0 (
 
   .frame_cntr_dst_sel_out (ctrl2frame_cntr_dst_sel),
   .frame_cntr_wen_out     (ctrl2frame_cntr_wen    ),
-  .frame_cntr_rst         (ctrl2frame_cntr_rst    ),
-  .frame_cntr_reg_sel     (ctrl_frame_cntr_reg_sel),
+  .frame_cntr_rst_out     (ctrl2frame_cntr_rst    ),
+  .frame_cntr_reg_sel_out (ctrl_frame_cntr_reg_sel),
 
   .display_on_out (ctrl_display_on)
 );
@@ -456,7 +469,8 @@ buffer (
   .data_out (buff_data)
 );
 
-assign icache_addr = ctrl_icache_addr_sel ? buff_data[3:0] : pc; //(ctrl_display_on ? display_user_addr_in : pc);
+assign icache_addr = ctrl_icache_addr_sel ? buff_data[3:0] :
+                                            (ctrl_display_on ? display_user_addr_in : pc);
 cache #(
   .SIZE(`IMEM_SZ)
 )
@@ -485,7 +499,9 @@ dcache(
   .addr_in  (dcache_addr),
   .en_in    (ctrl2dcache_wen),
 
-  .data_out (dcache_data)
+  .data_out (dcache_data),
+  
+  .anim_reg_out (anim_reg)
 );
 
 assign jmp = icache_data[7:4];
@@ -542,16 +558,12 @@ frame_cntr frame_cntr_0 (
 );
 
 // Seven segment interface //
-wire      msb;
 wire[3:0] value;
-// wire      view_sel;
-// wire[7:0] view_data;
+wire[7:0] view_data;
 
-// assign view_sel  = ui_in[6];
-// assign view_data = view_sel ? icache_data : dcache_data;
-
-assign msb   = ui_in[1];
-assign value = ctrl_display_on ? ( msb ? dcache_data[7:4] : dcache_data[3:0] ) : 4'h0;
+assign view_data = view_sel ? icache_data : dcache_data;
+assign value     = anim_en ? anim_reg :
+                             ( ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0 );
 
 seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
 

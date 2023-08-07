@@ -44,10 +44,11 @@ add wave -noupdate -expand -group FrameCntr /tb/tt_um_tiny_processor/frame_cntr_
 add wave -noupdate -expand -group FrameCntr /tb/tt_um_tiny_processor/frame_cntr_0/sig_out
 add wave -noupdate -expand -group FrameCntr /tb/tt_um_tiny_processor/frame_cntr_0/buff
 add wave -noupdate -expand -group FrameCntr /tb/tt_um_tiny_processor/frame_cntr_0/counter
+add wave -noupdate /tb/tt_um_tiny_processor/value
 add wave -noupdate -expand -group Ctrl /tb/tt_um_tiny_processor/ctrl_frame_cntr_reg_sel
 add wave -noupdate -expand -group Ctrl /tb/tt_um_tiny_processor/ctrl_src_sel
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {17005000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8713507 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 214
 configure wave -valuecolwidth 100
@@ -63,4 +64,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {14940746 ps} {19591066 ps}
+WaveRestoreZoom {7727196 ps} {12377516 ps}
