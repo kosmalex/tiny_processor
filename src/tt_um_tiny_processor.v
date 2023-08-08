@@ -282,6 +282,12 @@ assign frame_cntr_rst_out = (is_exec & is_branch & ~is_taken & is_rid_12) | ( is
 
 assign frame_cntr_reg_sel_out = rs_in[3] & rs_in[2] & ~rs_in[1] & ~rs_in[0];
 
+/**
+  If a `la x12` precedes a `bnez {label}` instruction, it means
+  that the frame counter of the seven segment should be reseted.
+  `is_rid_12` signal is used to indentify the above order of
+  instructions.
+ */
 always @(posedge clk) begin
   is_rid_12 <= frame_cntr_reg_sel_out;
 end
@@ -406,7 +412,7 @@ assign uio_out[7:4] = 1'b0;
 assign uio_oe[2:0] = 3'b0; // en, csi, csd, mosi
 
 // Outputs
-assign uio_oe[3]   = 3'h7; // done(uio_oe[3])
+assign uio_oe[3]   = 1'b1; // done(uio_oe[3])
 assign uio_oe[7:4] = 4'hF; // unsused
 
 assign opcode = icache_data[3:0]; 

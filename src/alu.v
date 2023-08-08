@@ -135,7 +135,7 @@ always @(*) begin
     3'b011: alu_res = src_in;
     
     3'b100: alu_res = acc_in | src_in;
-    3'b101: alu_res = acc_in < src_in;
+    3'b101: alu_res = acc_in ^ src_in;
     3'b110: alu_res = acc_in & src_in;
     3'b111: alu_res = acc_in; // this is for bnez
     
