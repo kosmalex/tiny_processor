@@ -101,21 +101,6 @@ adder_8bit adder_8bit_0 (
   .S_out (add_res)
 );
 
-// LOGIC-AND //
-wire[15:0] imul_res;
-wire[7:0]  mul_res;
-mul #(
-  .N_BIT    (8 ),
-  .RES_SIZE (16)
-) mul8bit (
-  .A        (acc_in),
-  .B        (src_in),
-  .mul_type (op_sel_in),
-
-  .product  (imul_res)
-);
-assign mul_res = mul_seg_sel ? imul_res[15:8] : imul_res[7:0];
-
 // SHIFTER //
 wire[7:0] shift_res;
 barrel_shift barrel_shift_0 (
@@ -130,14 +115,14 @@ reg[7:0] alu_res;
 always @(*) begin
   case (unit_sel_in)
     3'b000: alu_res = add_res;
-    3'b001: alu_res = mul_res;
+    3'b001: alu_res = src_in;           // SPI
     3'b010: alu_res = shift_res;
     3'b011: alu_res = src_in;
     
     3'b100: alu_res = acc_in | src_in;
     3'b101: alu_res = acc_in ^ src_in;
     3'b110: alu_res = acc_in & src_in;
-    3'b111: alu_res = acc_in; // this is for bnez
+    3'b111: alu_res = acc_in;           // BNEZ
     
     default: alu_res = acc_in;
   endcase

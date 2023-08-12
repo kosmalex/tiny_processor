@@ -26,10 +26,12 @@ logic [6:0] segments = uo_out[6:0];
 logic       lsb      = uo_out[7];
 
 logic drive, done_in;
-logic sclk_out, rst_n_out, mosi_out;
+logic sclk_out, mosi_out;
 logic[1:0] mode_out;
 
-assign done_in    = uio_out[3];
+logic rst_n;
+
+assign done_in    = uio_out[2];
 assign ui_in[0]   = display_on;
 assign ui_in[1]   = lsB;
 assign ui_in[5:2] = addr_in;
@@ -37,7 +39,7 @@ assign ui_in[6]   = view_sel;
 assign ui_in[7]   = anim_en;
 
 assign uio_in[1:0] = mode_out;
-assign uio_in[2]   = mosi_out;
+assign uio_in[4]   = mosi_out;
 
 driver dut (.*);
 
@@ -49,7 +51,7 @@ tt_um_tiny_processor tt_um_tiny_processor (
   .uio_oe  (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
   .ena     (1'b1),     // enable - goes high when design is selected
   .clk     (sclk_out), // clock
-  .rst_n   (rst_n_out) // not reset
+  .rst_n   (rst_n) // not reset
 );
 
 initial begin
@@ -62,12 +64,14 @@ initial begin
 end
 
 task RESET();
-  rst <= 1'b1;
-  drive <= 1'b0;
+  rst     <= 1'b1;
+  rst_n   <= 1'b0;
+  drive   <= 1'b0;
   anim_en <= 1'b1;
   repeat(10) @(posedge clk);
   rst <= 1'b0;
-  repeat( 5) @(posedge clk);
+  repeat(10) @(posedge clk);
+  rst_n <= 1'b1;
 endtask
 
 endmodule
