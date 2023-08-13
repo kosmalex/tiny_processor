@@ -95,8 +95,9 @@ module alu (
 wire[7:0] add_res;
 adder_8bit adder_8bit_0 (
   .A_in (acc_in),
-  .B_in (op_sel_in ? ~src_in : src_in),
-  .C_in (op_sel_in),
+  // .B_in (op_sel_in ? ~src_in : src_in),
+  .B_in (src_in),
+  .C_in (1'b0  ),
   
   .S_out (add_res)
 );

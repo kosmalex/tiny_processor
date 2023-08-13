@@ -136,7 +136,8 @@ shift_reg #(
 assign data_out = buffer[BUFFER_SIZE-1:ADDR_W];
 assign addr_out = buffer[ADDR_W-1:0];
 
-assign is_idle = ( st == IDLE );
+assign 
+is_idle = ( st == IDLE );
 assign is_busy = ( st == BUSY );
 
 assign all_bytes_recvd = (nbytes == 1'b1); // nbytes == 0

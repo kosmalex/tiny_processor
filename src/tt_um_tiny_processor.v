@@ -70,7 +70,7 @@ always @(posedge clk) begin
 end
 
 assign data_out     = mem[addr_in];
-assign anim_reg_out = mem[10];
+assign anim_reg_out = mem[8];
 endmodule
 
 module control_logic (
@@ -127,7 +127,7 @@ parameter EXEC  = 2'b01;
 parameter IRECV = 2'b10;
 parameter DRECV = 2'b11;
 
-reg is_rid_12;
+reg is_rid_15;
 
 wire iwrite;
 wire dwrite;
@@ -176,7 +176,9 @@ wire is_branch   = &opcode_in;
 wire is_not_zero = |alu_res_in;
 wire is_taken    = is_branch & is_not_zero;
 
-assign pc_sel_out = is_taken;
+wire is_non_cond_branch = ~opcode_in[3] & opcode_in[2] & ~opcode_in[1] & ~opcode_in[0];
+
+assign pc_sel_out = is_taken | is_non_cond_branch;
 
 /** If the last instruction is not a branch or is a not taken branch -->
     the programm has terminated --> freeze `pc`.
@@ -192,7 +194,7 @@ assign pc_rst_out = ~is_exec;
   src_sel_out: Operand select -> RS or SEXT immediate.
  */
 assign op_sel_out  = opcode_in[2];
-assign src_sel_out = opcode_in[3] & ~opcode_in[2] & ~spi_reg_sel_out;
+assign src_sel_out = opcode_in[3] & ~opcode_in[2];
 
 wire unit_sel_1;
 assign unit_sel_1 = &opcode_in[3:2]; /* Divides units into 2 categories:
@@ -212,10 +214,10 @@ assign spi_oe_out = spi_if_send_out | is_idle;
 
 // Send or read
 assign spi_if_send_out = is_spi_io;
-assign spi_if_read_out = ( (iwrite | dwrite) & ~master2proc_en_in ) | ( opcode_in[2] & is_spi_io & ); // <- second half is problematic
+assign spi_if_read_out = ( (iwrite | dwrite) & ~master2proc_en_in ) | ( opcode_in[2] & is_spi_io & is_exec ); // <- second half is problematic
 
 // Select the spi register as a source register
-assign spi_reg_sel_out = ~rs_in[3] & rs_in[2] & ~rs_in[3] & rs_in[2];
+assign spi_reg_sel_out = rs_in[3] & ~rs_in[2] & rs_in[1] & ~rs_in[0];
 
 assign icache_wen_out      = ( st == IRECV ) & csi;
 assign icache_addr_sel_out = icache_wen_out;
@@ -243,7 +245,7 @@ assign frame_cntr_dst_sel_out[3] = frame_cntr_reg_addr_in[3] & frame_cntr_reg_ad
 
 assign frame_cntr_wen_out = temp;
 
-assign frame_cntr_rst_out = (is_exec & is_branch & ~is_taken & is_rid_12) | ( is_idle & master2proc_en_in);
+assign frame_cntr_rst_out = (is_exec & is_branch & ~is_taken & is_rid_15) | ( is_idle & master2proc_en_in);
 
 assign frame_cntr_reg_sel_out = rs_in[3] & rs_in[2] & rs_in[1] & rs_in[0];
 
@@ -254,11 +256,11 @@ assign frame_cntr_reg_sel_out = rs_in[3] & rs_in[2] & rs_in[1] & rs_in[0];
   instructions.
  */
 always @(posedge clk) begin
-  is_rid_12 <= frame_cntr_reg_sel_out;
+  is_rid_15 <= frame_cntr_reg_sel_out;
 end
 
 // When storing or interacting with spi interface, don't write accumulator register
-assign acc_wen_out = ~dcache_wen_out & is_exec & ~is_spi_io;
+assign acc_wen_out = ~dcache_wen_out & is_exec & ~is_spi_io & ~(is_branch | is_non_cond_branch);
 
 // Seven segment
 assign display_on_out = is_idle & display_in;
@@ -555,9 +557,13 @@ wire[3:0] value;
 wire[7:0] view_data;
 
 assign view_data = view_sel ? icache_data : dcache_data;
-assign value     = anim_en ? anim_reg :
-                             ( ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0 );
+assign value     = ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0;
 
-seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
+seven_seg seven_seg_0 (
+  .value_in     ({msb, value}),
+  .bit_array_in (anim_reg),
+  .anim_en_in   (anim_en),
+  .out          (uo_out)
+);
 
 endmodule

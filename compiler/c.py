@@ -3,12 +3,12 @@ import re
 
 insts = {
   "add"  :0x0,
-  "sub"  :0x4,
+  "j"    :0x4,
   "addi" :0x8,
 
-  "mulu" :0x1,
-  "mul"  :0x5,
-  "mulh"  :0x9,
+  "write" :0x1,
+  "read"  :0x5,
+  "writei":0x9,
 
   "sll"  :0x2,
   "slli" :0xA,
@@ -19,7 +19,7 @@ insts = {
   "li"   :0xB,
   
   "or"  :0xC,
-  "slt" :0xD,
+  "xor" :0xD,
   "and" :0xE,
   "bnez":0xF
 }
