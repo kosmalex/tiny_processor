@@ -258,9 +258,9 @@ assign frame_cntr_rst_out = (is_exec & is_branch & ~is_taken & is_rid_15) | ( is
 assign frame_cntr_reg_sel_out = rs_in[3] & rs_in[2] & rs_in[1] & rs_in[0];
 
 /**
-  If a `la x12` precedes a `bnez {label}` instruction, it means
+  If a `la x15` precedes a `bnez {label}` instruction, it means
   that the frame counter of the seven segment should be reseted.
-  `is_rid_12` signal is used to indentify the above order of
+  `is_rid_15` signal is used to indentify the above order of
   instructions.
  */
 always @(posedge clk) begin
@@ -315,9 +315,6 @@ wire[3:0] dcache_addr;
 
 wire[`DATAPATH_W-1:0] dcache_data_in;
 
-// Shift register (8bit data and 4bit address --> tot: 12bits) //
-wire[(`DATAPATH_W + 4)-1:0] buff_data;
-
 // SPI-interface //
 wire csd, csi;   // Chip select signals for data and instruction caches
 wire miso, mosi; // Master In Slave Out and Master Out Slave In
@@ -355,7 +352,6 @@ wire      ctrl_stall;
 wire[2:0] ctrl2alu_unit_sel;
 wire      ctrl2alu_op_sel;
 wire      ctrl_src_sel;
-wire      ctrl2alu_mul_seg_sel;
 
 wire      ctrl2dcache_wen;
 wire      ctrl2icache_wen;
@@ -556,14 +552,13 @@ end
 
 // Animation counter //
 frame_cntr frame_cntr_0 (
-  .clk     ( clk                     ),
-  .rst     ( rst                     ),
-  .data_in ( spi_if_data             ),
-  .sel_in  ( ctrl2frame_cntr_dst_sel ),
-  .en_in   ( ctrl2frame_cntr_wen     ),
+  .clk     (clk                    ),
+  .rst     (rst                    ),
+  .data_in (spi_if_data            ),
+  .sel_in  (ctrl2frame_cntr_dst_sel),
+  .en_in   (ctrl2frame_cntr_wen    ),
   
   .cntr_rst_in (ctrl2frame_cntr_rst),
-
   .sig_out     (frame_cntr_reg_val)
 );
 
@@ -571,14 +566,14 @@ frame_cntr frame_cntr_0 (
 wire[3:0] value;
 wire[7:0] view_data;
 
-assign view_data = view_sel ? icache_data : dcache_data;
+assign view_data = view_sel        ? icache_data : dcache_data;
 assign value     = ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0;
 
 seven_seg seven_seg_0 (
   .value_in     ({msb, value}),
-  .bit_array_in (anim_reg),
-  .anim_en_in   (anim_en),
-  .out          (uo_out)
+  .bit_array_in (anim_reg    ),
+  .anim_en_in   (anim_en     ),
+  .out          (uo_out      )
 );
 
 endmodule

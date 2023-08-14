@@ -1,3 +1,7 @@
+/**
+  This is the driver module; It loads the instruction and register file (dmem)
+  of the tiny processor module and enables it to begin execution.
+*/
 module driver (
   input logic clk, rst,
 
@@ -15,6 +19,7 @@ module driver (
 
 logic[7:0] imem[16];
 logic[7:0] dmem[16];
+
 initial $readmemh("./oled.mem ", imem);
 initial $readmemh("./dummy.mem", dmem);
 

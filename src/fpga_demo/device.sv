@@ -1,3 +1,7 @@
+/**
+  A pseudo-device that comunicates through spi protocol
+*/
+
 module device (
   input logic clk, rst,
 

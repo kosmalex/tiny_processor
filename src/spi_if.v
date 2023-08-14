@@ -1,5 +1,10 @@
 `include "defs.vh"
 
+/**
+  The logic high of the design is 1.8 Volts, so
+  external amplification may be required.
+*/
+
 module shift_reg #(
   parameter SIZE = 8,
   parameter DATA_W = 8
@@ -26,9 +31,7 @@ generate
         if (rst) begin
           register[SIZE - 1] <= 0;
         end else begin
-          register[SIZE - 1] <= mode_in ? data_in[DATA_W - 1] 
-                                     : ( en_in ? sdata_in : 1'b0 );
-          // register[SIZE - 1] <= ( en_in ? sdata_in : 1'b0 );
+          register[SIZE - 1] <= mode_in ? data_in[DATA_W - 1] : ( en_in ? sdata_in : 1'b0 );
         end
       end
     end else begin
@@ -89,8 +92,10 @@ wire all_bytes_recvd;
 
 wire sr_en, sr_mode;
 
-reg phase_shift;
+wire incoming_req;
+assign incoming_req = ( send_in | read_in );
 
+reg phase_shift;
 reg st;
 
 // FSM
@@ -99,13 +104,8 @@ always @(posedge clk) begin
     st <= IDLE;
   end else begin
     case (st)
-      IDLE: begin
-        st <= (send_in | read_in) ? BUSY : IDLE;
-      end
-
-      BUSY: begin
-        st <= all_bytes_recvd ? IDLE : BUSY;
-      end
+      IDLE: st <= incoming_req    ? BUSY : IDLE;
+      BUSY: st <= all_bytes_recvd ? IDLE : BUSY;
 
       default: st <= IDLE;
     endcase
@@ -114,7 +114,7 @@ end
 
 // Bytes to receive/send counter
 always @(posedge clk) begin
-  if (rst | (is_idle & ( read_in | send_in ) ) ) begin
+  if (rst | ( is_idle & incoming_req ) ) begin
     nbytes <= driver_io_in ? BUFFER_SIZE : 4'h8;
   end else if (is_busy) begin
     nbytes <= nbytes - 1;
@@ -136,6 +136,7 @@ shift_reg #(
   .data_out (buffer)
 );
 
+// Helps keep data stable on the positive edge of sclk
 always @(negedge clk) begin
   phase_shift <= buffer[ADDR_W];
 end
@@ -146,7 +147,7 @@ assign addr_out = buffer[ADDR_W-1:0];
 assign is_idle = ( st == IDLE );
 assign is_busy = ( st == BUSY );
 
-assign all_bytes_recvd = (nbytes == 1'b1); // nbytes == 0
+assign all_bytes_recvd = (nbytes == 1'b1);
 
 assign ready_out = is_busy & all_bytes_recvd;
 
