@@ -25,7 +25,7 @@ generate
       always @(posedge clk) begin
         if (rst) begin
           register[SIZE - 1] <= 0;
-        end else if (en_shft_in) begin
+        end else begin
           register[SIZE - 1] <= mode_in ? data_in[DATA_W - 1] 
                                      : ( en_in ? sdata_in : 1'b0 );
           // register[SIZE - 1] <= ( en_in ? sdata_in : 1'b0 );
@@ -35,9 +35,10 @@ generate
       always @(posedge clk) begin
         if (rst) begin
           register[SIZE - i - 1] <= 0;
-        end else if (en_shft_in) begin
-          register[SIZE - i - 1] <= mode_in ? ( ( i < DATA_W ) ? data_in[DATA_W - i - 1] : 1'b0 )
-                                         : register[SIZE - i];
+        end else if (mode_in) begin
+          register[SIZE - i - 1] <= (i < DATA_W) ? data_in[DATA_W - i - 1] : 1'b0;
+        end else if (en_shft_in & ~mode_in) begin
+          register[SIZE - i - 1] <= register[SIZE - i];
         end
       end
     end
@@ -61,7 +62,7 @@ module spi_if #(
   input wire clk, rst,
 
   // DRIVER EXT //
-  input  wire             driverIO_in,
+  input  wire             driver_io_in, 
   output wire[ADDR_W-1:0] addr_out,
 
   // READ //
@@ -88,6 +89,8 @@ wire all_bytes_recvd;
 
 wire sr_en, sr_mode;
 
+reg phase_shift;
+
 reg st;
 
 // FSM
@@ -112,7 +115,7 @@ end
 // Bytes to receive/send counter
 always @(posedge clk) begin
   if (rst | (is_idle & ( read_in | send_in ) ) ) begin
-    nbytes <= BUFFER_SIZE;
+    nbytes <= driver_io_in ? BUFFER_SIZE : 4'h8;
   end else if (is_busy) begin
     nbytes <= nbytes - 1;
   end
@@ -126,18 +129,21 @@ shift_reg #(
 
   .sdata_in   (miso_in),
   .en_in      (sr_en),
-  .en_shft_in (sr_en),
+  .en_shft_in (is_busy),
   .mode_in    (sr_mode),
 
   .data_in  (data_in),
   .data_out (buffer)
 );
 
+always @(negedge clk) begin
+  phase_shift <= buffer[ADDR_W];
+end
+
 assign data_out = buffer[BUFFER_SIZE-1:ADDR_W];
 assign addr_out = buffer[ADDR_W-1:0];
 
-assign 
-is_idle = ( st == IDLE );
+assign is_idle = ( st == IDLE );
 assign is_busy = ( st == BUSY );
 
 assign all_bytes_recvd = (nbytes == 1'b1); // nbytes == 0
@@ -145,8 +151,10 @@ assign all_bytes_recvd = (nbytes == 1'b1); // nbytes == 0
 assign ready_out = is_busy & all_bytes_recvd;
 
 assign sclk_out = clk;
-assign cs       = ~is_busy; // reversed select
+assign cs_out   = ~(is_busy & ~driver_io_in); // reversed select
 
-assign sr_en   = (send_in & is_idle) | (read_in & is_busy);
-assign sr_mode = send_in;
+assign sr_en   = read_in & is_busy;
+assign sr_mode = send_in & is_idle;
+
+assign mosi_out = phase_shift;
 endmodule

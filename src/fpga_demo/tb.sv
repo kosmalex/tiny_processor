@@ -15,6 +15,7 @@ logic [7:0] uio_out;
 logic [7:0] uio_in;
 logic [7:0] uio_oe;
 
+logic miso, mosi, cs;
 logic display_on;
 logic lsB;
 logic view_sel;
@@ -25,6 +26,8 @@ logic[3:0] addr_in;
 logic [6:0] segments = uo_out[6:0];
 logic       lsb      = uo_out[7];
 
+logic sel_dev;
+logic done_drive;
 logic drive, done_in;
 logic sclk_out, mosi_out;
 logic[1:0] mode_out;
@@ -39,9 +42,13 @@ assign ui_in[6]   = view_sel;
 assign ui_in[7]   = anim_en;
 
 assign uio_in[1:0] = mode_out;
-assign uio_in[4]   = mosi_out;
+assign uio_in[4]   = sel_dev ? miso : mosi_out;
+assign mosi = uio_out[4];
+assign cs   = uio_out[5];
 
-driver dut (.*);
+driver dut (.*, .done_out(done_drive));
+
+device dev (.clk(sclk_out), .rst(~rst_n), .*);
 
 tt_um_tiny_processor tt_um_tiny_processor (
   .ui_in   (ui_in),    // Dedicated inputs
@@ -58,7 +65,11 @@ initial begin
   RESET();
 
   drive <= 1'b1;
-  repeat (100) @(posedge clk);
+  @(posedge clk);
+
+  @(posedge done_drive) begin
+    sel_dev <= 1'b1;
+  end
 
   $stop;
 end
@@ -67,7 +78,11 @@ task RESET();
   rst     <= 1'b1;
   rst_n   <= 1'b0;
   drive   <= 1'b0;
+  sel_dev <= 1'b0;
   anim_en <= 1'b1;
+  display_on <= 1'b0;
+  addr_in <= 4'b0;
+  view_sel <= 1'b0;
   repeat(10) @(posedge clk);
   rst <= 1'b0;
   repeat(10) @(posedge clk);

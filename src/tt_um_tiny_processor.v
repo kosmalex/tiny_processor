@@ -69,8 +69,9 @@ always @(posedge clk) begin
   if (en_in) mem[addr_in] <= data_in;
 end
 
-assign data_out     = mem[addr_in];
-assign anim_reg_out = mem[8];
+wire valid_addr = ( addr_in < SIZE );
+assign data_out     = ~valid_addr ? 7'h0 : mem[addr_in];
+assign anim_reg_out = mem[9];
 endmodule
 
 module control_logic (
@@ -95,11 +96,14 @@ module control_logic (
   output wire      pc_sel_out,
   output wire      pc_en_out,
   output wire      pc_rst_out,
+  
+  output wire      stall_out,
 
   output wire      spi_if_read_out,
   output wire      spi_if_send_out,
   output wire      spi_reg_sel_out,
   output wire      spi_oe_out,
+  output wire      spi_if_driver_io_out,
 
   output wire[2:0] unit_sel_out,
   output wire      op_sel_out,
@@ -176,15 +180,15 @@ wire is_branch   = &opcode_in;
 wire is_not_zero = |alu_res_in;
 wire is_taken    = is_branch & is_not_zero;
 
-wire is_non_cond_branch = ~opcode_in[3] & opcode_in[2] & ~opcode_in[1] & ~opcode_in[0];
+wire is_jump = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0];
 
-assign pc_sel_out = is_taken | is_non_cond_branch;
+assign pc_sel_out = is_taken | is_jump;
 
 /** If the last instruction is not a branch or is a not taken branch -->
     the programm has terminated --> freeze `pc`.
  */
 wire pc_last_val = &pc_in;
-assign pc_en_out = ~( pc_last_val & (~is_branch | ~is_taken) );
+assign pc_en_out = ~( pc_last_val & (~is_branch | ~is_taken | ~is_jump) );
 
 assign pc_rst_out = ~is_exec;
 
@@ -194,7 +198,7 @@ assign pc_rst_out = ~is_exec;
   src_sel_out: Operand select -> RS or SEXT immediate.
  */
 assign op_sel_out  = opcode_in[2];
-assign src_sel_out = opcode_in[3] & ~opcode_in[2];
+assign src_sel_out = opcode_in[3] & ~opcode_in[2] & ~is_jump;
 
 wire unit_sel_1;
 assign unit_sel_1 = &opcode_in[3:2]; /* Divides units into 2 categories:
@@ -209,15 +213,19 @@ assign unit_sel_out = {unit_sel_1, unit_sel_0};
 wire is_spi_io;
 assign is_spi_io = ~unit_sel_1 & ~opcode_in[1] & opcode_in[0];
 
+assign stall_out = is_spi_io & ~spi_if_ready_in & is_exec;
+
 // Switch between miso/mosi
 assign spi_oe_out = spi_if_send_out | is_idle;
 
 // Send or read
-assign spi_if_send_out = is_spi_io;
+assign spi_if_send_out = ~opcode_in[2] & is_spi_io & is_exec;
 assign spi_if_read_out = ( (iwrite | dwrite) & ~master2proc_en_in ) | ( opcode_in[2] & is_spi_io & is_exec ); // <- second half is problematic
 
 // Select the spi register as a source register
 assign spi_reg_sel_out = rs_in[3] & ~rs_in[2] & rs_in[1] & ~rs_in[0];
+
+assign spi_if_driver_io_out = ~is_exec;
 
 assign icache_wen_out      = ( st == IRECV ) & csi;
 assign icache_addr_sel_out = icache_wen_out;
@@ -229,8 +237,8 @@ assign temp = ( st == DRECV ) & csd;
 wire is_rf_wr;
 assign is_rf_wr = ( ~opcode_in[3] & &opcode_in[2:0] ); 
 
-assign dcache_wen_out = temp | ( is_rf_wr & is_exec );
-assign dcache_addr_sel_out = temp;
+assign dcache_wen_out         = temp | ( is_rf_wr & is_exec );
+assign dcache_addr_sel_out    = temp;
 assign dcache_data_in_sel_out = dcache_addr_sel_out;
 
 // Frame counter
@@ -260,7 +268,7 @@ always @(posedge clk) begin
 end
 
 // When storing or interacting with spi interface, don't write accumulator register
-assign acc_wen_out = ~dcache_wen_out & is_exec & ~is_spi_io & ~(is_branch | is_non_cond_branch);
+assign acc_wen_out = ~dcache_wen_out & is_exec & ~is_spi_io & ~(is_branch | is_jump);
 
 // Seven segment
 assign display_on_out = is_idle & display_in;
@@ -342,6 +350,8 @@ wire      ctrl_pc_sel;
 wire      ctrl_pc_en;
 wire      ctrl_pc_rst;
 
+wire      ctrl_stall;
+
 wire[2:0] ctrl2alu_unit_sel;
 wire      ctrl2alu_op_sel;
 wire      ctrl_src_sel;
@@ -368,6 +378,7 @@ wire      ctrl2spi_if_read;
 wire      ctrl2spi_if_send;
 wire      ctrl_spi_reg_sel;
 wire      ctrl_spi_oe;
+wire      ctrl2spi_if_driver_io;
 
 // SPI
 assign csi  = ~( ~uio_in[1] &  uio_in[0] );
@@ -418,10 +429,13 @@ control_logic control_logic_0 (
   .pc_en_out  (ctrl_pc_en ),
   .pc_rst_out (ctrl_pc_rst),
 
-  .spi_if_read_out (ctrl2spi_if_read),
-  .spi_if_send_out (ctrl2spi_if_send),
-  .spi_reg_sel_out (ctrl_spi_reg_sel),
-  .spi_oe_out      (ctrl_spi_oe),
+  .stall_out (ctrl_stall),
+
+  .spi_if_read_out      (ctrl2spi_if_read),
+  .spi_if_send_out      (ctrl2spi_if_send),
+  .spi_reg_sel_out      (ctrl_spi_reg_sel),
+  .spi_oe_out           (ctrl_spi_oe),
+  .spi_if_driver_io_out (ctrl2spi_if_driver_io),
 
   .unit_sel_out (ctrl2alu_unit_sel   ),
   .op_sel_out   (ctrl2alu_op_sel     ),
@@ -448,13 +462,14 @@ spi_if spi_if_0 (
   .clk (clk),
   .rst (rst),
 
-  .addr_out  (spi_if_addr),
+  .driver_io_in (ctrl2spi_if_driver_io),
+  .addr_out     (spi_if_addr),
 
   .read_in   (ctrl2spi_if_read ),
   .ready_out (spi_if2ctrl_ready),
   .data_out  (spi_if_data      ),
   
-  .send_in   (1'b0),
+  .send_in   (ctrl2spi_if_send),
   .data_in   (alu_res         ),
   
   .sclk_out  (uio_out[3]),
@@ -507,7 +522,7 @@ assign pc_next = ctrl_pc_sel ? jmp : pc+1;
 always @(posedge clk) begin
   if ( rst | ctrl_pc_rst ) begin
     pc <= 0;
-  end else if (ctrl_pc_en) begin
+  end else if (ctrl_pc_en & ~ctrl_stall) begin
     pc <= pc_next;
   end
 end

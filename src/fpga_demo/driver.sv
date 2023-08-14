@@ -8,12 +8,14 @@ module driver (
   output logic sclk_out,
   output logic mosi_out,
 
+  output logic done_out,
+
   output logic[1:0] mode_out
 );
 
 logic[7:0] imem[16];
 logic[7:0] dmem[16];
-initial $readmemh("./s7.mem   ", imem);
+initial $readmemh("./oled.mem ", imem);
 initial $readmemh("./dummy.mem", dmem);
 
 logic[12:0] data;
@@ -125,5 +127,7 @@ always_comb begin
     default: mode_out = 2'b00; 
   endcase
 end
+
+assign done_out = (st == FIN);
 
 endmodule
