@@ -534,7 +534,6 @@ assign src = ctrl_src_sel ? sext_imm :
 alu alu_0 (
   .unit_sel_in (ctrl2alu_unit_sel),
   .op_sel_in   (ctrl2alu_op_sel),
-  .mul_seg_sel (ctrl2alu_mul_seg_sel),
 
   .acc_in      (acc),
   .src_in      (src),

@@ -84,7 +84,6 @@ endmodule
 module alu (
   input wire[2:0] unit_sel_in,
   input wire      op_sel_in,
-  input wire      mul_seg_sel,
 
   input wire[7:0] acc_in, src_in,
   
