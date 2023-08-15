@@ -9,5 +9,5 @@
 
 `define DATAPATH_W 8
 `define INST_W     8
-`define IMEM_SZ    16
+`define IMEM_SZ    14
 `define DMEM_SZ    9
