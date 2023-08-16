@@ -41,23 +41,20 @@ documentation:
 
 # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
   how_to_test:  |
-    #Setup
-      1. Write and compile a simple programm using the provided compiler (more on that in the README.md, link below) to generate an .mem file.
-      This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
+      #Setup
+      1. Write and compile a simple programm using the provided compiler (more on that in the README.md, link below) to generate an .mem file. This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
       2. Open Xilinx' Vivado
       3. Create a project containing; seven_seg.v, spi_if.v, alu.v, tt_um_tiny_processor.v, driver.sv, demo_top.sv, tp.xdc and all needed .mem files.
       4. Connect the processor to an Xilinx FPGA.
       5. Programm the FPGA using the demo_top.sv as the top module of the design.
 
-    #Interaction
+      #Interaction
       - Turn on the switch connected to the **drive** signal of the driver module.
       - Use the first switch to freeze and unfreeze the 7-seg display.
       - Use the second switch to select which 4-bit values (msbs or lsbs) of a Byte, you wish to see on the 7-seg display.
       - The switches 2-5 represent the 4-bit address to index the 14 available for display registers.
-      - The sixth switch changes the source between instruction and data memory. If you wish to view instruction data Bytes
-      turn the switch on.
-      - The last switch enables the animation of the 7-seg display. If it is turned on, the display's source is the animation
-      register. Otherwise it is displays the data stored in one of the processor's memories.
+      - The sixth switch changes the source between instruction and data memory. If you wish to view instruction data Bytes turn the switch on.
+      - The last switch enables the animation of the 7-seg display. If it is turned on, the display's source is the animation register. Otherwise it is displays the data stored in one of the processor's memories.
 
 # A description of what the inputs do (e.g. red button, SPI CLK, SPI MOSI, etc).
   inputs:               
