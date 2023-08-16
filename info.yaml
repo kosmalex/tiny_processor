@@ -79,14 +79,14 @@ documentation:
     - dot
 # A description of what the bidirectional I/O pins do (e.g. I2C SDA, I2C SCL, etc)
   bidirectional:
-    - <pre>Driver_ctrl[0] (I)</pre>
-    - <pre>Driver_ctrl[1] (I)</pre>
-    - <pre>Done executing (O)</pre>
-    - <pre>Serial clock   (O)</pre>
-    - <pre>MISO           (I)</pre>
-    - <pre>MOSI           (O)</pre>
-    - <pre>Chip select    (O)</pre>
-    - <pre>Not used       (O)</pre>
+    - Driver_ctrl[0] (I)
+    - Driver_ctrl[1] (I)
+    - Done executing (O)
+    - Serial clock   (O)
+    - MISO           (I)
+    - MOSI           (O)
+    - Chip select    (O)
+    - Not used       (O)
 
 # The following fields are optional
   tag:          "processor, spi, fpga"                        # comma separated list of tags: test, encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,
