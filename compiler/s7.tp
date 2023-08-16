@@ -1,6 +1,3 @@
-la x1
-slli 4
-sa x1
 main:
   la x15
   bnez skip

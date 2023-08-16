@@ -3,49 +3,33 @@
 `include "defs.vh"
 
 module frame_cntr (
-  input wire      clk, rst,
-  input wire[7:0] data_in,
-  input wire[3:0] sel_in,
-  input wire      en_in,
-  input wire      cntr_rst_in,
+  input wire       clk, rst,
+  input wire[31:0] data_in,
+  input wire       cntr_rst_in,
 
   output wire     sig_out
 );
 
-reg[31:0] buff;
 reg[31:0] counter;
 
 always @(posedge clk) begin
-  if ( en_in ) begin
-    if ( sel_in[0] ) begin
-      buff[7:0] <= data_in;
-    end else if ( sel_in[1] ) begin
-      buff[15:8] <= data_in;
-    end else if ( sel_in[2] ) begin
-      buff[23:16] <= data_in;
-    end else if ( sel_in[3] ) begin
-      buff[31:24] <= data_in;
-    end
-  end else if ( cntr_rst_in ) begin
-    counter <= buff;
+  if (rst) begin
+    counter <= 0;
   end else begin
-    if ( counter > 0 ) counter <= counter - 1;
+    if ( cntr_rst_in ) begin
+      counter <= data_in;
+    end else begin
+      counter <= ( counter > 0 ) ? counter - 1 : counter;
+    end
   end
 end
 
-// reg sig;
-// always @(posedge clk) begin
-//   sig <= |counter;
-// end
-
-// assign sig_out = sig;
-
 assign sig_out = |counter;
-
 endmodule
 
 module cache #(
   parameter SIZE = 8,
+  parameter MODE = 1,
 
   localparam SIZE_W = `CLOG2(SIZE)
 )(
@@ -56,7 +40,8 @@ module cache #(
   input wire                  en_in,
 
   output wire[`DATAPATH_W-1:0] data_out,
-  output wire[`DATAPATH_W-1:0] anim_reg_out
+  output wire[`DATAPATH_W-1:0] anim_reg_out,
+  output wire[31:0]            frame_cntr_data_out
 );
 
 reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
@@ -69,9 +54,19 @@ always @(posedge clk) begin
   if (en_in) mem[addr_in] <= data_in;
 end
 
-wire valid_addr = ( addr_in < SIZE );
-assign data_out     = ~valid_addr ? 7'h0 : mem[addr_in];
-assign anim_reg_out = mem[9];
+generate
+  if (MODE == 1) begin
+    wire valid_addr = ( addr_in < SIZE );
+
+    assign data_out            = ~valid_addr ? 7'h0 : mem[addr_in];
+    assign anim_reg_out        = mem[9];
+    assign frame_cntr_data_out = {mem[13], mem[12], mem[11], mem[10]};
+  end else begin
+    assign data_out            = mem[addr_in];
+    assign anim_reg_out        = 0;
+    assign frame_cntr_data_out = 0;
+  end 
+endgenerate
 endmodule
 
 module control_logic (
@@ -102,7 +97,6 @@ module control_logic (
   output wire      spi_if_read_out,
   output wire      spi_if_send_out,
   output wire      spi_reg_sel_out,
-  output wire      spi_oe_out,
   output wire      spi_if_driver_io_out,
 
   output wire[2:0] unit_sel_out,
@@ -115,12 +109,8 @@ module control_logic (
   output wire      dcache_addr_sel_out,
   output wire      dcache_data_in_sel_out,
 
-  output wire      buff_shen_out,
-
   output wire      acc_wen_out,
 
-  output wire[3:0] frame_cntr_dst_sel_out,
-  output wire      frame_cntr_wen_out,
   output wire      frame_cntr_rst_out,
   output wire      frame_cntr_reg_sel_out,
 
@@ -211,19 +201,16 @@ assign unit_sel_0 = opcode_in[1:0]; /* Select between different ops in the categ
 assign unit_sel_out = {unit_sel_1, unit_sel_0};
 
 wire is_spi_io;
-assign is_spi_io = ~unit_sel_1 & ~opcode_in[1] & opcode_in[0];
+assign is_spi_io = ( (~opcode_in[3] & ~opcode_in[2]) | (~opcode_in[3] & opcode_in[2]) ) & ~opcode_in[1] & opcode_in[0];
 
 assign stall_out = is_spi_io & ~spi_if_ready_in & is_exec;
-
-// Switch between miso/mosi
-assign spi_oe_out = spi_if_send_out | is_idle;
 
 // Send or read
 assign spi_if_send_out = ~opcode_in[2] & is_spi_io & is_exec;
 assign spi_if_read_out = ( (iwrite | dwrite) & ~master2proc_en_in ) | ( opcode_in[2] & is_spi_io & is_exec ); // <- second half is problematic
 
 // Select the spi register as a source register
-assign spi_reg_sel_out = rs_in[3] & ~rs_in[2] & rs_in[1] & ~rs_in[0];
+assign spi_reg_sel_out = rs_in[3] & rs_in[2] & rs_in[1] & ~rs_in[0];
 
 assign spi_if_driver_io_out = ~is_exec;
 
@@ -237,21 +224,9 @@ assign temp = ( st == DRECV ) & csd;
 wire is_rf_wr;
 assign is_rf_wr = ( ~opcode_in[3] & &opcode_in[2:0] ); 
 
-assign dcache_wen_out         = temp | ( is_rf_wr & is_exec );
+assign dcache_wen_out         = ( temp | ( is_rf_wr & is_exec ) ) & ~stall_out;
 assign dcache_addr_sel_out    = temp;
 assign dcache_data_in_sel_out = dcache_addr_sel_out;
-
-// Frame counter
-// 1 <- 1011
-assign frame_cntr_dst_sel_out[0] = frame_cntr_reg_addr_in[3] & ~frame_cntr_reg_addr_in[2] & frame_cntr_reg_addr_in[1] & frame_cntr_reg_addr_in[0];
-// 1 <- 1100
-assign frame_cntr_dst_sel_out[1] = frame_cntr_reg_addr_in[3] & frame_cntr_reg_addr_in[2] & ~frame_cntr_reg_addr_in[1] & ~frame_cntr_reg_addr_in[0];
-// 1 <- 1101
-assign frame_cntr_dst_sel_out[2] = frame_cntr_reg_addr_in[3] & frame_cntr_reg_addr_in[2] & ~frame_cntr_reg_addr_in[1] & frame_cntr_reg_addr_in[0];
-// 1 <- 1110
-assign frame_cntr_dst_sel_out[3] = frame_cntr_reg_addr_in[3] & frame_cntr_reg_addr_in[2] &  frame_cntr_reg_addr_in[1] & ~frame_cntr_reg_addr_in[0];
-
-assign frame_cntr_wen_out = temp;
 
 assign frame_cntr_rst_out = (is_exec & is_branch & ~is_taken & is_rid_15) | ( is_idle & master2proc_en_in);
 
@@ -267,8 +242,8 @@ always @(posedge clk) begin
   is_rid_15 <= frame_cntr_reg_sel_out;
 end
 
-// When storing or interacting with spi interface, don't write accumulator register
-assign acc_wen_out = ~dcache_wen_out & is_exec & ~is_spi_io & ~(is_branch | is_jump);
+// Don't write accumulator register
+assign acc_wen_out = ~dcache_wen_out & is_exec & ~is_spi_io & ~(is_branch | is_jump) & ~stall_out;
 
 // Seven segment
 assign display_on_out = is_idle & display_in;
@@ -329,7 +304,8 @@ wire master_proc_en;
 assign master_proc_en = uio_in[1] & uio_in[0]; 
 
 // Frame counter //
-wire frame_cntr_reg_val;
+wire       frame_cntr_reg_val;
+wire[31:0] frame_cntr_data;
 
 // 7-seg //
 wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
@@ -361,43 +337,36 @@ wire      ctrl_dcache_data_in_sel;
 
 wire      ctrl_acc_wen;
 
-wire      ctrl_buff_shen;
-
 wire      ctrl_display_on;
 
-wire[3:0] ctrl2frame_cntr_dst_sel;
-wire      ctrl2frame_cntr_wen; 
 wire      ctrl2frame_cntr_rst;
 wire      ctrl_frame_cntr_reg_sel;
 
 wire      ctrl2spi_if_read;
 wire      ctrl2spi_if_send;
 wire      ctrl_spi_reg_sel;
-wire      ctrl_spi_oe;
 wire      ctrl2spi_if_driver_io;
 
 // SPI
-assign csi  = ~( ~uio_in[1] &  uio_in[0] );
-assign csd  = ~(  uio_in[1] & ~uio_in[0] );
-assign miso = uio_in[4];
-assign uio_out[4] = mosi;
-
+assign csi        = ~( ~uio_in[1] &  uio_in[0] );
+assign csd        = ~(  uio_in[1] & ~uio_in[0] );
+assign miso       = uio_in[4];
+assign uio_out[5] = mosi;
 assign uio_out[2] = ctrl_proc_done;
 
 // Ground unused
 assign uio_out[1:0] = 3'b0; 
-assign uio_out[7:6] = 1'b0;
+assign uio_out[4]   = 1'b0;
+assign uio_out[7]   = 1'b0;
 
 // Inputs
 assign uio_oe[1:0] = 2'b0; // ctrl[1:0]
+assign uio_oe[4]   = 1'b0; // miso
 
 // Outputs
 assign uio_oe[3:2] = 2'b11; // done(uio_oe[2]), sclk
-assign uio_oe[5]   = 1'b1;  // cs 
-assign uio_oe[7:6] = 2'h3;  // unsused
-
-// BIO
-assign uio_oe[4] = ctrl_spi_oe;
+assign uio_oe[6:5] = 2'b11;  // mosi, cs
+assign uio_oe[7]   = 1'b1;   // unsused
 
 assign opcode = icache_data[3:0]; 
 
@@ -430,7 +399,6 @@ control_logic control_logic_0 (
   .spi_if_read_out      (ctrl2spi_if_read),
   .spi_if_send_out      (ctrl2spi_if_send),
   .spi_reg_sel_out      (ctrl_spi_reg_sel),
-  .spi_oe_out           (ctrl_spi_oe),
   .spi_if_driver_io_out (ctrl2spi_if_driver_io),
 
   .unit_sel_out (ctrl2alu_unit_sel   ),
@@ -443,11 +411,8 @@ control_logic control_logic_0 (
   .dcache_addr_sel_out    (ctrl_dcache_addr_sel   ),
   .dcache_data_in_sel_out (ctrl_dcache_data_in_sel),
 
-  .buff_shen_out (ctrl_buff_shen),
-  .acc_wen_out   (ctrl_acc_wen  ),
+  .acc_wen_out   (ctrl_acc_wen),
 
-  .frame_cntr_dst_sel_out (ctrl2frame_cntr_dst_sel),
-  .frame_cntr_wen_out     (ctrl2frame_cntr_wen    ),
   .frame_cntr_rst_out     (ctrl2frame_cntr_rst    ),
   .frame_cntr_reg_sel_out (ctrl_frame_cntr_reg_sel),
 
@@ -459,7 +424,7 @@ spi_if spi_if_0 (
   .rst (rst),
 
   .driver_io_in (ctrl2spi_if_driver_io),
-  .addr_out     (spi_if_addr),
+  .addr_out     (spi_if_addr          ),
 
   .read_in   (ctrl2spi_if_read ),
   .ready_out (spi_if2ctrl_ready),
@@ -471,7 +436,7 @@ spi_if spi_if_0 (
   .sclk_out  (uio_out[3]),
   .miso_in   (miso      ),
   .mosi_out  (mosi      ),
-  .cs_out    (uio_out[5])
+  .cs_out    (uio_out[6])
 );
 
 assign icache_addr = ctrl_icache_addr_sel ? spi_if_addr :
@@ -506,7 +471,9 @@ dcache(
 
   .data_out (dcache_data),
   
-  .anim_reg_out (anim_reg)
+  .anim_reg_out (anim_reg),
+  
+  .frame_cntr_data_out (frame_cntr_data)
 );
 
 assign jmp = icache_data[7:4];
@@ -551,11 +518,10 @@ end
 
 // Animation counter //
 frame_cntr frame_cntr_0 (
-  .clk     (clk                    ),
-  .rst     (rst                    ),
-  .data_in (spi_if_data            ),
-  .sel_in  (ctrl2frame_cntr_dst_sel),
-  .en_in   (ctrl2frame_cntr_wen    ),
+  .clk     (clk),
+  .rst     (rst),
+
+  .data_in (frame_cntr_data),
   
   .cntr_rst_in (ctrl2frame_cntr_rst),
   .sig_out     (frame_cntr_reg_val)

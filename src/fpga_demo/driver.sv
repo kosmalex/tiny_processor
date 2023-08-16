@@ -20,7 +20,7 @@ module driver (
 logic[7:0] imem[16];
 logic[7:0] dmem[16];
 
-initial $readmemh("./oled.mem ", imem);
+initial $readmemh("./s7.mem ", imem);
 initial $readmemh("./dummy.mem", dmem);
 
 logic[12:0] data;

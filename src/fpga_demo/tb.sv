@@ -43,8 +43,8 @@ assign ui_in[7]   = anim_en;
 
 assign uio_in[1:0] = mode_out;
 assign uio_in[4]   = sel_dev ? miso : mosi_out;
-assign mosi = uio_out[4];
-assign cs   = uio_out[5];
+assign mosi = uio_out[5];
+assign cs   = uio_out[6];
 
 driver dut (.*, .done_out(done_drive));
 
