@@ -1,3 +1,7 @@
+/**
+  This is the driver module; It loads the instruction and register file (dmem)
+  of the tiny processor module and enables it to begin execution.
+*/
 module driver (
   input logic clk, rst,
 
@@ -6,15 +10,17 @@ module driver (
   input  logic done_in,
 
   output logic sclk_out,
-  output logic rst_n_out,
   output logic mosi_out,
+
+  output logic done_out,
 
   output logic[1:0] mode_out
 );
 
 logic[7:0] imem[16];
 logic[7:0] dmem[16];
-initial $readmemh("./s7.mem   ", imem);
+
+initial $readmemh("./s7.mem ", imem);
 initial $readmemh("./dummy.mem", dmem);
 
 logic[12:0] data;
@@ -30,7 +36,6 @@ always @(posedge clk) begin
 end
 
 assign sclk_out  = eff_clk;
-assign rst_n_out = ~rst;
 
 logic      bits_sent_en;
 logic[3:0] bits_sent;
@@ -54,7 +59,7 @@ always_ff @(posedge clk) begin
 end
 
 // FSMD //
-typedef enum logic[2:0] { IDLE, SENDi, DONEi, SENDd, DONEd, STALL, FIN } state_t;
+typedef enum logic[3:0] { IDLE, SENDi[3], DONEi, SENDd[3], DONEd, STALL, FIN } state_t;
 state_t st;
 always @(posedge clk) begin
   if (rst) begin
@@ -62,23 +67,29 @@ always @(posedge clk) begin
   end else begin
     case (st)
       IDLE: begin
-        st <= drive ? SENDi : IDLE;
+        st <= drive ? SENDi0 : IDLE;
       end
 
-      SENDi: begin
-        st <= (bits_sent == 4'd12) ? DONEi : SENDi;
+      SENDi0: st <= SENDi1;
+      SENDi1: st <= SENDi2;
+
+      SENDi2: begin
+        st <= (bits_sent == 4'd12) ? DONEi : SENDi2;
       end
 
       DONEi: begin
-        st <= ( (bytes_sent == 4'd15) & done_in ) ? SENDd : SENDi;
+        st <= ( (bytes_sent == 4'd15) & done_in ) ? SENDd0 : SENDi0;
       end
     
-      SENDd: begin
-        st <= (bits_sent == 4'd12) ? DONEd : SENDd;
+      SENDd0: st <= SENDd1;
+      SENDd1: st <= SENDd2;
+
+      SENDd2: begin
+        st <= (bits_sent == 4'd12) ? DONEd : SENDd2;
       end
 
       DONEd: begin
-        st <= ( (bytes_sent == 4'd15) & done_in ) ? STALL : SENDd;
+        st <= ( (bytes_sent == 4'd15) & done_in ) ? STALL : SENDd0;
       end
 
       STALL: begin
@@ -94,12 +105,12 @@ always @(posedge clk) begin
   end
 end
 
-assign bits_sent_en  = ( st == SENDi ) || ( st == SENDd);
-assign bytes_sent_en = ( st == DONEi ) || ( st == DONEd);
+assign bits_sent_en  = ( st == SENDi2 ) || ( st == SENDd2);
+assign bytes_sent_en = ( st == DONEi  ) || ( st == DONEd);
 
 assign bytes_sent_rst = ( &bytes_sent & (st == FIN) );
 
-assign src = ( st == SENDi ) ? imem[bytes_sent] : dmem[bytes_sent];
+assign src = ( st == SENDi2 ) ? imem[bytes_sent] : dmem[bytes_sent];
 
 assign data = {1'b0, src, bytes_sent};
 assign mosi_out = data[bits_sent];
@@ -107,9 +118,13 @@ assign mosi_out = data[bits_sent];
 always_comb begin
   case (st)
     IDLE : mode_out = 2'b00;
-    SENDi: mode_out = (bits_sent == 4'd12) ? 2'b00 : 2'b01;
+    SENDi0: mode_out = 2'b01;
+    SENDi1: mode_out = 2'b01;
+    SENDi2: mode_out = (bits_sent == 4'd12) ? 2'b00 : 2'b01;
     DONEi: mode_out = 2'b00;
-    SENDd: mode_out = (bits_sent == 4'd12) ? 2'b00 : 2'b10;
+    SENDd0: mode_out = 2'b10;
+    SENDd1: mode_out = 2'b10;
+    SENDd2: mode_out = (bits_sent == 4'd12) ? 2'b00 : 2'b10;
     DONEd: mode_out = 2'b00;
     STALL: mode_out = 2'b11;
     FIN  : mode_out = done_in ? 2'b00 : 2'b11;
@@ -117,5 +132,7 @@ always_comb begin
     default: mode_out = 2'b00; 
   endcase
 end
+
+assign done_out = (st == FIN);
 
 endmodule

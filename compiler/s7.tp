@@ -1,13 +1,15 @@
 main:
-  la x12
+  la x15
   bnez skip
     la x1
-    bnez skip_init
+    and x9
+    bnez to_init
+      la x9
+      slli 1
+      j skip_rest
+    to_init:
       li 1
-      sa x1
-    skip_init:
-    slli 1
-    sa x1
+    skip_rest:
+      sa x9
   skip:
-  la x0
-bnez main
+j main

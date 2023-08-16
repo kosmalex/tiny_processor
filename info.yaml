@@ -5,13 +5,9 @@ project:
 
 # If using an HDL, set wokwi_id as 0 and uncomment and list your source files here. 
 # Source files must be in ./src and you must list each source file separately
-#  source_files:        
-#    - counter.v
-#    - decoder.v
-#  top_module:  "tt_um_example"      # Put the name of your top module here, must start with "tt_um_". Make it unique by including your github username
   source_files:
     - seven_seg.v
-    - mul.v
+    - spi_if.v
     - alu.v
     - tt_um_tiny_processor.v
   top_module: "tt_um_tiny_processor"
@@ -27,14 +23,19 @@ yaml_version: 4
 #
 # Here is a great example: https://github.com/davidsiaw/tt02-davidsiaw-stackcalc/blob/38c5647f83aad2aec675d566aa3d67b98f0aac81/info.yaml
 documentation: 
-  author:       "Kosmas Alexandridis"                # Your name
-  title:        "Tiny processor"                     # Project title
-  language:     "Verilog"                            # other examples include Verilog, Amaranth, VHDL, etc
-  description:  "A processor with an 8-bit datapath" # Short description of what your project does
+  author:       "Kosmas Alexandridis"                    # Your name
+  title:        "Tiny processor"                         # Project title
+  language:     "Verilog"                                # other examples include Verilog, Amaranth, VHDL, etc
+  description:  "A processor with an 8-bit architecture" # Short description of what your project does
 
 # Longer description of how the project works. You can use standard markdown format.
   how_it_works: |
-      Explain how your project works
+      ### Quick Summary
+      The design is an 8-bit processor that supports communication with a single external device through the
+      Serial Periferal Interface or SPI protocol, and has the capability to animate the seven segment display. 
+      It contains two separate internal memories; For instructions and data (register file). These are 
+      initialized by an external driver module while the processor is idle. Once the processor has been initialized, 
+      the driver can enable it to begin execution. Once execution has finished the processor returns to its idle state.
 
 # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
   how_to_test:  |
@@ -42,14 +43,14 @@ documentation:
 
 # A description of what the inputs do (e.g. red button, SPI CLK, SPI MOSI, etc).
   inputs:               
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
+    - Display on/off
+    - Most significant Byte
+    - RS_addr[0]
+    - RS_addr[1]
+    - RS_addr[2]
+    - RS_addr[3]
+    - View select
+    - Animation on/off
 # A description of what the outputs do (e.g. status LED, SPI MISO, etc)
   outputs:
     - segment a
@@ -62,19 +63,19 @@ documentation:
     - dot
 # A description of what the bidirectional I/O pins do (e.g. I2C SDA, I2C SCL, etc)
   bidirectional:
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
+    - Driver_cntrl_signal[0]
+    - Driver_cntrl_signal[1]
+    - Processor done executing
+    - Serial clock (sclk)
+    - Master In Slave Out (miso)
+    - Master Out Slave In (mosi)
+    - Chip Select (cs)
+    - Not used
 
 # The following fields are optional
-  tag:          ""      # comma separated list of tags: test, encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,
-  external_hw:  ""      # Describe any external hardware needed
-  discord:      ""      # Your discord handle, used for communication and automatically assigning tapeout role after a submission
-  doc_link:     ""      # URL to longer form documentation, eg the README.md in your repository
-  clock_hz:     0       # Clock frequency in Hz (if required)
-  picture:      ""      # relative path to a picture in your repository
+  tag:          "processor, spi" # comma separated list of tags: test, encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,
+  external_hw:  "fpga"           # Describe any external hardware needed
+  discord:      "kosmalex"       # Your discord handle, used for communication and automatically assigning tapeout role after a submission
+  doc_link:     ""               # URL to longer form documentation, eg the README.md in your repository
+  clock_hz:     Any              # Clock frequency in Hz (if required)
+  picture:      ""               # relative path to a picture in your repository

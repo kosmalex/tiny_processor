@@ -28,7 +28,7 @@ logic done_in;
 logic sclk_out, rst_n_out, mosi_out;
 logic[1:0] mode_out;
 
-assign done_in = uio_out[3];
+assign done_in     = uio_out[3];
 assign uio_in[1:0] = mode_out;
 assign uio_in[2]   = mosi_out;
 

@@ -1,63 +1,35 @@
 `default_nettype none
 
-`define CLOG2(x) \
-  (x <= 2) ? 1 : \
-  (x <= 4) ? 2 : \
-  (x <= 8) ? 3 : \
-  (x <= 16) ? 4 : \
-  (x <= 32) ? 5 : \
-  (x <= 64) ? 6 : \
-  -1
-
-`define DATAPATH_W 8
-`define INST_W     8
-`define IMEM_SZ    16
-`define DMEM_SZ    9
+`include "defs.vh"
 
 module frame_cntr (
-  input wire      clk, rst,
-  input wire[7:0] data_in,
-  input wire[3:0] sel_in,
-  input wire      en_in,
-  input wire      cntr_rst_in,
+  input wire       clk, rst,
+  input wire[31:0] data_in,
+  input wire       cntr_rst_in,
 
   output wire     sig_out
 );
 
-reg[31:0] buff;
 reg[31:0] counter;
 
 always @(posedge clk) begin
-  if ( en_in ) begin
-    if ( sel_in[0] ) begin
-      buff[7:0] <= data_in;
-    end else if ( sel_in[1] ) begin
-      buff[15:8] <= data_in;
-    end else if ( sel_in[2] ) begin
-      buff[23:16] <= data_in;
-    end else if ( sel_in[3] ) begin
-      buff[31:24] <= data_in;
-    end
-  end else if ( cntr_rst_in ) begin
-    counter <= buff;
+  if (rst) begin
+    counter <= 0;
   end else begin
-    if ( counter > 0 ) counter <= counter - 1;
+    if ( cntr_rst_in ) begin
+      counter <= data_in;
+    end else begin
+      counter <= ( counter > 0 ) ? counter - 1 : counter;
+    end
   end
 end
 
-// reg sig;
-// always @(posedge clk) begin
-//   sig <= |counter;
-// end
-
-// assign sig_out = sig;
-
 assign sig_out = |counter;
-
 endmodule
 
 module cache #(
   parameter SIZE = 8,
+  parameter MODE = 1,
 
   localparam SIZE_W = `CLOG2(SIZE)
 )(
@@ -68,7 +40,8 @@ module cache #(
   input wire                  en_in,
 
   output wire[`DATAPATH_W-1:0] data_out,
-  output wire[`DATAPATH_W-1:0] anim_reg_out
+  output wire[`DATAPATH_W-1:0] anim_reg_out,
+  output wire[31:0]            frame_cntr_data_out
 );
 
 reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
@@ -81,47 +54,19 @@ always @(posedge clk) begin
   if (en_in) mem[addr_in] <= data_in;
 end
 
-assign data_out = mem[addr_in];
-assign anim_reg_out = mem[1];
-endmodule
-
-module shift_reg #(
-  parameter SIZE = 8
-)(
-  input wire clk, rst,
-  input wire sdata_in,  // Serial data
-  input wire en_in   ,  // Enable write and shift
-
-  output wire[SIZE-1:0] data_out //parallel data output
-);
-
-reg[SIZE-1:0] register;
-
 generate
-  genvar i;
+  if (MODE == 1) begin
+    wire valid_addr = ( addr_in < SIZE );
 
-  for (i = 0; i < SIZE; i = i + 1) begin
-    if (i == 0) begin
-      always @(posedge clk) begin
-        if (rst) begin
-          register[SIZE - i - 1] <= 0;
-        end else if (en_in) begin
-          register[SIZE - i - 1] <= sdata_in;
-        end
-      end
-    end else begin
-      always @(posedge clk) begin
-        if (rst) begin
-          register[SIZE - i - 1] <= 0;
-        end else if (en_in) begin
-          register[SIZE - i - 1] <= register[SIZE - i];
-        end
-      end
-    end
-  end
+    assign data_out            = ~valid_addr ? 7'h0 : mem[addr_in];
+    assign anim_reg_out        = mem[9];
+    assign frame_cntr_data_out = {mem[13], mem[12], mem[11], mem[10]};
+  end else begin
+    assign data_out            = mem[addr_in];
+    assign anim_reg_out        = 0;
+    assign frame_cntr_data_out = 0;
+  end 
 endgenerate
-
-assign data_out = register;
 endmodule
 
 module control_logic (
@@ -137,6 +82,8 @@ module control_logic (
   input wire       master2proc_en_in,
   input wire       csi, csd,
 
+  input wire       spi_if_ready_in,
+
   input wire[3:0]  frame_cntr_reg_addr_in,
 
   output wire      proc_done_out,
@@ -144,11 +91,17 @@ module control_logic (
   output wire      pc_sel_out,
   output wire      pc_en_out,
   output wire      pc_rst_out,
+  
+  output wire      stall_out,
+
+  output wire      spi_if_read_out,
+  output wire      spi_if_send_out,
+  output wire      spi_reg_sel_out,
+  output wire      spi_if_driver_io_out,
 
   output wire[2:0] unit_sel_out,
   output wire      op_sel_out,
   output wire      src_sel_out,
-  output wire      mul_seg_sel,
 
   output wire      dcache_wen_out,
   output wire      icache_wen_out,
@@ -156,12 +109,8 @@ module control_logic (
   output wire      dcache_addr_sel_out,
   output wire      dcache_data_in_sel_out,
 
-  output wire      buff_shen_out,
-
   output wire      acc_wen_out,
 
-  output wire[3:0] frame_cntr_dst_sel_out,
-  output wire      frame_cntr_wen_out,
   output wire      frame_cntr_rst_out,
   output wire      frame_cntr_reg_sel_out,
 
@@ -172,37 +121,37 @@ parameter EXEC  = 2'b01;
 parameter IRECV = 2'b10;
 parameter DRECV = 2'b11;
 
-reg is_rid_12;
+reg is_rid_15;
 
-wire master_wr;
-assign master_wr = (~csi | ~csd) & ~master2proc_en_in;
+wire iwrite;
+wire dwrite;
+
+assign iwrite = ~csi; 
+assign dwrite = ~csd;
+
+reg[1:0] st;
 
 // FSM //
-reg[1:0] st;
 always @(posedge clk) begin
   if (rst) begin
     st <= IDLE;
   end begin
     case (st)
       IDLE: begin
-        if (master2proc_en_in)
+        if (master2proc_en_in) begin
           st <= EXEC;
-        else if (~csi)
+        end else if (iwrite) begin
           st <= IRECV;
-        else if (~csd)
+        end else if (dwrite) begin
           st <= DRECV;
+        end
       end
+
+      IRECV: st <= csi ? IDLE : IRECV;
+      DRECV: st <= csd ? IDLE : DRECV;
 
       EXEC: begin
         st <= (master2proc_en_in & pc_en_out) ? EXEC : IDLE;
-      end
-
-      IRECV: begin
-        st <= ~csi ? IRECV : IDLE;
-      end
-
-      DRECV: begin
-        st <= ~csd ? DRECV : IDLE;
       end
 
       default: st <= IDLE;
@@ -221,13 +170,15 @@ wire is_branch   = &opcode_in;
 wire is_not_zero = |alu_res_in;
 wire is_taken    = is_branch & is_not_zero;
 
-assign pc_sel_out = is_taken;
+wire is_jump = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0];
+
+assign pc_sel_out = is_taken | is_jump;
 
 /** If the last instruction is not a branch or is a not taken branch -->
     the programm has terminated --> freeze `pc`.
  */
 wire pc_last_val = &pc_in;
-assign pc_en_out = ~( pc_last_val & (~is_branch | ~is_taken) );
+assign pc_en_out = ~( pc_last_val & (~is_branch | ~is_taken | ~is_jump) );
 
 assign pc_rst_out = ~is_exec;
 
@@ -237,7 +188,7 @@ assign pc_rst_out = ~is_exec;
   src_sel_out: Operand select -> RS or SEXT immediate.
  */
 assign op_sel_out  = opcode_in[2];
-assign src_sel_out = opcode_in[3] & ~opcode_in[2] & ~mul_seg_sel;
+assign src_sel_out = opcode_in[3] & ~opcode_in[2] & ~is_jump;
 
 wire unit_sel_1;
 assign unit_sel_1 = &opcode_in[3:2]; /* Divides units into 2 categories:
@@ -249,8 +200,19 @@ assign unit_sel_0 = opcode_in[1:0]; /* Select between different ops in the categ
 
 assign unit_sel_out = {unit_sel_1, unit_sel_0};
 
-// Select the upper or lower segment of the mul result
-assign mul_seg_sel = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0];
+wire is_spi_io;
+assign is_spi_io = ( (~opcode_in[3] & ~opcode_in[2]) | (~opcode_in[3] & opcode_in[2]) ) & ~opcode_in[1] & opcode_in[0];
+
+assign stall_out = is_spi_io & ~spi_if_ready_in & is_exec;
+
+// Send or read
+assign spi_if_send_out = ~opcode_in[2] & is_spi_io & is_exec;
+assign spi_if_read_out = ( (iwrite | dwrite) & ~master2proc_en_in ) | ( opcode_in[2] & is_spi_io & is_exec ); // <- second half is problematic
+
+// Select the spi register as a source register
+assign spi_reg_sel_out = rs_in[3] & rs_in[2] & rs_in[1] & ~rs_in[0];
+
+assign spi_if_driver_io_out = ~is_exec;
 
 assign icache_wen_out      = ( st == IRECV ) & csi;
 assign icache_addr_sel_out = icache_wen_out;
@@ -262,35 +224,26 @@ assign temp = ( st == DRECV ) & csd;
 wire is_rf_wr;
 assign is_rf_wr = ( ~opcode_in[3] & &opcode_in[2:0] ); 
 
-assign dcache_wen_out = temp | ( is_rf_wr & is_exec );
-assign dcache_addr_sel_out = temp;
+assign dcache_wen_out         = ( temp | ( is_rf_wr & is_exec ) ) & ~stall_out;
+assign dcache_addr_sel_out    = temp;
 assign dcache_data_in_sel_out = dcache_addr_sel_out;
 
-// Frame counter
-// 1 <- 1000
-assign frame_cntr_dst_sel_out[0] = frame_cntr_reg_addr_in[3] & ~frame_cntr_reg_addr_in[2] & ~frame_cntr_reg_addr_in[1] & ~frame_cntr_reg_addr_in[0];
-// 1 <- 1001
-assign frame_cntr_dst_sel_out[1] = frame_cntr_reg_addr_in[3] & ~frame_cntr_reg_addr_in[2] & ~frame_cntr_reg_addr_in[1] &  frame_cntr_reg_addr_in[0];
-// 1 <- 1010
-assign frame_cntr_dst_sel_out[2] = frame_cntr_reg_addr_in[3] & ~frame_cntr_reg_addr_in[2] &  frame_cntr_reg_addr_in[1] & ~frame_cntr_reg_addr_in[0];
-// 1 <- 1011
-assign frame_cntr_dst_sel_out[3] = frame_cntr_reg_addr_in[3] & ~frame_cntr_reg_addr_in[2] &  frame_cntr_reg_addr_in[1] &  frame_cntr_reg_addr_in[0];
+assign frame_cntr_rst_out = (is_exec & is_branch & ~is_taken & is_rid_15) | ( is_idle & master2proc_en_in);
 
-assign frame_cntr_wen_out = temp;
+assign frame_cntr_reg_sel_out = rs_in[3] & rs_in[2] & rs_in[1] & rs_in[0];
 
-assign frame_cntr_rst_out = (is_exec & is_branch & ~is_taken & is_rid_12) | ( is_idle & master2proc_en_in);
-
-assign frame_cntr_reg_sel_out = rs_in[3] & rs_in[2] & ~rs_in[1] & ~rs_in[0];
-
+/**
+  If a `la x15` precedes a `bnez {label}` instruction, it means
+  that the frame counter of the seven segment should be reseted.
+  `is_rid_15` signal is used to indentify the above order of
+  instructions.
+ */
 always @(posedge clk) begin
-  is_rid_12 <= frame_cntr_reg_sel_out;
+  is_rid_15 <= frame_cntr_reg_sel_out;
 end
 
-// When storing, don't write accumulator register
-assign acc_wen_out = ~dcache_wen_out & is_exec;
-
-// Buffer shift register
-assign buff_shen_out = master_wr;
+// Don't write accumulator register
+assign acc_wen_out = ~dcache_wen_out & is_exec & ~is_spi_io & ~(is_branch | is_jump) & ~stall_out;
 
 // Seven segment
 assign display_on_out = is_idle & display_in;
@@ -337,21 +290,22 @@ wire[3:0] dcache_addr;
 
 wire[`DATAPATH_W-1:0] dcache_data_in;
 
-// Shift register (8bit data and 4bit address --> tot: 12bits) //
-wire[(`DATAPATH_W + 4)-1:0] buff_data;
-
-/**
-  SPI-interface: The slave is the processor.
- */
+// SPI-interface //
 wire csd, csi;   // Chip select signals for data and instruction caches
 wire miso, mosi; // Master In Slave Out and Master Out Slave In
+
+// SPI //
+wire[RID_W-1:0]       spi_if_addr;
+wire[`DATAPATH_W-1:0] spi_if_data;
+wire                  spi_if2ctrl_ready;
 
 // Master //
 wire master_proc_en;
 assign master_proc_en = uio_in[1] & uio_in[0]; 
 
 // Frame counter //
-wire frame_cntr_reg_val;
+wire       frame_cntr_reg_val;
+wire[31:0] frame_cntr_data;
 
 // 7-seg //
 wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
@@ -369,10 +323,11 @@ wire      ctrl_pc_sel;
 wire      ctrl_pc_en;
 wire      ctrl_pc_rst;
 
+wire      ctrl_stall;
+
 wire[2:0] ctrl2alu_unit_sel;
 wire      ctrl2alu_op_sel;
 wire      ctrl_src_sel;
-wire      ctrl2alu_mul_seg_sel;
 
 wire      ctrl2dcache_wen;
 wire      ctrl2icache_wen;
@@ -382,32 +337,36 @@ wire      ctrl_dcache_data_in_sel;
 
 wire      ctrl_acc_wen;
 
-wire      ctrl_buff_shen;
-
 wire      ctrl_display_on;
 
-wire[3:0] ctrl2frame_cntr_dst_sel;
-wire      ctrl2frame_cntr_wen; 
 wire      ctrl2frame_cntr_rst;
 wire      ctrl_frame_cntr_reg_sel;
 
-// SPI
-assign csi  = ~( ~uio_in[1] &  uio_in[0] );
-assign csd  = ~(  uio_in[1] & ~uio_in[0] );
-assign mosi = uio_in[2];
+wire      ctrl2spi_if_read;
+wire      ctrl2spi_if_send;
+wire      ctrl_spi_reg_sel;
+wire      ctrl2spi_if_driver_io;
 
-assign uio_out[3] = ctrl_proc_done;
+// SPI
+assign csi        = ~( ~uio_in[1] &  uio_in[0] );
+assign csd        = ~(  uio_in[1] & ~uio_in[0] );
+assign miso       = uio_in[4];
+assign uio_out[5] = mosi;
+assign uio_out[2] = ctrl_proc_done;
 
 // Ground unused
-assign uio_out[2:0] = 3'b0; 
-assign uio_out[7:4] = 1'b0;
+assign uio_out[1:0] = 3'b0; 
+assign uio_out[4]   = 1'b0;
+assign uio_out[7]   = 1'b0;
 
 // Inputs
-assign uio_oe[2:0] = 3'b0; // en, csi, csd, mosi
+assign uio_oe[1:0] = 2'b0; // ctrl[1:0]
+assign uio_oe[4]   = 1'b0; // miso
 
 // Outputs
-assign uio_oe[3]   = 3'h7; // done(uio_oe[3])
-assign uio_oe[7:4] = 4'hF; // unsused
+assign uio_oe[3:2] = 2'b11; // done(uio_oe[2]), sclk
+assign uio_oe[6:5] = 2'b11;  // mosi, cs
+assign uio_oe[7]   = 1'b1;   // unsused
 
 assign opcode = icache_data[3:0]; 
 
@@ -422,11 +381,12 @@ control_logic control_logic_0 (
   .pc_in      (pc     ),
   .alu_res_in (alu_res),
 
-  .master2proc_en_in (master_proc_en),
-  .csi               (csi           ),
-  .csd               (csd           ),
+  .master2proc_en_in (master_proc_en   ),
+  .csi               (csi              ),
+  .csd               (csd              ),
+  .spi_if_ready_in   (spi_if2ctrl_ready),
 
-  .frame_cntr_reg_addr_in (buff_data[3:0]),
+  .frame_cntr_reg_addr_in (spi_if_addr),
 
   .proc_done_out (ctrl_proc_done),
   
@@ -434,10 +394,16 @@ control_logic control_logic_0 (
   .pc_en_out  (ctrl_pc_en ),
   .pc_rst_out (ctrl_pc_rst),
 
+  .stall_out (ctrl_stall),
+
+  .spi_if_read_out      (ctrl2spi_if_read),
+  .spi_if_send_out      (ctrl2spi_if_send),
+  .spi_reg_sel_out      (ctrl_spi_reg_sel),
+  .spi_if_driver_io_out (ctrl2spi_if_driver_io),
+
   .unit_sel_out (ctrl2alu_unit_sel   ),
   .op_sel_out   (ctrl2alu_op_sel     ),
   .src_sel_out  (ctrl_src_sel        ),
-  .mul_seg_sel  (ctrl2alu_mul_seg_sel),
 
   .dcache_wen_out         (ctrl2dcache_wen        ),
   .icache_wen_out         (ctrl2icache_wen        ),
@@ -445,31 +411,35 @@ control_logic control_logic_0 (
   .dcache_addr_sel_out    (ctrl_dcache_addr_sel   ),
   .dcache_data_in_sel_out (ctrl_dcache_data_in_sel),
 
-  .buff_shen_out (ctrl_buff_shen),
-  .acc_wen_out   (ctrl_acc_wen  ),
+  .acc_wen_out   (ctrl_acc_wen),
 
-  .frame_cntr_dst_sel_out (ctrl2frame_cntr_dst_sel),
-  .frame_cntr_wen_out     (ctrl2frame_cntr_wen    ),
   .frame_cntr_rst_out     (ctrl2frame_cntr_rst    ),
   .frame_cntr_reg_sel_out (ctrl_frame_cntr_reg_sel),
 
   .display_on_out (ctrl_display_on)
 );
 
-shift_reg #(
-  .SIZE(`DATAPATH_W + 4)
-)
-buffer (
-  .clk      (clk),
-  .rst      (rst),
+spi_if spi_if_0 (
+  .clk (clk),
+  .rst (rst),
 
-  .sdata_in (mosi),
-  .en_in    (ctrl_buff_shen),
+  .driver_io_in (ctrl2spi_if_driver_io),
+  .addr_out     (spi_if_addr          ),
 
-  .data_out (buff_data)
+  .read_in   (ctrl2spi_if_read ),
+  .ready_out (spi_if2ctrl_ready),
+  .data_out  (spi_if_data      ),
+  
+  .send_in   (ctrl2spi_if_send),
+  .data_in   (alu_res         ),
+  
+  .sclk_out  (uio_out[3]),
+  .miso_in   (miso      ),
+  .mosi_out  (mosi      ),
+  .cs_out    (uio_out[6])
 );
 
-assign icache_addr = ctrl_icache_addr_sel ? buff_data[3:0] :
+assign icache_addr = ctrl_icache_addr_sel ? spi_if_addr :
                                             (ctrl_display_on ? display_user_addr_in : pc);
 cache #(
   .SIZE(`IMEM_SZ)
@@ -478,16 +448,16 @@ icache(
   .clk      (clk),
   .rst      (rst),
 
-  .data_in  (buff_data[11:4]),
+  .data_in  (spi_if_data),
   .addr_in  (icache_addr),
   .en_in    (ctrl2icache_wen),
 
   .data_out (icache_data)
 );
 
-assign dcache_addr = ctrl_dcache_addr_sel ? buff_data[3:0] : 
+assign dcache_addr = ctrl_dcache_addr_sel ? spi_if_addr :
                                             (ctrl_display_on ? display_user_addr_in : rs);
-assign dcache_data_in = ctrl_dcache_data_in_sel ? buff_data[11:4] : acc;
+assign dcache_data_in = ctrl_dcache_data_in_sel ? spi_if_data : acc;
 cache #(
   .SIZE(`DMEM_SZ)
 )
@@ -501,7 +471,9 @@ dcache(
 
   .data_out (dcache_data),
   
-  .anim_reg_out (anim_reg)
+  .anim_reg_out (anim_reg),
+  
+  .frame_cntr_data_out (frame_cntr_data)
 );
 
 assign jmp = icache_data[7:4];
@@ -513,7 +485,7 @@ assign pc_next = ctrl_pc_sel ? jmp : pc+1;
 always @(posedge clk) begin
   if ( rst | ctrl_pc_rst ) begin
     pc <= 0;
-  end else if (ctrl_pc_en) begin
+  end else if (ctrl_pc_en & ~ctrl_stall) begin
     pc <= pc_next;
   end
 end
@@ -522,13 +494,13 @@ end
 wire[`DATAPATH_W-1:0] sext_imm = {{4{imm[3]}}, imm};
 
 assign src = ctrl_src_sel ? sext_imm : 
-                            (ctrl_frame_cntr_reg_sel ? {7'b0, frame_cntr_reg_val} : dcache_data );
+                            (ctrl_frame_cntr_reg_sel ? {7'b0, frame_cntr_reg_val} :
+                                                       (ctrl_spi_reg_sel ? spi_if_data : dcache_data ) );
 
 // ALU //
 alu alu_0 (
   .unit_sel_in (ctrl2alu_unit_sel),
   .op_sel_in   (ctrl2alu_op_sel),
-  .mul_seg_sel (ctrl2alu_mul_seg_sel),
 
   .acc_in      (acc),
   .src_in      (src),
@@ -546,14 +518,12 @@ end
 
 // Animation counter //
 frame_cntr frame_cntr_0 (
-  .clk     ( clk                     ),
-  .rst     ( rst                     ),
-  .data_in ( buff_data[11:4]         ),
-  .sel_in  ( ctrl2frame_cntr_dst_sel ),
-  .en_in   ( ctrl2frame_cntr_wen     ),
+  .clk     (clk),
+  .rst     (rst),
+
+  .data_in (frame_cntr_data),
   
   .cntr_rst_in (ctrl2frame_cntr_rst),
-
   .sig_out     (frame_cntr_reg_val)
 );
 
@@ -561,10 +531,14 @@ frame_cntr frame_cntr_0 (
 wire[3:0] value;
 wire[7:0] view_data;
 
-assign view_data = view_sel ? icache_data : dcache_data;
-assign value     = anim_en ? anim_reg :
-                             ( ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0 );
+assign view_data = view_sel        ? icache_data : dcache_data;
+assign value     = ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0;
 
-seven_seg seven_seg_0 ( .value_in({msb, value}), .out(uo_out) );
+seven_seg seven_seg_0 (
+  .value_in     ({msb, value}),
+  .bit_array_in (anim_reg    ),
+  .anim_en_in   (anim_en     ),
+  .out          (uo_out      )
+);
 
 endmodule

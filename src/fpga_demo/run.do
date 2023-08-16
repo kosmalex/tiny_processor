@@ -10,4 +10,4 @@ log -r /*
 do wave.do
 
 run -all
-run 1000ns
+run 10us

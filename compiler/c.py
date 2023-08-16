@@ -6,9 +6,9 @@ insts = {
   "sub"  :0x4,
   "addi" :0x8,
 
-  "mulu" :0x1,
-  "mul"  :0x5,
-  "mulh"  :0x9,
+  "spiw" :0x1,
+  "spir" :0x5,
+  "j"    :0x9,
 
   "sll"  :0x2,
   "slli" :0xA,
@@ -18,10 +18,10 @@ insts = {
   "sa"   :0x7,
   "li"   :0xB,
   
-  "or"  :0xC,
-  "slt" :0xD,
-  "and" :0xE,
-  "bnez":0xF
+  "or"   :0xC,
+  "xor"  :0xD,
+  "and"  :0xE,
+  "bnez" :0xF
 }
 
 def main():
@@ -107,11 +107,11 @@ def main():
     while nEmpty > 0:
       inst = ""
       if args.f == "hex":
-        inst = "{:X}{:X}".format(0, 0)
+        inst = "{:X}{:X}".format(0, 8)
       elif args.f == "bin":
-        inst = "{:4b}{:4b}".format(0, 0).replace(" ", "0")
+        inst = "{:4b}{:4b}".format(0, 8).replace(" ", "0")
       elif args.f == "dec":
-        inst = "{:0^3d}".format(0)
+        inst = "{:0^3d}".format(8)
       else:
         raise Exception(f"[FILE: {__file__}]: Format [{args}] not supported.")
       inst_list.append(inst)
