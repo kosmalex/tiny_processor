@@ -23,23 +23,41 @@ yaml_version: 4
 #
 # Here is a great example: https://github.com/davidsiaw/tt02-davidsiaw-stackcalc/blob/38c5647f83aad2aec675d566aa3d67b98f0aac81/info.yaml
 documentation: 
-  author:       "Kosmas Alexandridis"                    # Your name
-  title:        "Tiny processor"                         # Project title
-  language:     "Verilog"                                # other examples include Verilog, Amaranth, VHDL, etc
-  description:  "A processor with an 8-bit architecture" # Short description of what your project does
+  author:       "Kosmas Alexandridis" # Your name
+  title:        "Tiny processor"      # Project title
+  language:     "Verilog"             # other examples include Verilog, Amaranth, VHDL, etc
+  description:  "A 8-bit processor"   # Short description of what your project does
 
 # Longer description of how the project works. You can use standard markdown format.
   how_it_works: |
-      ### Quick Summary
       The design is an 8-bit processor that supports communication with a single external device through the
       Serial Periferal Interface or SPI protocol, and has the capability to animate the seven segment display. 
-      It contains two separate internal memories; For instructions and data (register file). These are 
+      It contains two internal memories with a capacity of 16; For instructions and data (register file). These are 
       initialized by an external driver module while the processor is idle. Once the processor has been initialized, 
       the driver can enable it to begin execution. Once execution has finished the processor returns to its idle state.
+      Communication via SPI is supported by an SPI interface module. To support animation of the 7 segment display a
+      programmable frame counter module was added; It is basically handles the countdown of clock ticks between different frames.
+      A simple combinational module handles the convertion of a 4-bit number to the corresponding 7-segment signal pattern. 
 
 # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
   how_to_test:  |
-      Explain how to test your project
+    #Setup
+      1. Write and compile a simple programm using the provided compiler (more on that in the README.md, link below) to generate an .mem file.
+      This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
+      2. Open Xilinx' Vivado
+      3. Create a project containing; seven_seg.v, spi_if.v, alu.v, tt_um_tiny_processor.v, driver.sv, demo_top.sv, tp.xdc and all needed .mem files.
+      4. Connect the processor to an Xilinx FPGA.
+      5. Programm the FPGA using the demo_top.sv as the top module of the design.
+
+    #Interaction
+      - Turn on the switch connected to the **drive** signal of the driver module.
+      - Use the first switch to freeze and unfreeze the 7-seg display.
+      - Use the second switch to select which 4-bit values (msbs or lsbs) of a Byte, you wish to see on the 7-seg display.
+      - The switches 2-5 represent the 4-bit address to index the 14 available for display registers.
+      - The sixth switch changes the source between instruction and data memory. If you wish to view instruction data Bytes
+      turn the switch on.
+      - The last switch enables the animation of the 7-seg display. If it is turned on, the display's source is the animation
+      register. Otherwise it is displays the data stored in one of the processor's memories.
 
 # A description of what the inputs do (e.g. red button, SPI CLK, SPI MOSI, etc).
   inputs:               
@@ -63,19 +81,19 @@ documentation:
     - dot
 # A description of what the bidirectional I/O pins do (e.g. I2C SDA, I2C SCL, etc)
   bidirectional:
-    - Driver_cntrl_signal[0]
-    - Driver_cntrl_signal[1]
-    - Processor done executing
-    - Serial clock (sclk)
-    - Master In Slave Out (miso)
-    - Master Out Slave In (mosi)
-    - Chip Select (cs)
-    - Not used
+    - Driver_ctrl[0] (I)
+    - Driver_ctrl[1] (I)
+    - Done executing (O)
+    - Serial clock   (O)
+    - MISO           (I)
+    - MOSI           (O)
+    - Chip select    (O)
+    - Not used       (O)
 
 # The following fields are optional
-  tag:          "processor, spi" # comma separated list of tags: test, encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,
-  external_hw:  "fpga"           # Describe any external hardware needed
-  discord:      "kosmalex"       # Your discord handle, used for communication and automatically assigning tapeout role after a submission
-  doc_link:     ""               # URL to longer form documentation, eg the README.md in your repository
-  clock_hz:     Any              # Clock frequency in Hz (if required)
-  picture:      ""               # relative path to a picture in your repository
+  tag:          "processor, spi, fpga" # comma separated list of tags: test, encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,
+  external_hw:  "fpga"                 # Describe any external hardware needed
+  discord:      "kosmalex"             # Your discord handle, used for communication and automatically assigning tapeout role after a submission
+  doc_link:     ""                     # URL to longer form documentation, eg the README.md in your repository
+  clock_hz:     Any                    # Clock frequency in Hz (if required)
+  picture:      ""                     # relative path to a picture in your repository
