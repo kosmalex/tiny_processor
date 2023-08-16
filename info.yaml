@@ -40,7 +40,7 @@ documentation:
       A simple combinational module handles the convertion of a 4-bit number to the corresponding 7-segment signal pattern. 
 
 # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
-  how_to_test:  |
+  how_to_test: |
       #Setup
       1. Write and compile a simple programm using the provided compiler (more on that in the README.md, link below) to generate an .mem file. This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
       2. Open Xilinx' Vivado
