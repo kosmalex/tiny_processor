@@ -26,7 +26,7 @@ documentation:
   author:       "Kosmas Alexandridis" # Your name
   title:        "Tiny processor"      # Project title
   language:     "Verilog"             # other examples include Verilog, Amaranth, VHDL, etc
-  description:  "A 8-bit processor"   # Short description of what your project does
+  description:  "An 8-bit processor"  # Short description of what your project does
 
 # Longer description of how the project works. You can use standard markdown format.
   how_it_works: |
@@ -34,11 +34,11 @@ documentation:
       Serial Periferal Interface or SPI protocol, and has the capability to animate the seven segment display. 
       It contains two internal memories with a capacity of 16 each*; For instructions and data (register file). These are 
       initialized by an external driver module while the processor is idle. Once the processor has been initialized, 
-      the driver can enable it to begin execution. Once execution has finished the processor returns to its idle state.
+      the driver can enable it to begin execution. Once the execution has finished, the processor returns to its idle state.
       Communication via SPI is supported by an SPI interface module. To support animation of the 7 segment display a
       programmable frame counter module was added; It basically handles the countdown of clock ticks between different frames.
-      A simple combinational module handles the convertion of a 4-bit number to the corresponding 7-segment signal pattern. Every
-      component of the design is controlled by the Control logic module. This was a short overview of the design, a more detailed description
+      A simple combinational module handles the convertion of a 4-bit number to the corresponding signal pattern for the 7-segment display. 
+      Every component of the design is controlled by the Control logic module. This was a short overview of the design, a more detailed description
       of its features can be found in the README.md in the github repository.
       
       *Not exactly true for the data memory (register file).
@@ -49,6 +49,7 @@ documentation:
       1. Write and compile a simple program using the provided compiler (more on that in the README.md) to generate an .mem file. This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
       2. Open Xilinx' Vivado
       3. Create a project containing; driver.sv, tp.xdc and all needed .mem files.
+      4. Replace the desired file paths in the **readmemh** macros in the driver.sv module for instructions and data.
       4. Connect the processor to an Xilinx FPGA.
       5. Program the FPGA using the driver.sv as the top module of the design.
 
@@ -56,8 +57,8 @@ documentation:
       - Turn on the switch connected to the **drive** signal of the driver module.
       - Use the first switch to freeze (switch off) and unfreeze (switch on) the 7-seg display.
       - Use the second switch to select which 4-bit values (msbs [on] or lsbs [off]) of a Byte, you wish to see on the 7-seg display.
-      - The switches 2-5 represent the 4-bit address to index the 14 available for display registers.
-      - The sixth switch changes the source between instruction and data memory. If you wish to view instruction data Bytes turn the switch on.
+      - The switches 2-5 represent the 4-bit address to index the 14 registers available for display.
+      - The sixth switch changes the source between instruction and data memory. If you wish to view instruction memory's data Bytes turn the switch on.
       - The last switch enables the animation of the 7-seg display. If it is turned on, the display's source is the animation register. Otherwise it is displays the data stored in one of the processor's memories.
 
 # A description of what the inputs do (e.g. red button, SPI CLK, SPI MOSI, etc).
@@ -89,7 +90,7 @@ documentation:
     - MISO           (I)
     - MOSI           (O)
     - Chip select    (O)
-    - Not used       (O)
+    - Sync           (O)
 
 # The following fields are optional
   tag:          "processor, spi, fpga"                        # comma separated list of tags: test, encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,
