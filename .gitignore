@@ -14,3 +14,7 @@ src/log
 work/
 *.wlf
 **transcript
+
+# Exclude some files
+!src/fpga_demo/dummy.mem
+!src/fpga_demo/s7.mem
