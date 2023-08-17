@@ -351,13 +351,13 @@ wire      ctrl2spi_if_driver_io;
 assign csi        = ~( ~uio_in[1] &  uio_in[0] );
 assign csd        = ~(  uio_in[1] & ~uio_in[0] );
 assign miso       = uio_in[4];
-assign uio_out[5] = mosi;
 assign uio_out[2] = ctrl_proc_done;
+assign uio_out[5] = mosi;
+assign uio_out[7] = frame_cntr_reg_val;
 
 // Ground unused
 assign uio_out[1:0] = 3'b0; 
 assign uio_out[4]   = 1'b0;
-assign uio_out[7]   = 1'b0;
 
 // Inputs
 assign uio_oe[1:0] = 2'b0; // ctrl[1:0]
@@ -365,8 +365,8 @@ assign uio_oe[4]   = 1'b0; // miso
 
 // Outputs
 assign uio_oe[3:2] = 2'b11; // done(uio_oe[2]), sclk
-assign uio_oe[6:5] = 2'b11;  // mosi, cs
-assign uio_oe[7]   = 1'b1;   // unsused
+assign uio_oe[6:5] = 2'b11; // mosi, cs
+assign uio_oe[7]   = 1'b1;  // sync
 
 assign opcode = icache_data[3:0]; 
 
