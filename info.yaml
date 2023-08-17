@@ -30,7 +30,6 @@ documentation:
 
 # Longer description of how the project works. You can use standard markdown format.
   how_it_works: |
-      ![alt text](https://github.com/kosmalex/tiny_processor/tree/master/figs/TP-uARCH.png)
       The design is an 8-bit processor that supports communication with a single external device through the
       Serial Periferal Interface or SPI protocol, and has the capability to animate the seven segment display. 
       It contains two internal memories with a capacity of 16 each; For instructions and data (register file). These are 
@@ -94,5 +93,5 @@ documentation:
   external_hw:  "fpga, a device that supports SPI (optional)" # Describe any external hardware needed
   discord:      "630116636912779293"                          # Your discord handle, used for communication and automatically assigning tapeout role after a submission
   doc_link:     ""                                            # URL to longer form documentation, eg the README.md in your repository
-  clock_hz:     Any                                           # Clock frequency in Hz (if required)
-  picture:      ""                                            # relative path to a picture in your repository
+  clock_hz:     25 000 000                                    # Clock frequency in Hz (if required)
+  picture:      "./figs/TP-uARCH.png"                         # relative path to a picture in your repository
