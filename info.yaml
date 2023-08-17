@@ -55,11 +55,11 @@ documentation:
 
       ### Interaction
       - Turn on the switch connected to the **drive** signal of the driver module.
-      - Use the first switch to freeze (switch off) and unfreeze (switch on) the 7-seg display.
+      - Use the first switch to freeze [off] and unfreeze [on] the 7-seg display.
       - Use the second switch to select which 4-bit values (msbs [on] or lsbs [off]) of a Byte, you wish to see on the 7-seg display.
-      - The switches 2-5 represent the 4-bit address to index the 14 registers available for display.
-      - The sixth switch changes the source between instruction and data memory. If you wish to view instruction memory's data Bytes turn the switch on.
-      - The last switch enables the animation of the 7-seg display. If it is turned on, the display's source is the animation register. Otherwise it is displays the data stored in one of the processor's memories.
+      - The switches[5:2] represent the 4-bit address used to index the 14 registers available for display.
+      - The sixth switch changes the source between instruction [on] and data [off] memory.
+      - The last switch enables the animation of the 7-seg display. If it is turned on, the display's source is the animation register (x9). Otherwise it displays the data stored in one of the processor's memories.
 
 # A description of what the inputs do (e.g. red button, SPI CLK, SPI MOSI, etc).
   inputs:               
