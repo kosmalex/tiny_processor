@@ -1,0 +1,8 @@
+li 1
+sll x0
+sa x10
+la x1
+srl x10
+sa x11
+slli 10
+sa 12

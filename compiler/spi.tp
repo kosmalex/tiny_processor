@@ -1,0 +1,14 @@
+li 4
+sa x2
+li 10
+slli 4
+sa x0
+li -2
+slli 4
+srl x2
+or x0
+sa x1
+spiw x1
+
+loop:
+j loop

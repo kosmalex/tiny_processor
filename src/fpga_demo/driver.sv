@@ -20,8 +20,16 @@ module driver (
 logic[7:0] imem[16];
 logic[7:0] dmem[16];
 
-initial $readmemh("./s7.mem ", imem);
-initial $readmemh("./dummy.mem", dmem);
+// initial $readmemh("./anim0.mem ", imem);
+// initial $readmemh("./anim0d.mem", dmem);
+// initial $readmemh("./add.mem ", imem);
+// initial $readmemh("./addd.mem", dmem);
+// initial $readmemh("./shift.mem ", imem);
+// initial $readmemh("./shiftd.mem", dmem);
+// initial $readmemh("./popc.mem ", imem);
+// initial $readmemh("./popcd.mem", dmem);
+initial $readmemh("./spi.mem ", imem);
+initial $readmemh("./spid.mem", dmem);
 
 logic[12:0] data;
 logic[7:0]  src;

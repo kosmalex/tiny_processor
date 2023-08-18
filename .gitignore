@@ -16,5 +16,4 @@ work/
 **transcript
 
 # Exclude some files
-!src/fpga_demo/dummy.mem
-!src/fpga_demo/s7.mem
+!src/fpga_demo/*d.mem

@@ -1,10 +1,4 @@
-li 1
-sa x1
-li 1
-sa x3
-li -1
-sa x0
-
+la x0
 loop:
   and x1
   add x2

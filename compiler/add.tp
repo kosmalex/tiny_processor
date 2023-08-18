@@ -1,0 +1,13 @@
+la x0
+add x5
+sa x9
+add x13
+sa x11
+addi -2
+sa x3
+sub x2
+sa x1
+sub x10
+sa x8
+add x15
+sa x7

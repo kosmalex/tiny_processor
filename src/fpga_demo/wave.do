@@ -24,13 +24,8 @@ add wave -noupdate -expand -group Processor -divider ShiftReg
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/opcode
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/pc
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/ctrl_stall
-add wave -noupdate -expand -group Processor -expand -group ALU /tb/tt_um_tiny_processor/alu_0/unit_sel_in
-add wave -noupdate -expand -group Processor -expand -group ALU /tb/tt_um_tiny_processor/alu_0/op_sel_in
 add wave -noupdate -expand -group Processor -expand -group ALU /tb/tt_um_tiny_processor/alu_0/acc_in
 add wave -noupdate -expand -group Processor -expand -group ALU /tb/tt_um_tiny_processor/alu_0/src_in
-add wave -noupdate -expand -group Processor -expand -group ALU /tb/tt_um_tiny_processor/alu_0/add_res
-add wave -noupdate -expand -group Processor -expand -group ALU /tb/tt_um_tiny_processor/alu_0/shift_res
-add wave -noupdate -expand -group Processor -expand -group ALU /tb/tt_um_tiny_processor/ctrl_acc_wen
 add wave -noupdate -expand -group Processor -expand -group ALU /tb/tt_um_tiny_processor/alu_0/alu_res
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/uo_out
 add wave -noupdate -expand -group FrameCntr /tb/tt_um_tiny_processor/frame_cntr_0/data_in
@@ -55,7 +50,6 @@ add wave -noupdate -expand -group SPI_if /tb/tt_um_tiny_processor/spi_if_0/mosi_
 add wave -noupdate -expand -group SPI_if /tb/tt_um_tiny_processor/spi_if_0/cs_out
 add wave -noupdate -expand -group SPI_if /tb/tt_um_tiny_processor/spi_if_0/nbytes
 add wave -noupdate -expand -group SPI_if /tb/tt_um_tiny_processor/spi_if_0/buffer
-add wave -noupdate -expand -group SPI_if /tb/tt_um_tiny_processor/spi_if_0/all_bytes_recvd
 add wave -noupdate -expand -group SPI_if /tb/tt_um_tiny_processor/spi_if_0/sr_en
 add wave -noupdate -expand -group SPI_if /tb/tt_um_tiny_processor/spi_if_0/sr_mode
 add wave -noupdate -expand -group SPI_if /tb/tt_um_tiny_processor/spi_if_0/st
@@ -67,7 +61,7 @@ add wave -noupdate -group SR /tb/tt_um_tiny_processor/spi_if_0/shift_reg_0/data_
 add wave -noupdate -group SR /tb/tt_um_tiny_processor/spi_if_0/shift_reg_0/data_out
 add wave -noupdate -group SR /tb/tt_um_tiny_processor/spi_if_0/shift_reg_0/register
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9200953 ps} 0}
+WaveRestoreCursors {{Cursor 1} {9200707 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 214
 configure wave -valuecolwidth 100
@@ -83,4 +77,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {6376668 ps} {11117400 ps}
+WaveRestoreZoom {5727659 ps} {19872229 ps}
