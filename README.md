@@ -32,7 +32,7 @@ The table below shows some examples, of the instructions' encoding.
 The processor contains in total 16 registers (Data memory capacity), withought taking into account the program counter and the accumulator registers. The first 15 registers are 8-bits wide while the last is a single bit wide register (a pseudo-register). The registers are divided into 5 groups;
 
 - **GPRs ($x0-x8$)**: These are simple general purpose registers. They store and provide intermediate results or data while the programm is being executed. The GPR registers can be updated w/ the sa instruction (store accumulator).
-- **Animation register ($x9$)**: This group contains a single register and it can also be used as a GPR register. It is additionally used to feed the 7-segment display when the animation switch is on.
+- **Animation register ($x9$)**: This group contains a single register and it can also be used as a GPR register. It is used to feed the 7-segment display when the animation switch is on.
 - **Frame counter registers ($x10-x13$)**: These registers can also be used as GPR registers. Combined (LSR: $x10$) they form a 32-bit unsigned integer value that is used to initialize the frame counter's count, when it is reset.
 - **SPI register ($x14$)**: This register is used as a buffer that stores the data that is about to be sent or received from the processor via the SPI interface. For the programmer it is a read-only register.
 - **FC sync register ($x15$)**: This is a single bit pseudo-register (it's value is a result of comparing a register with the value 1), that indicates the start of a new frame. This is also a read-only register.
@@ -53,7 +53,7 @@ The accumulator register is an extra 8-bit register used as source and destinati
 
 ## Compiler
 
-To ease the task of writting programs for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a .tp file and a format field (`-f` flag; hex (default), bin, dec), and outputs an executable .mem file. Below we demonstrate step-by-step how to create a executable that animates the seven segment display in a circular pattern.
+To ease the task of writting programs for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a .tp file and a format field (`-f` flag; hex (default), bin, dec), and outputs an executable .mem file. Below we demonstrate step-by-step how to create an executable that animates the seven segment display in a circular pattern.
 
 ### Go to the compiler directory
 ```
@@ -159,18 +159,18 @@ Below is a schematic that shows all the inputs and outputs the processor design 
 <p align=center> <img src="figs/TP-IO.png" alt="figs/TP-IO.png" width="800"/> </p>
 
 #### Switches ( ui_in[7:0] )
-- **SW[0]**: This switches the display on/off. When the display is off the 7-segment display freezes in the zero value. When it is on the value of SW[5:2] is fed as an address to both memories of the processor.
-- **SW[1]**: When this switch is on, bits[7:4] of a byte are shown, and when its off, bits[3:0] are shown.
+- **SW[0]**: Switch the display on/off. When the display is off the 7-segment display freezes at the zero value. When it is on, the value of SW[5:2] is fed as an address to both memories of the processor to display their contents.
+- **SW[1]**: When this switch is on, bits[7:4] of a byte are displayed, and when it's off, bits[3:0] are displayed.
 - **SW[5:2]**: These provide the register's address when SW[0] is on. All registers that can be used as a GPR register can be displayed.
-- **SW[6]**: When this switch is turned on data from the instruction memory is displayed. When it's off data from the register file is shown.
-- **SW[7]**: This enables the animation of the 7-segment display. When it is turned on the 7-segment display is directly fed by the animation register ($x9$).
+- **SW[6]**: When this switch is turned on, data from the instruction memory is displayed. When it's off, data from the register file is shown.
+- **SW[7]**: This enables the animation of the 7-segment display. When it is turned on, the 7-segment display is directly fed by the animation register ($x9$).
 
 #### Outputs ( uo_out[7:0] )
 
 These are directly connected to each segment of the 7-segment display
 
 #### Bidirectional IO ( uio_{in, out}[7:0] )
-- **ctrl[1:0] (I)**: These are the control signals that driver uses to initialize processor and tell it to begin execution. The intial value should always be `2'b00`, this means *do nothing*. The driver sends data to the processor in forms of a packet. A packet has 12-bits of data; The data itself (8-bits) and its destination address (4-bits). When the driver wants to write the instruction memory of the processor he sets the control signal to `2'b10` and sends a single packet of data to the processor. When the transaction has completed, the driver stalls for a couple of cycles and procedes to send the next packet. Once all packets for the instruction memory have been sent, the driver switches the control signal to `2'b01` and follows the same procedure to initialize the register file of the processor. 
+- **ctrl[1:0] (I)**: These are the control signals that the external driver uses to initialize the processor and signal it to begin execution. The intial value should always be `2'b00`, this means *do nothing*. The driver sends data to the processor in forms of a packet. A single packet carries 12-bits of data; The payload (8-bits) and its destination address (4-bits). When the driver wants to write the instruction memory of the processor he sets the control signal to `2'b10` and sends a single packet of data to the processor. When the transaction is complete, the driver stalls for a couple of cycles and procedes to send the next packet. Once all packets for the instruction memory have been sent, the driver switches the control signal to `2'b01` and follows the same procedure to initialize the register file of the processor. Once initialization is over the driver sets the signals to `2b11` and the processor begins the execution of the program.
 - **done (O)**: This signal is used to indicate that the processor is in its idle state (does nothing).
 - **SPI IO (IO)**: The next 4 IOs belong to the SPI interface.
 - **sync (O)**: This last BIO is used to output the value of the $x15$ register. 
