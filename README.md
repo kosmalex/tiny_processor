@@ -49,7 +49,7 @@ The accumulator register is an extra 8-bit register used as source and destinati
 | la  x5 | $acc \leftarrow x5$ |
 | add x6 | $acc \leftarrow acc + x6$ |
 | sa  x0 | $x0  \leftarrow acc$ |
-| spiw x0| $x0  \rightarrow spi\_write$ |
+| spiw x0| $x0  \rightarrow spi\ write$ |
 
 ## Compiler
 
