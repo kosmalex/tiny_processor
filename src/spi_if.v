@@ -88,7 +88,7 @@ reg[BUFFER_SIZE_W-1:0] nbytes;
 wire[BUFFER_SIZE-1:0]  buffer;
 
 wire is_idle, is_busy;
-wire all_bytes_recvd;
+wire all_bits_recvd;
 
 wire sr_en, sr_mode;
 
@@ -105,7 +105,7 @@ always @(posedge clk) begin
   end else begin
     case (st)
       IDLE: st <= incoming_req    ? BUSY : IDLE;
-      BUSY: st <= all_bytes_recvd ? IDLE : BUSY;
+      BUSY: st <= all_bits_recvd ? IDLE : BUSY;
 
       default: st <= IDLE;
     endcase
@@ -147,9 +147,9 @@ assign addr_out = buffer[ADDR_W-1:0];
 assign is_idle = ( st == IDLE );
 assign is_busy = ( st == BUSY );
 
-assign all_bytes_recvd = (nbytes == 1'b1);
+assign all_bits_recvd = (nbytes == 1'b1);
 
-assign ready_out = is_busy & all_bytes_recvd;
+assign ready_out = is_busy & all_bits_recvd;
 
 assign sclk_out = clk;
 assign cs_out   = ~(is_busy & ~driver_io_in); // reversed select

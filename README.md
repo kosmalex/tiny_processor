@@ -128,6 +128,9 @@ File contents:
 0
 ```
 
+#### Note
+Only register $x0-x13$ can be initialized w/ the .mem file. The last 2 registers are read-only registers.
+
 ### Use of .mem files 
 
 The s7.mem file can be used to initialize the `imem` variable of the driver. Simply insert the file path of the generated .mem file in the corresponding **$readmemh** macro located in the driver.sv module.
@@ -146,9 +149,6 @@ The `dummy.mem` file is an initialization file for the registers;
   - $x9 \leftarrow 8'h01$
   - $x10 \leftarrow 8'h10$
   - $other \leftarrow 8'h00$
-
-#### Note
-Both `s7.mem` and `dummy.mem` files must be included in the Vivado project.
 
 ## Hardware
 
@@ -204,7 +204,7 @@ When the driver module initializes the processor both memories have as input dat
 
 The schematic of the memory modules is shown below.
 
-<p align=center> <img src="figs/TP-$.png" alt="figs/TP-$.png" width="500"/> </p>
+<p align=center> <img src="figs/TP-MEM.png" alt="figs/TP-MEM.png" width="500"/> </p>
 
 The DMEM module broadcasts register $x9$ through the `anim_reg` output and registers $x10-x13$ through `frame_cntr_data` output. IMEM does not use these output signals and outputs a zero value.
 
@@ -241,13 +241,46 @@ Below is the mapping between the signals in the **DATAPATH** image and the **FRA
 |data | {x13, x12, x11, x10} |
 |fc_data | sig |
 
-#### SPI interface
+### SPI interface
 
 The schematic of the module is shown below.
 
 <p align=center> <img src="figs/TP-SPI.png" alt="figs/TP-SPI.png" width="1000"/> </p>
 
-#### 7-seg driver
+Below is the mapping between the signals in the **DATAPATH** image and the **SPI INTERFACE** image.
+
+| Datapath | SPI Interface |
+| :------: | :------: |
+|spi_addr | addr |
+|spi_data | data |
+|alu_res | data |
+
+The three main components of the SPI module are the FSM, the counter `NB` that indicates how many bytes have been received or sent, the shift register that buffers the data that are about to be sent or that being received and the phase-shift (`PS`) single bit register.
+
+#### FSM
+
+The finite state machine of the SPI module is pretty simple. When the module receives an incoming request (`send` | `read`) the FSM transitions to `BUSY` state. While in this state it enables the datapath to send or receive data based on the which signal (`send` or `read`) was active. When the transaction is completed (`all_bits_received`) it returns to its `IDLE` state.
+
+#### Number of Bytes counter or NB
+
+The `NB` counter is a 4-bit counter and has 4 possible future values;
+
+  1. `4'd12`: This is the size in bits of a single packet (8-bit data and 4-bit address). The `NB` counter is reset to this value only when the driver module initializes the processor.
+  2. `4'd8`: During normal execution the processor sends or receives via SPI a single byte, so the counter is reset to this value.
+  3. `NB - 1`: While the transaction through SPI is not yet complete the counter decrements by 1, to count the number of bytes sent or received.
+  4. `NB`: When one of the above is not true the counter does nothing.
+
+Once the counter's value reaches 1, it indicates that all bits have been received and so sets the `all_bits_received` signal.
+
+#### Shift register
+
+The shift register stores the data that is about to be sent or received via SPI protocol. When the request is a `read` or when the driver module initializes the processor the each bit received is shifted into the shift register from its `sdata` input. All bits of the shift register are read in parallel (`buffer`). When the processor requests a write to an external device a GPR register is written to the shift register via its `data` input. It is then sent bit by bit thtough the `mosi` IO of the module. The shift register alias is $x14$.
+
+#### Phase shift register
+
+The phase shift register was used to keep the mosi signal stable near the positive edges of the serial clock, to ensure that sent bits are sampled correctly. This register samples values at the negative edge of the input clock.
+
+### 7-seg driver
 
 The diagram for the 7-segment driver is shown below.
 
