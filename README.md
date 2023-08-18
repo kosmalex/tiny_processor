@@ -185,9 +185,9 @@ Tiny processor is a single-cycle processor with an 8-bit architecture. Its uarch
 
 The program counter can have 4 different future values;
 
-  1. `0` if the global reset is enabled
-  2. `PC + 1` during sequential execution
-  3. `PC` if a stall is present due to spi io operation
+  1. `0` If the global reset is enabled
+  2. `PC + 1` During sequential execution
+  3. `PC` If a stall is present due to spi io operation
   4. `jmp` This is a destination address, in case of a branch instruction
 
 #### IMEM
@@ -198,7 +198,7 @@ The IMEM storage can have 3 different sources of register index addresses;
   2. `PC` The program counter value is used during normal execution
   3. `spi_addr` This address is used only when the driver initializes IMEM
 
-(1) and (3) stay the same for DMEM, while (2) instead of the `PC`, `rs` is used.
+(1) and (3) stay the same for DMEM, while for (2) instead of the `PC`, `rs` is used.
 
 When the driver module initializes the processor both memories have as input data the `spi_data`. During normal execution instructions' memory is not writable, while the input data to DMEM is the value of the accumulator register.
 
