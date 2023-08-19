@@ -47,13 +47,13 @@ The accumulator register is an extra 8-bit register used as source and destinati
 | Instruction | Action |
 | :-----------: | :-----------: |
 | la  x5 | $acc \leftarrow x5$ |
-| add x6 | $acc \leftarrow acc + x6$ |
+| add x11 | $acc \leftarrow acc + x11$ |
 | sa  x0 | $x0  \leftarrow acc$ |
 | spiw x0| $x0  \rightarrow spi\ write$ |
 
 ## Compiler
 
-To ease the task of writting programs for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a .tp file and a format field (`-f` flag; hex (default), bin, dec), and outputs an executable .mem file. Below we demonstrate step-by-step how to create an executable that animates the seven segment display in a circular pattern.
+To ease the task of writting programs for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a `.tp` file and a format field (`-f` flag; hex (default), bin, dec), and outputs an executable .mem file. Below we demonstrate step-by-step, how to create an executable that animates the seven segment display in a circular pattern.
 
 ### Go to the compiler directory
 ```
@@ -62,7 +62,7 @@ $ cd <path-to-git-dir>/compiler
 ### Create a .tp file
 
 ```
-$ vi s7.tp
+$ vi anim0.tp
 ```
 
 File contents:
@@ -90,28 +90,28 @@ j main
 Manually:
 
 ```
-$ python c.py s7.tp -f hex
+$ python c.py anim0.tp -f hex
 ```
 
 Using bash script:
 
 ```
 $ ./c.sh
-$ File name: s7.tp
+$ File name: anim0.tp
 $ Format: hex
 ```
 
 ### Create a dummy.mem file
 
 ```
-$ vi dummy.mem
+$ vi anim0d.mem
 ```
 
 File contents:
 
 ```
 1
-80
+20
 0
 0
 0
@@ -120,34 +120,38 @@ File contents:
 0
 0
 1
-10
-0
-0
-0
+40
+78
+7D
+01
 0
 0
 ```
 
 #### Note
-Only register $x0-x13$ can be initialized w/ the .mem file. The last 2 registers are read-only registers.
+Only register $x0-x13$ can be initialized w/ the `.mem` file. The last 2 registers are read-only registers. The 32-bit value
+`0x017D7840` is the clock ticks between consecutive frames.
 
 ### Use of .mem files 
 
-The s7.mem file can be used to initialize the `imem` variable of the driver. Simply insert the file path of the generated .mem file in the corresponding **$readmemh** macro located in the driver.sv module.
+The `anim0.mem` file can be used to initialize the `imem` variable of the driver. Simply insert the file path of the generated `.mem` file in the corresponding **$readmemh** macro located in the driver.sv module.
 
 ```
 logic[7:0] imem[16];
 logic[7:0] dmem[16];
 
-initial $readmemh("<path>/s7.mem   ", imem);
-initial $readmemh("<path>/dummy.mem", dmem);
+initial $readmemh("<path>/anim0.mem ", imem);
+initial $readmemh("<path>/anim0d.mem", dmem);
 ```
 
-The `dummy.mem` file is an initialization file for the registers;
+The `anim0d.mem` file is an initialization file for the registers;
   - $x0 \leftarrow 8'h01$
-  - $x1 \leftarrow 8'h80$
+  - $x1 \leftarrow 8'h20$
   - $x9 \leftarrow 8'h01$
-  - $x10 \leftarrow 8'h10$
+  - $x10 \leftarrow 8'h40$
+  - $x11 \leftarrow 8'h78$
+  - $x12 \leftarrow 8'h7D$
+  - $x13 \leftarrow 8'h01$
   - $other \leftarrow 8'h00$
 
 ## Hardware
@@ -159,7 +163,7 @@ Below is a schematic that shows all the inputs and outputs the processor design 
 <p align=center> <img src="figs/TP-IO.png" alt="figs/TP-IO.png" width="800"/> </p>
 
 #### Switches ( ui_in[7:0] )
-- **SW[0]**: Switch the display on/off. When the display is off the 7-segment display freezes at the zero value. When it is on, the value of SW[5:2] is fed as an address to both memories of the processor to display their contents.
+- **SW[0]**: Switch the display on/off. When the display is off the 7-segment display freezes at the zero value. When it is on, the value of SW [5:2] is fed as an address to both memories of the processor to display their contents.
 - **SW[1]**: When this switch is on, bits[7:4] of a byte are displayed, and when it's off, bits[3:0] are displayed.
 - **SW[5:2]**: These provide the register's address when SW[0] is on. All registers that can be used as a GPR register can be displayed.
 - **SW[6]**: When this switch is turned on, data from the instruction memory is displayed. When it's off, data from the register file is shown.
@@ -180,6 +184,13 @@ These are directly connected to each segment of the 7-segment display
 Tiny processor is a single-cycle processor with an 8-bit architecture. Its uarchitecture schematic is shown below.
 
 <p align=center> <img src="figs/TP-uARCH.png" alt="figs/TP-uARCH.png" width="1000"/> </p>
+
+Below is the mapping between the signals from the **DATAPATH** image and the **IO** image.
+
+| Datapath | IO |
+| :------: | :------: |
+| sw_addr | ui_in[5:2] |
+| msb | ui_in[1] |
 
 #### Program counter
 
@@ -206,9 +217,9 @@ The schematic of the memory modules is shown below.
 
 <p align=center> <img src="figs/TP-MEM.png" alt="figs/TP-MEM.png" width="500"/> </p>
 
-The DMEM module broadcasts register $x9$ through the `anim_reg` output and registers $x10-x13$ through `frame_cntr_data` output. IMEM does not use these output signals and outputs a zero value.
+The DMEM module broadcasts register $x9$ through the `anim_reg` output and registers $x10-x13$ through `frame_cntr_data` output. IMEM does not use these output signals and outputs a zero values.
 
-Below is the mapping between the signals in the **DATAPATH** image and the **MEM** image.
+Below is the mapping between the signals from the **DATAPATH** image and the **MEM** image.
 
 | Datapath | IMEM | DMEM |
 | :------: | :------: | :------: |
@@ -221,20 +232,19 @@ Below is the mapping between the signals in the **DATAPATH** image and the **MEM
 
 The first operand and destination of the ALU-unit is always the accumulator register. The second can alternate between;
   1. `sext imm` This is a 8-bit sign extented immediate encoded in the instruction
-  2. `fc_data` This is a single bit value from the frame counter module that indicates the transition between frames
-  3. It is zero-extented to 8 bits
-  4. `rs_data` This is a value from the register file. It is used when an instruction indexes registers $x0-x13$.
-  5. `spi_data` When an instruction indexes the SPI register ($x14$) this operand is chosen
+  2. `fc_data` This is a single bit value from the frame counter module that indicates the transition between frames. It is zero-extented to 8 bits.
+  1. `rs_data` This is a value from the register file. It is used when an instruction indexes registers $x0-x13$.
+  2. `spi_data` When an instruction indexes the SPI register ($x14$) this operand is chosen
 
 ### Frame counter
 
-The input data to the frame counter module is the combination of registers $x10-x11$, that form a 32-bit value. The output single bit value is the so called pseudo register ($x15$). It is enabled (negative enable) at the transition between frames. The diagram of the module is shown in the image below.
+The input data to the frame counter module is the combination of registers $x10-x13$, that form a 32-bit value. The output single bit value is the so called pseudo register ($x15$). It is enabled (negative enable) at the transition between frames. The diagram of the module is shown in the image below.
 
 <p align=center> <img src="figs/TP-FC.png" alt="figs/TP-FC.png" width="500"/> </p>
 
 The global reset signal `rst`, sets the counter to the 0 value. During normal execution if the signal `ctrl_rst` is enabled the counter is reset to the 32-bit `data` input. Otherwise it decreases by one each clock cycle. When it reaches the 0 value it stays there until it is reset by the control logic through the `ctrl_rst` signal. The output `sig` signal is 0 only when the counter reaches 0.
 
-Below is the mapping between the signals in the **DATAPATH** image and the **FRAME COUNTER** image.
+Below is the mapping between the signals from the **DATAPATH** image and the **FRAME COUNTER** image.
 
 | Datapath | Frame counter |
 | :------: | :------: |
@@ -247,7 +257,7 @@ The schematic of the module is shown below.
 
 <p align=center> <img src="figs/TP-SPI.png" alt="figs/TP-SPI.png" width="1000"/> </p>
 
-Below is the mapping between the signals in the **DATAPATH** image and the **SPI INTERFACE** image.
+Below is the mapping between the signals from the **DATAPATH** image and the **SPI INTERFACE** image.
 
 | Datapath | SPI Interface |
 | :------: | :------: |
@@ -274,7 +284,7 @@ Once the counter's value reaches 1, it indicates that all bits have been receive
 
 #### Shift register
 
-The shift register stores the data that is about to be sent or received via SPI protocol. When the request is a `read` or when the driver module initializes the processor the each bit received is shifted into the shift register from its `sdata` input. All bits of the shift register are read in parallel (`buffer`). When the processor requests a write to an external device a GPR register is written to the shift register via its `data` input. It is then sent bit by bit thtough the `mosi` IO of the module. The shift register alias is $x14$.
+The shift register stores the data that is about to be sent or received via SPI protocol. When the request is a `read` or when the driver module initializes the processor the each bit received is shifted into the shift register from its `sdata` input. All bits of the shift register are read in parallel (`buffer`). When the processor requests a write to an external device a GPR register is written to the shift register via its `data` input. It is then sent bit by bit through the `mosi` IO of the module. The shift register alias is $x14$.
 
 #### Phase shift register
 
@@ -286,4 +296,14 @@ The diagram for the 7-segment driver is shown below.
 
 <p align=center> <img src="figs/TP-7-seg.png" alt="figs/TP-7-seg.png" width="500"/> </p>
 
-The combinational logic cluster handles the convertion of the 5-bit input `value` to the corresponding 8-bit 7-segment signal pattern. If the animation is enabled (SW[7] is on) the `bit_array` input is broadcast to the 7-segment display through the `out` IO. If the animation is disabled, the signal pattern is broadcast.
+The combinational logic cluster handles the convertion of the 5-bit input `value` to the corresponding 8-bit 7-segment signal pattern. If the animation is enabled (SW[7] is on) the `bit_array` input is forwarded to the 7-segment display through the `out` IO. If the animation is disabled, the signal pattern is forwarded.
+
+Below is the mapping between the signals from the **DATAPATH**, **IO** images and the **7-SEG DRIVER** image.
+
+| Datapath | 7-seg driver |
+| :------: | :------: |
+| 5-bit input | data |
+| x9 | bit_array |
+| ui_in[7] | anim_en |
+
+

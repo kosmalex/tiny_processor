@@ -31,30 +31,19 @@ documentation:
 # Longer description of how the project works. You can use standard markdown format.
   how_it_works: |
       The design is an 8-bit processor that supports communication with a single external device through the
-      Serial Periferal Interface or SPI protocol, and has the capability to animate the seven segment display. 
-      It contains two internal memories with a capacity of 16 each*; For instructions and data (register file). These are 
-      initialized by an external driver module while the processor is idle. Once the processor has been initialized, 
-      the driver can enable it to begin execution. Once the execution has finished, the processor returns to its idle state.
-      Communication via SPI is supported by an SPI interface module. To support animation of the 7 segment display a
-      programmable frame counter module was added; It basically handles the countdown of clock ticks between different frames.
-      A simple combinational module handles the convertion of a 4-bit number to the corresponding signal pattern for the 7-segment display. 
-      Every component of the design is controlled by the Control logic module. This was a short overview of the design, a more detailed description
-      of its features can be found in the README.md in the github repository.
-      
-      *Not exactly true for the data memory (register file).
-
-# Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
-  how_to_test: |
+      Serial Periferal Interface or SPI protocol, and has the capability to animate the seven segment display.
+      To use the processor an additional external driver is needed. In this project we use an Digilent Nexys A7 FPGA.
       ### Setup
       1. Write and compile a simple program using the provided compiler (more on that in the README.md) to generate an .mem file. This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
-      2. Open Xilinx' Vivado
-      3. Create a project containing; driver.sv, tp.xdc and all needed .mem files.
+      2. Open Xilinx' Vivado and create a project containing; driver.sv, tp.xdc and all needed .mem files. This module will handle the initialization of the processor. Once the intialization is done it will automatically signal the processor to begin execution.
       4. Replace the desired file paths in the **readmemh** macros in the driver.sv module for instructions and data.
       4. Connect the processor to an Xilinx FPGA.
       5. Program the FPGA using the driver.sv as the top module of the design.
 
+# Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
+  how_to_test: |
       ### Interaction
-      - Turn on the switch connected to the **drive** signal of the driver module.
+      - Turn on the switch connected to the **drive** signal of the driver module. This will signal the driver to begin intializing the processor.
       - Use the first switch to freeze [off] and unfreeze [on] the 7-seg display.
       - Use the second switch to select which 4-bit values (msbs [on] or lsbs [off]) of a Byte, you wish to see on the 7-seg display.
       - The switches[5:2] represent the 4-bit address used to index the 14 registers available for display.
@@ -96,6 +85,6 @@ documentation:
   tag:          "processor, spi, fpga"                        # comma separated list of tags: test, encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,
   external_hw:  "fpga, a device that supports SPI (optional)" # Describe any external hardware needed
   discord:      "630116636912779293"                          # Your discord handle, used for communication and automatically assigning tapeout role after a submission
-  doc_link:     ""                                            # URL to longer form documentation, eg the README.md in your repository
+  doc_link:     "./README.md"                                 # URL to longer form documentation, eg the README.md in your repository
   clock_hz:     25 000 000                                    # Clock frequency in Hz (if required)
   picture:      "./figs/TP-uARCH.png"                         # relative path to a picture in your repository
