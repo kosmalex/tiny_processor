@@ -33,10 +33,6 @@ documentation:
       The design is an 8-bit processor that supports communication with a single external device through the
       Serial Periferal Interface or SPI protocol, and has the capability to animate the seven segment display.
       To use the processor an additional external driver is needed. In this project we use an Digilent Nexys A7 FPGA. 
-
-      ### Setup 
-      
-
       1. Write and compile a simple program using the provided compiler (more on that in the README.md) to generate an .mem file. This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
       2. Open Xilinx' Vivado and create a project containing; driver.sv, tp.xdc and all needed .mem files. This module will handle the initialization of the processor. Once the intialization is done it will automatically signal the processor to begin execution.
       4. Replace the desired file paths in the **readmemh** macros in the driver.sv module for instructions and data.
