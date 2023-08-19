@@ -269,7 +269,7 @@ The three main components of the SPI module are the FSM, the counter `NB` that i
 
 #### FSM
 
-The finite state machine of the SPI module is pretty simple. When the module receives an incoming request (`send` | `read`) the FSM transitions to `BUSY` state. While in this state it enables the datapath to send or receive data based on the which signal (`send` or `read`) was active. When the transaction is completed (`all_bits_received`) it returns to its `IDLE` state.
+The finite state machine of the SPI module is pretty simple. When the module receives an incoming request (`send` | `read`) the FSM transitions to `BUSY` state. While in this state it enables the datapath to send or receive data based on the which signal (`send` or `read`) was active. When the transaction is completed (`all_bits_received` = 1) it returns to its `IDLE` state.
 
 #### Number of Bytes counter or NB
 
@@ -278,7 +278,7 @@ The `NB` counter is a 4-bit counter and has 4 possible future values;
   1. `4'd12`: This is the size in bits of a single packet (8-bit data and 4-bit address). The `NB` counter is reset to this value only when the driver module initializes the processor.
   2. `4'd8`: During normal execution the processor sends or receives via SPI a single byte, so the counter is reset to this value.
   3. `NB - 1`: While the transaction through SPI is not yet complete the counter decrements by 1, to count the number of bytes sent or received.
-  4. `NB`: When one of the above is not true the counter does nothing.
+  4. `NB`: When none of the above is not true the counter does nothing.
 
 Once the counter's value reaches 1, it indicates that all bits have been received and so sets the `all_bits_received` signal.
 
