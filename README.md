@@ -85,6 +85,9 @@ main:
 j main
 ```
 
+#### Note
+Identation doesn't matter. Each instruction and label must be on a separate line. Comments are not supported.
+
 ### Save and compile
 
 Manually:
@@ -152,7 +155,7 @@ The `anim0d.mem` file is an initialization file for the registers;
   - $x11 \leftarrow 8'h78$
   - $x12 \leftarrow 8'h7D$
   - $x13 \leftarrow 8'h01$
-  - $other \leftarrow 8'h00$
+  - $other \leftarrow 8'h00$ 
 
 ## Hardware
 

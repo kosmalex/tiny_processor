@@ -159,26 +159,35 @@ always @(posedge clk) begin
   end
 end
 
-wire is_idle = ( st == IDLE );
-wire is_exec = ( st == EXEC );
+wire is_idle;
+wire is_exec;
+
+is_idle = ( st == IDLE );
+is_exec = ( st == EXEC );
 
 // Processor
 assign proc_done_out = is_idle;
 
 // Check if `bnez` branch is taken
-wire is_branch   = &opcode_in;
-wire is_not_zero = |alu_res_in;
-wire is_taken    = is_branch & is_not_zero;
+wire is_branch  ;
+wire is_not_zero;
+wire is_taken   ;
 
-wire is_jump = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0];
+assign is_branch   = &opcode_in;
+assign is_not_zero = |alu_res_in;
+assign is_taken    = is_branch & is_not_zero;
+
+wire is_jump;
+assign is_jump = opcode_in[3] & ~opcode_in[2] & ~opcode_in[1] & opcode_in[0];
 
 assign pc_sel_out = is_taken | is_jump;
 
 /** If the last instruction is not a branch or is a not taken branch -->
     the programm has terminated --> freeze `pc`.
  */
-wire pc_last_val = &pc_in;
-assign pc_en_out = ~( pc_last_val & (~is_branch | ~is_taken | ~is_jump) );
+wire pc_last_val
+assign pc_last_val =  &pc_in;
+assign pc_en_out   = ~( pc_last_val & (~is_branch | ~is_taken | ~is_jump) );
 
 assign pc_rst_out = ~is_exec;
 
@@ -266,7 +275,8 @@ localparam RID_W = `CLOG2(`DMEM_SZ);
 localparam OPC_W = 4;
 
 // Processor global //
-wire rst = ~rst_n;
+wire rst;
+assign rst = ~rst_n;
 
 // Fetch-Decode //
 reg [PC_W-1:0]  pc;
@@ -308,11 +318,17 @@ wire       frame_cntr_reg_val;
 wire[31:0] frame_cntr_data;
 
 // 7-seg //
-wire      display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
-wire      msb                  = ui_in[1];  
-wire[3:0] display_user_addr_in = ui_in[5:2];
-wire      view_sel             = ui_in[6];
-wire      anim_en              = ui_in[7];
+wire      display_on_off      ;
+wire      msb                 ;
+wire[3:0] display_user_addr_in;
+wire      view_sel            ;
+wire      anim_en             ;
+
+assign display_on_off       = ui_in[0]; // Basically freezes seven segment @ 0
+assign msb                  = ui_in[1];  
+assign display_user_addr_in = ui_in[5:2];
+assign view_sel             = ui_in[6];
+assign anim_en              = ui_in[7];
 
 wire[`DATAPATH_W-1:0] anim_reg;
 
@@ -491,7 +507,8 @@ always @(posedge clk) begin
 end
 
 // Execute-Writeback stage //
-wire[`DATAPATH_W-1:0] sext_imm = {{4{imm[3]}}, imm};
+wire[`DATAPATH_W-1:0] sext_imm;
+assign sext_imm = {{4{imm[3]}}, imm};
 
 assign src = ctrl_src_sel ? sext_imm : 
                             (ctrl_frame_cntr_reg_sel ? {7'b0, frame_cntr_reg_val} :
