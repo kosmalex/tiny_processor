@@ -12,7 +12,7 @@ The below image shows the processor's ISA.
 
 <p align=center> <img src="figs/TP-ISA.png" alt="figs/TP-ISA.png" width="500"/> </p>
 
-The first column contains the alias of the instruction that is used in the assembly. The second column contains its action, and finally the third, its opcode. The opcode field is comprised of the first 4 bits of the instruction.
+The first column contains the alias of the instruction that is used in the assembly. The second column contains its action, and finally the third, its opcode. The opcode field is the lower 4 bits of an instruction, while the other 4 bits may encode a register source id, a 4-bit signed immediate or a target branch address.
 
 <p align=center> <img src="figs/TP-Inst.png" alt="figs/TP-Inst.png" width="400"/> </p>
 
@@ -32,9 +32,9 @@ The table below shows some examples, of the instructions' encoding.
 The processor contains in total 16 registers (Data memory capacity), withought taking into account the program counter and the accumulator registers. The first 15 registers are 8-bits wide while the last is a single bit wide register (a pseudo-register). The registers are divided into 5 groups;
 
 - **GPRs ($x0-x8$)**: These are simple general purpose registers. They store and provide intermediate results or data while the programm is being executed. The GPR registers can be updated w/ the sa instruction (store accumulator).
-- **Animation register ($x9$)**: This group contains a single register and it can also be used as a GPR register. It is used to feed the 7-segment display when the animation switch is on.
+- **Animation register ($x9$)**: This group contains a single register that can be used as a GPR register. It is also used to feed the 7-segment display when the animation switch is on.
 - **Frame counter registers ($x10-x13$)**: These registers can also be used as GPR registers. Combined (LSR: $x10$) they form a 32-bit unsigned integer value that is used to initialize the frame counter's count, when it is reset.
-- **SPI register ($x14$)**: This register is used as a buffer that stores the data that is about to be sent or received from the processor via the SPI interface. For the programmer it is a read-only register.
+- **SPI register ($x14$)**: This register is used as a buffer that stores the data that is about to be sent or received from the processor via the SPI interface. It is a read-only register.
 - **FC sync register ($x15$)**: This is a single bit pseudo-register (it's value is a result of comparing a register with the value 1), that indicates the start of a new frame. This is also a read-only register.
 
 <p align=center> <img src="figs/TP-PM.png" alt="figs/TP-PM.png" width="500"/> </p>
@@ -53,7 +53,7 @@ The accumulator register is an extra 8-bit register used as source and destinati
 
 ## Compiler
 
-To ease the task of writting programs for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a `.tp` file and a format field (`-f` flag; hex (default), bin, dec), and outputs an executable .mem file. Below we demonstrate step-by-step, how to create an executable that animates the seven segment display in a circular pattern.
+To ease the task of writing kernels for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a `.tp` file, a format field `-f` (hex (default), bin, dec), and outputs an executable .mem file. Below we demonstrate step-by-step, how to create an executable that animates the seven segment display in a circular pattern.
 
 ### Go to the compiler directory
 ```
@@ -104,7 +104,7 @@ $ File name: anim0.tp
 $ Format: hex
 ```
 
-### Create a dummy.mem file
+### Create a .mem file for register init
 
 ```
 $ vi anim0d.mem
@@ -133,7 +133,7 @@ File contents:
 
 #### Note
 Only register $x0-x13$ can be initialized w/ the `.mem` file. The last 2 registers are read-only registers. The 32-bit value
-`0x017D7840` is the clock ticks between consecutive frames.
+`32'h017D7840` is the count of clock ticks between consecutive frames.
 
 ### Use of .mem files 
 
@@ -155,7 +155,9 @@ The `anim0d.mem` file is an initialization file for the registers;
   - $x11 \leftarrow 8'h78$
   - $x12 \leftarrow 8'h7D$
   - $x13 \leftarrow 8'h01$
-  - $other \leftarrow 8'h00$ 
+  - $other \leftarrow 8'h00$
+
+During initialization of the processor, the driver copies the instructions from imem and data from dmem to the corresponding memories of the processor.
 
 ## Hardware
 
@@ -167,7 +169,7 @@ Below is a schematic that shows all the inputs and outputs the processor design 
 
 #### Switches ( ui_in[7:0] )
 - **SW[0]**: Switch the display on/off. When the display is off the 7-segment display freezes at the zero value. When it is on, the value of SW [5:2] is fed as an address to both memories of the processor to display their contents.
-- **SW[1]**: When this switch is on, bits[7:4] of a byte are displayed, and when it's off, bits[3:0] are displayed.
+- **SW[1]**: Choose which bits of a Byte to display. When this switch is on, bits[7:4] of a byte are displayed, and when it's off, bits[3:0] are displayed.
 - **SW[5:2]**: These provide the register's address when SW[0] is on. All registers that can be used as a GPR register can be displayed.
 - **SW[6]**: When this switch is turned on, data from the instruction memory is displayed. When it's off, data from the register file is shown.
 - **SW[7]**: This enables the animation of the 7-segment display. When it is turned on, the 7-segment display is directly fed by the animation register ($x9$).
@@ -177,7 +179,7 @@ Below is a schematic that shows all the inputs and outputs the processor design 
 These are directly connected to each segment of the 7-segment display
 
 #### Bidirectional IO ( uio_{in, out}[7:0] )
-- **ctrl[1:0] (I)**: These are the control signals that the external driver uses to initialize the processor and signal it to begin execution. The intial value should always be `2'b00`, this means *do nothing*. The driver sends data to the processor in forms of a packet. A single packet carries 12-bits of data; The payload (8-bits) and its destination address (4-bits). When the driver wants to write the instruction memory of the processor he sets the control signal to `2'b10` and sends a single packet of data to the processor. When the transaction is complete, the driver stalls for a couple of cycles and procedes to send the next packet. Once all packets for the instruction memory have been sent, the driver switches the control signal to `2'b01` and follows the same procedure to initialize the register file of the processor. Once initialization is over the driver sets the signals to `2b11` and the processor begins the execution of the program.
+- **ctrl[1:0] (I)**: These are the control signals that the external driver uses to initialize the processor and signal it to begin execution. The intial value should always be `2'b00`, this means *do nothing*. The driver sends data to the processor in forms of a packet. A single packet carries 12-bits of data; The payload (8-bits) and its destination address (4-bits). When the driver wants to write the instruction memory of the processor he sets the control signal to `2'b10` and sends a single packet of data to the processor. When the transaction is complete, the driver stalls for a couple of cycles and procedes to send the next packet. Once all packets for the instruction memory have been sent, the driver switches the control signal to `2'b01` and follows the same procedure to initialize the register file of the processor. Once initialization is over the driver sets the signals to `2'b11` and the processor begins the execution of the program.
 - **done (O)**: This signal is used to indicate that the processor is in its idle state (does nothing).
 - **SPI IO (IO)**: The next 4 IOs belong to the SPI interface.
 - **sync (O)**: This last BIO is used to output the value of the $x15$ register. 
@@ -220,7 +222,7 @@ The schematic of the memory modules is shown below.
 
 <p align=center> <img src="figs/TP-MEM.png" alt="figs/TP-MEM.png" width="500"/> </p>
 
-The DMEM module broadcasts register $x9$ through the `anim_reg` output and registers $x10-x13$ through `frame_cntr_data` output. IMEM does not use these output signals and outputs a zero values.
+The DMEM module forwards register $x9$ to the `anim_reg` output and registers $x10-x13$ to the `frame_cntr_data` output. IMEM does not use these output signals and outputs zero values.
 
 Below is the mapping between the signals from the **DATAPATH** image and the **MEM** image.
 
@@ -234,10 +236,10 @@ Below is the mapping between the signals from the **DATAPATH** image and the **M
 #### ALU
 
 The first operand and destination of the ALU-unit is always the accumulator register. The second can alternate between;
-  1. `sext imm` This is a 8-bit sign extented immediate encoded in the instruction
+  1. `sext imm` This is a 4-bit sign extented immediate encoded in the instruction
   2. `fc_data` This is a single bit value from the frame counter module that indicates the transition between frames. It is zero-extented to 8 bits.
   1. `rs_data` This is a value from the register file. It is used when an instruction indexes registers $x0-x13$.
-  2. `spi_data` When an instruction indexes the SPI register ($x14$) this operand is chosen
+  2. `spi_data` This is SPI register's ($x14$) value.
 
 ### Frame counter
 
@@ -245,7 +247,7 @@ The input data to the frame counter module is the combination of registers $x10-
 
 <p align=center> <img src="figs/TP-FC.png" alt="figs/TP-FC.png" width="500"/> </p>
 
-The global reset signal `rst`, sets the counter to the 0 value. During normal execution if the signal `ctrl_rst` is enabled the counter is reset to the 32-bit `data` input. Otherwise it decreases by one each clock cycle. When it reaches the 0 value it stays there until it is reset by the control logic through the `ctrl_rst` signal. The output `sig` signal is 0 only when the counter reaches 0.
+The global reset signal `rst`, sets the counter to the 0 value. During normal execution if the signal `ctrl_rst` is enabled the counter is reset to the 32-bit `data` input. Otherwise it decreases by one, each clock cycle. When it reaches the 0 value it stays there until it is reset by the control logic through the `ctrl_rst` signal. The output signal `sig` is 0, only when the counter reaches 0.
 
 Below is the mapping between the signals from the **DATAPATH** image and the **FRAME COUNTER** image.
 
@@ -253,6 +255,10 @@ Below is the mapping between the signals from the **DATAPATH** image and the **F
 | :------: | :------: |
 |data | {x13, x12, x11, x10} |
 |fc_data | sig |
+
+#### Example use
+
+If the input clock frequency is 25 MHz and we want a frame-to-frame delay of 1 sec, registers $x10-x13$ must be set to have a combined value of `32'd25_000_000` or `32'h017D7840`. Then when the processor executes a `la x15` inctruction followed by a `bnez` the counter will reset to this value and start counting down to zero.
 
 ### SPI interface
 
@@ -268,7 +274,7 @@ Below is the mapping between the signals from the **DATAPATH** image and the **S
 |spi_data | data |
 |alu_res | data |
 
-The three main components of the SPI module are the FSM, the counter `NB` that indicates how many bytes have been received or sent, the shift register that buffers the data that are about to be sent or that being received and the phase-shift (`PS`) single bit register.
+The three main components of the SPI module are the FSM, the counter `NB` that indicates how many bytes have been received or sent, the shift register that buffers the data that is about to be sent or received and the phase-shift single bit register `PS`.
 
 #### FSM
 
