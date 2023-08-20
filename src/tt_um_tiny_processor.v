@@ -162,8 +162,8 @@ end
 wire is_idle;
 wire is_exec;
 
-is_idle = ( st == IDLE );
-is_exec = ( st == EXEC );
+assign is_idle = ( st == IDLE );
+assign is_exec = ( st == EXEC );
 
 // Processor
 assign proc_done_out = is_idle;
@@ -185,7 +185,7 @@ assign pc_sel_out = is_taken | is_jump;
 /** If the last instruction is not a branch or is a not taken branch -->
     the programm has terminated --> freeze `pc`.
  */
-wire pc_last_val
+wire pc_last_val;
 assign pc_last_val =  &pc_in;
 assign pc_en_out   = ~( pc_last_val & (~is_branch | ~is_taken | ~is_jump) );
 
