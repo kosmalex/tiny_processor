@@ -31,6 +31,9 @@ logic[7:0] dmem[16];
 initial $readmemh("./spi.mem ", imem);
 initial $readmemh("./spid.mem", dmem);
 
+////////////////////////////////////////////////////////////
+// Modification beyond this point should not be necessary //
+////////////////////////////////////////////////////////////
 logic[12:0] data;
 logic[7:0]  src;
 

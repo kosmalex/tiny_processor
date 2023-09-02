@@ -2,7 +2,7 @@
 
 # Tiny Processor
 
-The readme file is split into two sections a software part and a hardware part. In the first section we describe the ISA, the programming model and the compiler script that was used to generate the executable files. In the second part we describe the harware components of the *Tiny Processor* design.
+The readme file is split into two sections; The introduction section of the project that describes the software part, and the hardware part of this project and a second section which shows how to simulate the design or implement it on an FPGA. In the software part of the first section we describe the ISA, the programming model and the compiler script that was used to generate the executable files. In the hardware part we describe the harware components of the *Tiny Processor* design.
 
 ## Software
 
@@ -12,7 +12,7 @@ The below image shows the processor's ISA.
 
 <p align=center> <img src="figs/TP-ISA.png" alt="figs/TP-ISA.png" width="500"/> </p>
 
-The first column contains the alias of the instruction that is used in the assembly. The second column contains its action, and finally the third, its opcode. The opcode field is the lower 4 bits of an instruction, while the other 4 bits may encode a register source id, a 4-bit signed immediate or a target branch address.
+The first column contains the alias of the instruction that is used in the assembly. The second column contains its action, and finally the third, its opcode. The opcode field is the lower 4 bits of an instruction. The other 4 bits may encode a register source id, a 4-bit signed immediate or a target branch address.
 
 <p align=center> <img src="figs/TP-Inst.png" alt="figs/TP-Inst.png" width="400"/> </p>
 
@@ -53,7 +53,7 @@ The accumulator register is an extra 8-bit register used as source and destinati
 
 ## Compiler
 
-To ease the task of writing kernels for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a `.tp` file, a format field `-f` (hex (default), bin, dec), and outputs an executable .mem file. Below we demonstrate step-by-step, how to create an executable that animates the seven segment display in a circular pattern.
+To ease the task of writing kernels for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a `.tp` file, a format field `-f` (hex (default), bin, dec), and outputs an executable `.mem` file. Below we demonstrate step-by-step, how to create an executable that animates the seven segment display in a circular pattern.
 
 ### Go to the compiler directory
 ```
@@ -88,6 +88,10 @@ j main
 #### Note
 Identation doesn't matter. Each instruction and label must be on a separate line. Comments are not supported.
 
+While the frame counter's count is not `0` the value of the animation register $x9$ stays the same. This is acheived by branching to the `skip` label @ the end of the loop's body. When the counter reaches `0` the inner body of the loop (start @ `la x1`) is executed. Here the value of the animation register is updated. To animate the 7-segment in a circular pattern a single bit shift is applied. If there is no more need to shift we initialize the animation register back to the value `1`. Below is a diagram indicating how the change of the animation registers value affects the output of the 7-segement display in this particular example.
+
+<p align=center> <img src="figs/TP-anim.png" alt="figs/TP-anim.png" width="700"/> </p>
+
 ### Save and compile
 
 Manually:
@@ -104,7 +108,7 @@ $ File name: anim0.tp
 $ Format: hex
 ```
 
-### Create a .mem file for register init
+### Create a .mem file for RF (DMEM) initialization
 
 ```
 $ vi anim0d.mem
@@ -157,7 +161,7 @@ The `anim0d.mem` file is an initialization file for the registers;
   - $x13 \leftarrow 8'h01$
   - $other \leftarrow 8'h00$
 
-During initialization of the processor, the driver copies the instructions from imem and data from dmem to the corresponding memories of the processor.
+During initialization of the processor, the driver copies the instructions from imem, and data from dmem, to the corresponding memories of the processor.
 
 ## Hardware
 
@@ -169,7 +173,7 @@ Below is a schematic that shows all the inputs and outputs the processor design 
 
 #### Switches ( ui_in[7:0] )
 - **SW[0]**: Switch the display on/off. When the display is off the 7-segment display freezes at the zero value. When it is on, the value of SW [5:2] is fed as an address to both memories of the processor to display their contents.
-- **SW[1]**: Choose which bits of a Byte to display. When this switch is on, bits[7:4] of a byte are displayed, and when it's off, bits[3:0] are displayed.
+- **SW[1]**: Choose which bits of a Byte to display. When this switch is on, Byte[7:4] is displayed, and when it's off, Byte[3:0] is displayed.
 - **SW[5:2]**: These provide the register's address when SW[0] is on. All registers that can be used as a GPR register can be displayed.
 - **SW[6]**: When this switch is turned on, data from the instruction memory is displayed. When it's off, data from the register file is shown.
 - **SW[7]**: This enables the animation of the 7-segment display. When it is turned on, the 7-segment display is directly fed by the animation register ($x9$).
@@ -179,7 +183,7 @@ Below is a schematic that shows all the inputs and outputs the processor design 
 These are directly connected to each segment of the 7-segment display
 
 #### Bidirectional IO ( uio_{in, out}[7:0] )
-- **ctrl[1:0] (I)**: These are the control signals that the external driver uses to initialize the processor and signal it to begin execution. The intial value should always be `2'b00`, this means *do nothing*. The driver sends data to the processor in forms of a packet. A single packet carries 12-bits of data; The payload (8-bits) and its destination address (4-bits). When the driver wants to write the instruction memory of the processor he sets the control signal to `2'b10` and sends a single packet of data to the processor. When the transaction is complete, the driver stalls for a couple of cycles and procedes to send the next packet. Once all packets for the instruction memory have been sent, the driver switches the control signal to `2'b01` and follows the same procedure to initialize the register file of the processor. Once initialization is over the driver sets the signals to `2'b11` and the processor begins the execution of the program.
+- **ctrl[1:0] (I)**: These are the control signals that the external driver uses to initialize the processor and signal it to begin execution. The initial value should always be `2'b00`, this means *do nothing*. The driver sends data to the processor in forms of a packet. A single packet carries 12-bits of data; The payload (8-bits) and its destination address (4-bits). When the driver wants to write the instruction memory of the processor he sets the control signal to `2'b10` and sends a single packet of data to the processor. When the transaction is complete, the driver stalls for a couple of cycles and procedes to send the next packet. Once all packets for the instruction memory have been sent, the driver switches the control signal to `2'b01` and follows the same procedure to initialize the register file of the processor. Once initialization is over the driver sets the signals to `2'b11` and the processor begins the execution of the program.
 - **done (O)**: This signal is used to indicate that the processor is in its idle state (does nothing).
 - **SPI IO (IO)**: The next 4 IOs belong to the SPI interface.
 - **sync (O)**: This last BIO is used to output the value of the $x15$ register. 

@@ -2,7 +2,7 @@ module demo_top (
   input logic clk, rst,
 
   input logic[15:0] sw,
-  output logic[7:0] leds,
+  output logic[15:0] leds,
 
   output logic[7:0] s7,
   output logic[7:0] an
@@ -11,26 +11,36 @@ module demo_top (
 logic drive;
 assign drive = sw[15];
 
-logic [7:0] uo_out;
-logic [7:0] ui_in;
-logic [7:0] uio_out;
-logic [7:0] uio_in;
-logic [7:0] uio_oe;
+logic[7:0] uo_out;
+logic[7:0] ui_in;
+logic[7:0] uio_out;
+logic[7:0] uio_in;
+logic[7:0] uio_oe;
 
 logic display_on;
 logic lsB;
 logic[3:0] addr_in;
 
 logic [6:0] segments = uo_out[6:0];
-logic       lsb      = uo_out[7];
+logic       msb      = uo_out[7];
 
 logic done_in;
 logic sclk_out, rst_n_out, mosi_out;
 logic[1:0] mode_out;
 
-assign done_in     = uio_out[3];
+// Processor
+logic p_sclk;
+logic p_mosi;
+logic p_cs;
+
+
 assign uio_in[1:0] = mode_out;
-assign uio_in[2]   = mosi_out;
+assign done_in     = uio_out[2];
+assign p_sclk      = uio_out[3];
+assign uio_in[4]   = (drive & done_in) ? 1'b0 : mosi_out;
+assign p_mosi      = uio_out[5];
+assign p_cs        = uio_out[6];
+assign p_sync      = uio_out[7];
 
 logic[7:0] s7_n;
 assign s7 = ~s7_n;
@@ -48,6 +58,9 @@ tt_um_tiny_processor tt_um_tiny_processor_0 (
   .rst_n   (rst_n_out) // not reset
 );
 
-assign leds = sw;
+assign leds[7:0]  = sw[7:0];
+assign leds[8]    = p_sync;
+assign leds[15]   = sw[15];
+assign leds[14:0] = 1'b0;
 assign an   = 8'hFE;
 endmodule
