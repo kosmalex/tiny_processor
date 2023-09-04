@@ -104,7 +104,7 @@ always @(posedge clk) begin
     st <= IDLE;
   end else begin
     case (st)
-      IDLE: st <= incoming_req    ? BUSY : IDLE;
+      IDLE: st <= incoming_req   ? BUSY : IDLE;
       BUSY: st <= all_bits_recvd ? IDLE : BUSY;
 
       default: st <= IDLE;
