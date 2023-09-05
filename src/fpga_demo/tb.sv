@@ -60,7 +60,7 @@ tt_um_tiny_processor tt_um_tiny_processor (
   .uio_out (uio_out),  // IOs: Output path
   .uio_oe  (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
   .ena     (1'b1),     // enable - goes high when design is selected
-  .clk     (pclk), // clock
+  .clk     (clk), // clock
   .rst_n   (rst_n) // not reset
 );
 

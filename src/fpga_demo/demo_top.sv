@@ -47,20 +47,7 @@ assign p_sync      = uio_out[7];
 logic[7:0] s7_n;
 assign s7 = ~s7_n;
 
-clk_wiz_0 instance_name
-(
-  // Clock out ports
-  .dclk(dclk),     // output dclk
-  .pclk(pclk),     // output pclk
-  // Status and control signals
-  .reset(rst), // input reset
-  .locked(locked),       // output locked
-  // Clock in ports
-  .clk_in1(clk)      // input clk_in1
-);
-
-
-driver driver_0 (.clk(dclk), .*, .done_out(d_done_out));
+driver driver_0 (.clk(clk), .*, .done_out(d_done_out));
 
 tt_um_tiny_processor tt_um_tiny_processor_0 (
   .ui_in   (sw[7:0]), // Dedicated inputs
@@ -69,7 +56,7 @@ tt_um_tiny_processor tt_um_tiny_processor_0 (
   .uio_out (uio_out), // IOs: Output path
   .uio_oe  (uio_oe ), // IOs: Enable path (active high: 0=input, 1=output)
   .ena     (1'b1   ), // enable - goes high when design is selected
-  .clk     (pclk   ), // clock
+  .clk     (clk    ), // clock
   .rst_n   (rst_n  )  // not reset
 );
 

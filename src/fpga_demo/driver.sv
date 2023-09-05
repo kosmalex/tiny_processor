@@ -36,20 +36,12 @@ initial $readmemh("./anim0d.mem", dmem);
 logic[12:0] data;
 logic[7:0]  src;
 
-reg pclk;
-always @(posedge clk) begin
-  if (rst)
-    pclk <= 0;
-  else if (clk)
-    pclk <= ~pclk;
-end
-
 logic      bits_sent_en;
 logic[3:0] bits_sent;
-always_ff @(posedge clk) begin
+always_ff @(negedge clk) begin
   if (rst | (bits_sent == 4'd12)) begin
     bits_sent <= 0;
-  end else if (bits_sent_en & pclk) begin
+  end else if (bits_sent_en) begin
     bits_sent <= bits_sent + 1;
   end
 end
@@ -60,7 +52,7 @@ logic[3:0] bytes_sent;
 always_ff @(posedge clk) begin
   if ( rst | bytes_sent_rst ) begin
     bytes_sent <= 0;
-  end else if (bytes_sent_en & pclk) begin
+  end else if (bytes_sent_en) begin
     bytes_sent <= bytes_sent + 1;
   end
 end
@@ -100,7 +92,7 @@ always @(posedge clk) begin
       end
 
       STALL: begin
-        st <= pclk ? FIN : STALL;
+        st <= FIN;
       end
 
       FIN: begin
