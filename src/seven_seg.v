@@ -14,7 +14,8 @@ module seven_seg (
   input wire[4:0] value_in,
   input wire[7:0] bit_array_in,
   input wire      anim_en_in,
-  
+  input wire      display_on_in,
+
   output wire[7:0] out
 );
 
@@ -52,6 +53,6 @@ always @(*) begin
   end
 end
 
-assign out = result;
+assign out = display_on_in ? result : 8'b0;
 
 endmodule
