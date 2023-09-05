@@ -9,7 +9,7 @@ module shift_reg #(
   parameter SIZE = 8,
   parameter DATA_W = 8
 )(
-  input wire clk, rst  ,
+  input wire clk, rst,
   input wire sdata_in  , // Serial data
 
   input wire en_in     , // Enable write

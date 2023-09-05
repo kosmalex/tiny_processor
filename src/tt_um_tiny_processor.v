@@ -15,13 +15,11 @@ reg[31:0] counter;
 always @(posedge clk) begin
   if (rst) begin
     counter <= 0;
-  end else begin
-    if ( cntr_rst_in ) begin
+  end else if ( cntr_rst_in ) begin
       counter <= data_in;
     end else begin
       counter <= ( counter > 0 ) ? counter - 1 : counter;
     end
-  end
 end
 
 assign sig_out = |counter;
@@ -33,7 +31,7 @@ module cache #(
 
   localparam SIZE_W = `CLOG2(SIZE)
 )(
-  input wire clk, rst,
+  input wire clk,
 
   input wire[`DATAPATH_W-1:0] data_in,
   input wire[SIZE_W-1:0]      addr_in,
@@ -45,10 +43,6 @@ module cache #(
 );
 
 reg[`DATAPATH_W-1:0] mem[0:SIZE-1];
-
-`ifdef FPGA_demo
-  initial $readmemh("./init.mem", mem);
-`endif
 
 always @(posedge clk) begin
   if (en_in) mem[addr_in] <= data_in;
@@ -72,8 +66,6 @@ endmodule
 module control_logic (
   input wire       clk, rst,
 
-  input wire       display_in,
-
   input wire[3:0]  opcode_in,
   input wire[3:0]  rs_in,
   input wire[3:0]  pc_in,
@@ -83,8 +75,6 @@ module control_logic (
   input wire       csi, csd,
 
   input wire       spi_if_ready_in,
-
-  input wire[3:0]  frame_cntr_reg_addr_in,
 
   output wire      proc_done_out,
 
@@ -112,9 +102,7 @@ module control_logic (
   output wire      acc_wen_out,
 
   output wire      frame_cntr_rst_out,
-  output wire      frame_cntr_reg_sel_out,
-
-  output wire      display_on_out
+  output wire      frame_cntr_reg_sel_out
 );
 parameter IDLE  = 2'b00;
 parameter EXEC  = 2'b01;
@@ -135,7 +123,7 @@ reg[1:0] st;
 always @(posedge clk) begin
   if (rst) begin
     st <= IDLE;
-  end begin
+  end else begin
     case (st)
       IDLE: begin
         if (master2proc_en_in) begin
@@ -254,8 +242,6 @@ end
 // Don't write accumulator register
 assign acc_wen_out = ~dcache_wen_out & is_exec & ~is_spi_io & ~(is_branch | is_jump) & ~stall_out;
 
-// Seven segment
-assign display_on_out = is_idle & display_in;
 endmodule
 
 module tt_um_tiny_processor (
@@ -353,8 +339,6 @@ wire      ctrl_dcache_data_in_sel;
 
 wire      ctrl_acc_wen;
 
-wire      ctrl_display_on;
-
 wire      ctrl2frame_cntr_rst;
 wire      ctrl_frame_cntr_reg_sel;
 
@@ -387,10 +371,8 @@ assign uio_oe[7]   = 1'b1;  // sync
 assign opcode = icache_data[3:0]; 
 
 control_logic control_logic_0 (
-  .clk        (clk),
+  .clk        (clk ),
   .rst        (rst),
-
-  .display_in (display_on_off),
 
   .opcode_in  (opcode ),
   .rs_in      (rs     ),
@@ -401,8 +383,6 @@ control_logic control_logic_0 (
   .csi               (csi              ),
   .csd               (csd              ),
   .spi_if_ready_in   (spi_if2ctrl_ready),
-
-  .frame_cntr_reg_addr_in (spi_if_addr),
 
   .proc_done_out (ctrl_proc_done),
   
@@ -417,9 +397,9 @@ control_logic control_logic_0 (
   .spi_reg_sel_out      (ctrl_spi_reg_sel),
   .spi_if_driver_io_out (ctrl2spi_if_driver_io),
 
-  .unit_sel_out (ctrl2alu_unit_sel   ),
-  .op_sel_out   (ctrl2alu_op_sel     ),
-  .src_sel_out  (ctrl_src_sel        ),
+  .unit_sel_out (ctrl2alu_unit_sel),
+  .op_sel_out   (ctrl2alu_op_sel  ),
+  .src_sel_out  (ctrl_src_sel     ),
 
   .dcache_wen_out         (ctrl2dcache_wen        ),
   .icache_wen_out         (ctrl2icache_wen        ),
@@ -427,17 +407,15 @@ control_logic control_logic_0 (
   .dcache_addr_sel_out    (ctrl_dcache_addr_sel   ),
   .dcache_data_in_sel_out (ctrl_dcache_data_in_sel),
 
-  .acc_wen_out   (ctrl_acc_wen),
+  .acc_wen_out (ctrl_acc_wen),
 
   .frame_cntr_rst_out     (ctrl2frame_cntr_rst    ),
-  .frame_cntr_reg_sel_out (ctrl_frame_cntr_reg_sel),
-
-  .display_on_out (ctrl_display_on)
+  .frame_cntr_reg_sel_out (ctrl_frame_cntr_reg_sel)
 );
 
 spi_if spi_if_0 (
-  .clk (clk),
-  .rst (rst),
+  .clk  (clk),
+  .rst  (rst),
 
   .driver_io_in (ctrl2spi_if_driver_io),
   .addr_out     (spi_if_addr          ),
@@ -456,14 +434,14 @@ spi_if spi_if_0 (
 );
 
 assign icache_addr = ctrl_icache_addr_sel ? spi_if_addr :
-                                            (ctrl_display_on ? display_user_addr_in : pc);
+                                            (ctrl_proc_done ? display_user_addr_in : pc);
 cache #(
-  .SIZE(`IMEM_SZ)
+  .SIZE(`IMEM_SZ),
+  .MODE(    0   )
 )
 icache(
   .clk      (clk),
-  .rst      (rst),
-
+  
   .data_in  (spi_if_data),
   .addr_in  (icache_addr),
   .en_in    (ctrl2icache_wen),
@@ -472,14 +450,13 @@ icache(
 );
 
 assign dcache_addr = ctrl_dcache_addr_sel ? spi_if_addr :
-                                            (ctrl_display_on ? display_user_addr_in : rs);
+                                            (ctrl_proc_done ? display_user_addr_in : rs);
 assign dcache_data_in = ctrl_dcache_data_in_sel ? spi_if_data : acc;
 cache #(
   .SIZE(`DMEM_SZ)
 )
 dcache(
   .clk      (clk),
-  .rst      (rst),
 
   .data_in  (dcache_data_in),
   .addr_in  (dcache_addr),
@@ -535,8 +512,8 @@ end
 
 // Animation counter //
 frame_cntr frame_cntr_0 (
-  .clk     (clk),
-  .rst     (rst),
+  .clk (clk),
+  .rst (rst),
 
   .data_in (frame_cntr_data),
   
@@ -548,14 +525,16 @@ frame_cntr frame_cntr_0 (
 wire[3:0] value;
 wire[7:0] view_data;
 
-assign view_data = view_sel        ? icache_data : dcache_data;
-assign value     = ctrl_display_on ? ( msb ? view_data[7:4] : view_data[3:0] ) : 4'h0;
+assign view_data = view_sel ? icache_data    : dcache_data;
+assign value     = msb      ? view_data[7:4] : view_data[3:0];
 
 seven_seg seven_seg_0 (
   .value_in     ({msb, value}),
   .bit_array_in (anim_reg    ),
   .anim_en_in   (anim_en     ),
-  .out          (uo_out      )
+  .out          (uo_out      ),
+
+  .display_on_in (display_on_off)
 );
 
 endmodule

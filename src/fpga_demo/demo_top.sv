@@ -24,15 +24,17 @@ logic[3:0] addr_in;
 logic [6:0] segments = uo_out[6:0];
 logic       msb      = uo_out[7];
 
+logic d_done_out;
 logic done_in;
-logic sclk_out, rst_n_out, mosi_out;
+logic rst_n, mosi_out;
 logic[1:0] mode_out;
+
+assign rst_n = ~rst;
 
 // Processor
 logic p_sclk;
 logic p_mosi;
 logic p_cs;
-
 
 assign uio_in[1:0] = mode_out;
 assign done_in     = uio_out[2];
@@ -45,22 +47,36 @@ assign p_sync      = uio_out[7];
 logic[7:0] s7_n;
 assign s7 = ~s7_n;
 
-driver driver_0 (.*);
+clk_wiz_0 instance_name
+(
+  // Clock out ports
+  .dclk(dclk),     // output dclk
+  .pclk(pclk),     // output pclk
+  // Status and control signals
+  .reset(rst), // input reset
+  .locked(locked),       // output locked
+  // Clock in ports
+  .clk_in1(clk)      // input clk_in1
+);
+
+
+driver driver_0 (.clk(dclk), .*, .done_out(d_done_out));
 
 tt_um_tiny_processor tt_um_tiny_processor_0 (
-  .ui_in   (sw[7:0]),  // Dedicated inputs
-  .uo_out  (s7_n),     // Dedicated outputs
-  .uio_in  (uio_in),   // IOs: Input path
-  .uio_out (uio_out),  // IOs: Output path
-  .uio_oe  (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
-  .ena     (1'b1),     // enable - goes high when design is selected
-  .clk     (sclk_out), // clock
-  .rst_n   (rst_n_out) // not reset
+  .ui_in   (sw[7:0]), // Dedicated inputs
+  .uo_out  (s7_n   ), // Dedicated outputs
+  .uio_in  (uio_in ), // IOs: Input path
+  .uio_out (uio_out), // IOs: Output path
+  .uio_oe  (uio_oe ), // IOs: Enable path (active high: 0=input, 1=output)
+  .ena     (1'b1   ), // enable - goes high when design is selected
+  .clk     (pclk   ), // clock
+  .rst_n   (rst_n  )  // not reset
 );
 
 assign leds[7:0]  = sw[7:0];
 assign leds[8]    = p_sync;
 assign leds[15]   = sw[15];
-assign leds[14:0] = 1'b0;
-assign an   = 8'hFE;
+assign leds[14:9] = 6'b0;
+assign an         = 8'hFE;
+
 endmodule

@@ -9,7 +9,6 @@ module driver (
 
   input  logic done_in,
 
-  output logic sclk_out,
   output logic mosi_out,
 
   output logic done_out,
@@ -20,16 +19,16 @@ module driver (
 logic[7:0] imem[16];
 logic[7:0] dmem[16];
 
-// initial $readmemh("./anim0.mem ", imem);
-// initial $readmemh("./anim0d.mem", dmem);
+initial $readmemh("./anim0.mem ", imem);
+initial $readmemh("./anim0d.mem", dmem);
 // initial $readmemh("./add.mem ", imem);
 // initial $readmemh("./addd.mem", dmem);
 // initial $readmemh("./shift.mem ", imem);
 // initial $readmemh("./shiftd.mem", dmem);
 // initial $readmemh("./popc.mem ", imem);
 // initial $readmemh("./popcd.mem", dmem);
-initial $readmemh("./spi.mem ", imem);
-initial $readmemh("./spid.mem", dmem);
+// initial $readmemh("./spi.mem ", imem);
+// initial $readmemh("./spid.mem", dmem);
 
 ////////////////////////////////////////////////////////////
 // Modification beyond this point should not be necessary //
@@ -37,23 +36,20 @@ initial $readmemh("./spid.mem", dmem);
 logic[12:0] data;
 logic[7:0]  src;
 
-logic eff_clk;
+reg pclk;
 always @(posedge clk) begin
-  if (rst) begin
-    eff_clk <= 0;
-  end else if (clk) begin
-    eff_clk <= ~eff_clk;
-  end
+  if (rst)
+    pclk <= 0;
+  else if (clk)
+    pclk <= ~pclk;
 end
-
-assign sclk_out  = eff_clk;
 
 logic      bits_sent_en;
 logic[3:0] bits_sent;
 always_ff @(posedge clk) begin
   if (rst | (bits_sent == 4'd12)) begin
     bits_sent <= 0;
-  end else if (bits_sent_en & eff_clk) begin
+  end else if (bits_sent_en & pclk) begin
     bits_sent <= bits_sent + 1;
   end
 end
@@ -64,7 +60,7 @@ logic[3:0] bytes_sent;
 always_ff @(posedge clk) begin
   if ( rst | bytes_sent_rst ) begin
     bytes_sent <= 0;
-  end else if (bytes_sent_en & eff_clk) begin
+  end else if (bytes_sent_en & pclk) begin
     bytes_sent <= bytes_sent + 1;
   end
 end
@@ -89,7 +85,7 @@ always @(posedge clk) begin
       end
 
       DONEi: begin
-        st <= ( (bytes_sent == 4'd15) & done_in ) ? SENDd0 : SENDi0;
+        st <= (bytes_sent == 4'd15) ? SENDd0 : SENDi0;
       end
     
       SENDd0: st <= SENDd1;
@@ -100,11 +96,11 @@ always @(posedge clk) begin
       end
 
       DONEd: begin
-        st <= ( (bytes_sent == 4'd15) & done_in ) ? STALL : SENDd0;
+        st <= (bytes_sent == 4'd15) ? STALL : SENDd0;
       end
 
       STALL: begin
-        st <= FIN;
+        st <= pclk ? FIN : STALL;
       end
 
       FIN: begin

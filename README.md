@@ -172,10 +172,10 @@ Below is a schematic that shows all the inputs and outputs the processor design 
 <p align=center> <img src="figs/TP-IO.png" alt="figs/TP-IO.png" width="800"/> </p>
 
 #### Switches ( ui_in[7:0] )
-- **SW[0]**: Switch the display on/off. When the display is off the 7-segment display freezes at the zero value. When it is on, the value of SW [5:2] is fed as an address to both memories of the processor to display their contents.
+- **SW[0]**: Switch the display on/off. When the switch is off the 7-segment display shows nothing. When it is on, the displayed contents are dependent on the SW[7:6] values.
 - **SW[1]**: Choose which bits of a Byte to display. When this switch is on, Byte[7:4] is displayed, and when it's off, Byte[3:0] is displayed.
-- **SW[5:2]**: These provide the register's address when SW[0] is on. All registers that can be used as a GPR register can be displayed.
-- **SW[6]**: When this switch is turned on, data from the instruction memory is displayed. When it's off, data from the register file is shown.
+- **SW[5:2]**: These provide the register's address when SW[0] is on and the processor has finished execution (It is in its `IDLE` state). All registers that can be used as a GPR register can be displayed.
+- **SW[6]**: When this switch is turned on, data from the instruction memory is displayed. When it's off, data from the register file is shown. 
 - **SW[7]**: This enables the animation of the 7-segment display. When it is turned on, the 7-segment display is directly fed by the animation register ($x9$).
 
 #### Outputs ( uo_out[7:0] )
@@ -200,6 +200,8 @@ Below is the mapping between the signals from the **DATAPATH** image and the **I
 | :------: | :------: |
 | sw_addr | ui_in[5:2] |
 | msb | ui_in[1] |
+| view_sel | ui_in[6] |
+| anim_en | ui_in[7] |
 
 #### Program counter
 
@@ -309,14 +311,15 @@ The diagram for the 7-segment driver is shown below.
 
 <p align=center> <img src="figs/TP-7-seg.png" alt="figs/TP-7-seg.png" width="500"/> </p>
 
-The combinational logic cluster handles the convertion of the 5-bit input `value` to the corresponding 8-bit 7-segment signal pattern. If the animation is enabled (SW[7] is on) the `bit_array` input is forwarded to the 7-segment display through the `out` IO. If the animation is disabled, the signal pattern is forwarded.
+The combinational logic cluster handles the convertion of the 5-bit input `value` to the corresponding 8-bit 7-segment signal pattern. If the animation is enabled (SW[7] is on) the `bit_array` input is forwarded to the 7-segment display through the `out` IO. If the animation is disabled, the signal pattern is forwarded. If the display is not enabled (SW[0] is off) nothing is shown.
 
 Below is the mapping between the signals from the **DATAPATH**, **IO** images and the **7-SEG DRIVER** image.
 
-| Datapath | 7-seg driver |
-| :------: | :------: |
-| 5-bit input | data |
-| x9 | bit_array |
-| ui_in[7] | anim_en |
+| Datapath    |  IO    | 7-seg driver |
+| :------:    |  :------:    | :------: |
+| 5-bit input |  - | data |
+| x9          |  - | bit_array |
+| -    |  ui_in[0]    | display_on |
+| -    |  ui_in[7]    | anim_en |
 
 
