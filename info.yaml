@@ -45,7 +45,7 @@ documentation:
       5. Program the FPGA using the driver.sv as the top module of the design.
 
       - Turn on the switch connected to the **drive** signal of the driver module. This will signal the driver to begin intializing the processor.
-      - Use the first switch to freeze [off] and unfreeze [on] the 7-seg display.
+      - Use the first switch to turn the 7-seg display [on] and [off].
       - Use the second switch to select which 4-bit values (msbs [on] or lsbs [off]) of a Byte, you wish to see on the 7-seg display.
       - The switches[5:2] represent the 4-bit address used to index the 14 registers available for display.
       - The sixth switch changes the source between instruction [on] and data [off] memory.
@@ -54,7 +54,7 @@ documentation:
 # A description of what the inputs do (e.g. red button, SPI CLK, SPI MOSI, etc).
   inputs:               
     - Display on/off
-    - Most significant Byte
+    - Most Significant Bits
     - RS_addr[0]
     - RS_addr[1]
     - RS_addr[2]
