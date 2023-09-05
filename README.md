@@ -2,7 +2,7 @@
 
 # Tiny Processor
 
-The readme file is split into two sections; The introduction section of the project that describes the software part, and the hardware part of this project and a second section which shows how to simulate the design or implement it on an FPGA. In the software part of the first section we describe the ISA, the programming model and the compiler script that was used to generate the executable files. In the hardware part we describe the harware components of the *Tiny Processor* design.
+The readme file is split into two sections; The introduction section that describes the software part, and the hardware part of this project, and a *hands on* section which shows how to simulate the design or implement it on an FPGA. In the software part of the first section we describe the ISA, the programming model and the compiler script that was used to generate the executable files. In the hardware part we describe the harware components of the *Tiny Processor* design.
 
 ## Software
 
@@ -88,7 +88,7 @@ j main
 #### Note
 Identation doesn't matter. Each instruction and label must be on a separate line. Comments are not supported.
 
-While the frame counter's count is not `0` the value of the animation register $x9$ stays the same. This is acheived by branching to the `skip` label @ the end of the loop's body. When the counter reaches `0` the inner body of the loop (start @ `la x1`) is executed. Here the value of the animation register is updated. To animate the 7-segment in a circular pattern a single bit shift is applied. If there is no more need to shift we initialize the animation register back to the value `1`. Below is a diagram indicating how the change of the animation registers value affects the output of the 7-segement display in this particular example.
+While the frame counter's count is not `0` the value of the animation register $x9$ stays the same. This is acheived by branching to the `skip` label @ the end of the loop's body. When the counter reaches `0` the inner body of the loop (start @ `la x1`) is executed. Here the value of the animation register is updated. To animate the 7-segment in a circular pattern a single bit shift is applied. If there is no more need to shift, we initialize the animation register back to the value `1`. Below is a diagram indicating how the change of the animation register's value, affects the output of the 7-segement display.
 
 <p align=center> <img src="figs/TP-anim.png" alt="figs/TP-anim.png" width="700"/> </p>
 
@@ -176,7 +176,7 @@ Below is a schematic that shows all the inputs and outputs the processor design 
 - **SW[1]**: Choose which bits of a Byte to display. When this switch is on, Byte[7:4] is displayed, and when it's off, Byte[3:0] is displayed.
 - **SW[5:2]**: These provide the register's address when SW[0] is on and the processor has finished execution (It is in its `IDLE` state). All registers that can be used as a GPR register can be displayed.
 - **SW[6]**: When this switch is turned on, data from the instruction memory is displayed. When it's off, data from the register file is shown. 
-- **SW[7]**: This enables the animation of the 7-segment display. When it is turned on, the 7-segment display is directly fed by the animation register ($x9$).
+- **SW[7]**: This enables the animation of the 7-segment display. When it is turned on, the 7-segment display is directly fed by the animation register $x9$.
 
 #### Outputs ( uo_out[7:0] )
 
@@ -242,7 +242,7 @@ Below is the mapping between the signals from the **DATAPATH** image and the **M
 #### ALU
 
 The first operand and destination of the ALU-unit is always the accumulator register. The second can alternate between;
-  1. `sext imm` This is a 4-bit sign extented immediate encoded in the instruction
+  1. `sext_imm` This is a 4-bit sign extented immediate encoded in the instruction
   2. `fc_data` This is a single bit value from the frame counter module that indicates the transition between frames. It is zero-extented to 8 bits.
   1. `rs_data` This is a value from the register file. It is used when an instruction indexes registers $x0-x13$.
   2. `spi_data` This is SPI register's ($x14$) value.
@@ -253,7 +253,7 @@ The input data to the frame counter module is the combination of registers $x10-
 
 <p align=center> <img src="figs/TP-FC.png" alt="figs/TP-FC.png" width="500"/> </p>
 
-The global reset signal `rst`, sets the counter to the 0 value. During normal execution if the signal `ctrl_rst` is enabled the counter is reset to the 32-bit `data` input. Otherwise it decreases by one, each clock cycle. When it reaches the 0 value it stays there until it is reset by the control logic through the `ctrl_rst` signal. The output signal `sig` is 0, only when the counter reaches 0.
+The global reset signal `rst`, sets the counter to the 0 value. During normal execution if the signal `ctrl_rst` is enabled the counter is reset to the 32-bit `data` input. Otherwise it decreases by one, each clock cycle. When it reaches the 0 value, it stays there until it is reset by the control logic through the `ctrl_rst` signal. The output signal `sig` is 0, only when the counter reaches 0.
 
 Below is the mapping between the signals from the **DATAPATH** image and the **FRAME COUNTER** image.
 
@@ -284,7 +284,7 @@ The three main components of the SPI module are the FSM, the counter `NB` that i
 
 #### FSM
 
-The finite state machine of the SPI module is pretty simple. When the module receives an incoming request (`send` | `read`) the FSM transitions to `BUSY` state. While in this state it enables the datapath to send or receive data based on the which signal (`send` or `read`) was active. When the transaction is completed (`all_bits_received` = 1) it returns to its `IDLE` state.
+The finite state machine of the SPI module is pretty simple. When the module receives an incoming request (`send` | `read`) the FSM transitions to `BUSY` state. While in this state it enables the datapath to send or receive data based on the which signal (`send` or `read`) was active. When the transaction has been completed, (`all_bits_received` = 1) it returns to its `IDLE` state.
 
 #### Number of Bytes counter or NB
 
