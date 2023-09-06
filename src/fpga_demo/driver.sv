@@ -16,11 +16,15 @@ module driver (
   output logic[1:0] mode_out
 );
 
-logic[7:0] imem[16];
+logic[7:0] imem[32];
 logic[7:0] dmem[16];
 
-initial $readmemh("./anim0.mem ", imem);
-initial $readmemh("./anim0d.mem", dmem);
+int offset;
+
+initial $readmemh("./test.mem ", imem);
+initial $readmemh("./testd.mem", dmem);
+// initial $readmemh("./anim0.mem ", imem);
+// initial $readmemh("./anim0d.mem", dmem);
 // initial $readmemh("./add.mem ", imem);
 // initial $readmemh("./addd.mem", dmem);
 // initial $readmemh("./shift.mem ", imem);
@@ -57,6 +61,15 @@ always_ff @(posedge clk) begin
   end
 end
 
+logic inc_off;
+always @(posedge clk) begin
+  if (rst) begin
+    offset <= 0;
+  end else if (inc_off) begin
+    offset <= offset + 16;
+  end 
+end
+
 // FSMD //
 typedef enum logic[3:0] { IDLE, SENDi[3], DONEi, SENDd[3], DONEd, STALL, FIN } state_t;
 state_t st;
@@ -80,7 +93,10 @@ always @(posedge clk) begin
         st <= (bytes_sent == 4'd15) ? SENDd0 : SENDi0;
       end
     
-      SENDd0: st <= SENDd1;
+      SENDd0: begin 
+        st <= (offset >= 32) ? FIN : SENDd1;
+      end
+
       SENDd1: st <= SENDd2;
 
       SENDd2: begin
@@ -96,7 +112,13 @@ always @(posedge clk) begin
       end
 
       FIN: begin
-        st <= ~drive ? IDLE : FIN;
+        if (done_in) begin
+          if (offset < 32) begin
+            st <= SENDi0;
+          end else begin
+            st <= ~drive ? IDLE : FIN;
+          end
+        end
       end
 
       default: st <= IDLE;
@@ -104,12 +126,14 @@ always @(posedge clk) begin
   end
 end
 
+assign inc_off = (st == DONEi) && (bytes_sent == 4'd15);
+
 assign bits_sent_en  = ( st == SENDi2 ) || ( st == SENDd2);
 assign bytes_sent_en = ( st == DONEi  ) || ( st == DONEd);
 
 assign bytes_sent_rst = ( &bytes_sent & (st == FIN) );
 
-assign src = ( st == SENDi2 ) ? imem[bytes_sent] : dmem[bytes_sent];
+assign src = ( st == SENDi2 ) ? imem[offset + bytes_sent] : dmem[bytes_sent];
 
 assign data = {1'b0, src, bytes_sent};
 assign mosi_out = data[bits_sent];
@@ -132,6 +156,6 @@ always_comb begin
   endcase
 end
 
-assign done_out = (st == FIN);
+assign done_out = (st == FIN) && (offset >= 32);
 
 endmodule
