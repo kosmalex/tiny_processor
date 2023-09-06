@@ -47,7 +47,8 @@ assign p_sync      = uio_out[7];
 logic[7:0] s7_n;
 assign s7 = ~s7_n;
 
-driver driver_0 (.clk(clk), .*, .done_out(d_done_out));
+driver #( .nInstructions(32), .nRegisters(16) )
+driver_0 (.clk(clk), .*, .done_out(d_done_out));
 
 tt_um_tiny_processor tt_um_tiny_processor_0 (
   .ui_in   (sw[7:0]), // Dedicated inputs

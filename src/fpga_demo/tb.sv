@@ -51,7 +51,8 @@ assign uio_in[4]   = sel_dev ? miso : mosi_out;
 assign mosi        = uio_out[5];
 assign cs          = uio_out[6];
 
-driver dut (.*, .done_out(done_drive));
+driver #( .nInstructions(16), .nRegisters(16) )
+dut     ( .clk(clk), .*, .done_out(d_done_out));
 
 tt_um_tiny_processor tt_um_tiny_processor (
   .ui_in   (ui_in),    // Dedicated inputs
@@ -60,8 +61,8 @@ tt_um_tiny_processor tt_um_tiny_processor (
   .uio_out (uio_out),  // IOs: Output path
   .uio_oe  (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
   .ena     (1'b1),     // enable - goes high when design is selected
-  .clk     (clk), // clock
-  .rst_n   (rst_n) // not reset
+  .clk     (clk),      // clock
+  .rst_n   (rst_n)     // not reset
 );
 
 initial begin
@@ -70,23 +71,19 @@ initial begin
   drive <= 1'b1;
   @(posedge clk);
 
-  @(posedge done_drive) begin
-    sel_dev <= 1'b1;
-  end
-
   $stop;
 end
 
 task RESET();
-  rst     <= 1'b1;
-  rst_n   <= 1'b0;
-  drive   <= 1'b0;
-  sel_dev <= 1'b0;
-  anim_en <= 1'b1;
+  rst        <= 1'b1;
+  rst_n      <= 1'b0;
+  drive      <= 1'b0;
+  sel_dev    <= 1'b0;
+  anim_en    <= 1'b1;
   display_on <= 1'b0;
-  addr_in <= 4'b0;
-  view_sel <= 1'b0;
-  msb     <= 1'b0;
+  addr_in    <= 4'b0;
+  view_sel   <= 1'b0;
+  msb        <= 1'b0;
   repeat(10) @(posedge clk);
   rst <= 1'b0;
   repeat(10) @(posedge clk);

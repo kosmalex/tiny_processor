@@ -13,9 +13,9 @@ add wave -noupdate -expand -group Driver /tb/dut/bits_sent_en
 add wave -noupdate -expand -group Driver /tb/dut/bits_sent
 add wave -noupdate -expand -group Driver /tb/dut/bytes_sent_en
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/rst_n
-add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/pclk
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/icache/mem
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/control_logic_0/master2proc_en_in
+add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/control_logic_0/pc_en_out
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/control_logic_0/csi
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/control_logic_0/st
 add wave -noupdate -expand -group Processor /tb/tt_um_tiny_processor/dcache/mem
@@ -56,7 +56,7 @@ add wave -noupdate -group SR /tb/tt_um_tiny_processor/spi_if_0/shift_reg_0/data_
 add wave -noupdate -group SR /tb/tt_um_tiny_processor/spi_if_0/shift_reg_0/data_out
 add wave -noupdate -group SR /tb/tt_um_tiny_processor/spi_if_0/shift_reg_0/register
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9164991 ps} 0}
+WaveRestoreCursors {{Cursor 1} {7599919 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 214
 configure wave -valuecolwidth 100
@@ -72,4 +72,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {9067833 ps} {9300141 ps}
+WaveRestoreZoom {5005920 ps} {5207242 ps}

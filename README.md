@@ -301,9 +301,9 @@ Once the counter's value reaches 1, it indicates that all bits have been receive
 
 The shift register stores the data that is about to be sent or received via SPI protocol. When the request is a `read` or when the driver module initializes the processor the each bit received is shifted into the shift register from its `sdata` input. All bits of the shift register are read in parallel (`buffer`). When the processor requests a write to an external device a GPR register is written to the shift register via its `data` input. It is then sent bit by bit through the `mosi` IO of the module. The shift register alias is $x14$.
 
-#### Phase shift register
+#### Chip Select register
 
-The phase shift register was used to keep the mosi signal stable near the positive edges of the serial clock, to ensure that sent bits are sampled correctly. This register samples values at the negative edge of the input clock.
+It is used to buffer the outcoming `cs` signal.
 
 ### 7-seg driver
 

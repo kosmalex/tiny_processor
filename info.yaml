@@ -34,22 +34,24 @@ documentation:
       Serial Periferal Interface or SPI protocol, and has the capability to animate the seven segment display.
       To use the processor an additional external driver is needed. In this project we use an Digilent Nexys A7 FPGA. The FPGA is programmed w/ the driver.sv module. The driver's
       internal storages (imem, dmem) are initialized w/ .mem files. The driver then sends this data to the processor and signals it to begin
-      execution. Once execution is finished the user can view the contents of the GPRs on the 7-segment display or watch an animation on the display.
+      execution. Once execution is finished the user can view the contents of the GPRs or watch an animation on the 7-segment display.
      
 # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
   how_to_test: |
-      1. Write and compile a simple program using the provided compiler (more on that in the README.md) to generate a .mem file. This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
+      1. Write and assemble a simple program using the provided assembler (more on that in the README.md) to generate a .mem file. This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
       2. Open Xilinx' Vivado and create a project containing; driver.sv, tp.xdc and all needed .mem files.
       4. Replace the desired file paths in the **readmemh** macros in the driver.sv module for instructions and data.
       4. Connect the processor to an Xilinx FPGA.
       5. Program the FPGA using the driver.sv as the top module of the design.
 
-      - Turn on the switch connected to the **drive** signal of the driver module. This will signal the driver to begin intializing the processor.
+      - Turn on the switch connected to the **drive** signal of the driver module. This will signal the driver to begin intializing the processor and signal it to start execution.
       - Use the first switch to turn the 7-seg display [on] and [off].
       - Use the second switch to select which 4-bit values (msbs [on] or lsbs [off]) of a Byte, you wish to see on the 7-seg display.
       - The switches[5:2] represent the 4-bit address used to index the 14 registers available for display.
       - The sixth switch changes the source between instruction [on] and data [off] memory.
       - The last switch enables the animation of the 7-seg display. If it is turned on, the display's source is the animation register (x9). Otherwise it displays the data stored in one of the processor's memories.
+
+      **Note:** Unless the processor has stopped executing (is in its `IDLE` state), the contents of its memories will not be clearly visible on the display.
 
 # A description of what the inputs do (e.g. red button, SPI CLK, SPI MOSI, etc).
   inputs:               

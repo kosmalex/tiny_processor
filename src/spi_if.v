@@ -30,8 +30,10 @@ generate
       always @(posedge clk) begin
         if (rst) begin
           register[SIZE - 1] <= 0;
-        end else begin
-          register[SIZE - 1] <= mode_in ? data_in[DATA_W - 1] : ( en_in ? sdata_in : 1'b0 );
+        end else if (mode_in) begin
+          register[SIZE - 1] <= (i < DATA_W) ? data_in[DATA_W - 1] : 1'b0;
+        end else if (en_shft_in & ~mode_in) begin
+          register[SIZE - 1] <= en_in ? sdata_in : 1'b0;
         end
       end
     end else begin
@@ -87,6 +89,9 @@ module spi_if #(
 reg[BUFFER_SIZE_W-1:0] nbytes;
 wire[BUFFER_SIZE-1:0]  buffer;
 
+wire master_override;
+reg cs;
+
 wire is_idle, is_busy;
 wire all_bits_recvd;
 
@@ -95,10 +100,8 @@ wire sr_en, sr_mode;
 wire incoming_req;
 assign incoming_req = ( send_in | read_in );
 
-reg phase_shift;
-reg st;
-
 // FSM
+reg st;
 always @(posedge clk) begin
   if (rst) begin
     st <= IDLE;
@@ -116,7 +119,7 @@ end
 always @(posedge clk) begin
   if (rst | ( is_idle & incoming_req ) ) begin
     nbytes <= driver_io_in ? BUFFER_SIZE : 4'h8;
-  end else if (is_busy) begin
+  end else if (master_override) begin
     nbytes <= nbytes - 1;
   end
 end
@@ -129,16 +132,20 @@ shift_reg #(
 
   .sdata_in   (miso_in),
   .en_in      (sr_en),
-  .en_shft_in (is_busy),
+  .en_shft_in (master_override),
   .mode_in    (sr_mode),
 
   .data_in  (data_in),
   .data_out (buffer)
 );
 
-// Helps keep data stable on the positive edge of sclk
-always @(negedge clk) begin
-  phase_shift <= buffer[ADDR_W];
+// reversed select
+always @(posedge clk) begin
+  if ( rst | ready_out ) begin
+    cs <= 1'b1;
+  end else if (~sclk_out & cs) begin
+    cs <= ~(is_busy & ~driver_io_in);
+  end
 end
 
 assign data_out = buffer[BUFFER_SIZE-1:ADDR_W];
@@ -151,11 +158,12 @@ assign all_bits_recvd = (nbytes == 1'b1);
 
 assign ready_out = is_busy & all_bits_recvd;
 
-assign sclk_out = clk;
-assign cs_out   = ~(is_busy & ~driver_io_in); // reversed select
+assign master_override = ~cs | driver_io_in;
+assign sclk_out        = master_override ? ~clk : 1'b0;
+assign cs_out          = cs;
 
 assign sr_en   = read_in & is_busy;
 assign sr_mode = send_in & is_idle;
 
-assign mosi_out = phase_shift;
+assign mosi_out = buffer[ADDR_W];
 endmodule
