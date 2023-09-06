@@ -305,6 +305,26 @@ The shift register stores the data that is about to be sent or received via SPI 
 
 It is used to buffer the outcoming `cs` signal.
 
+#### An example transaction
+
+The below waveform shows a SPI write operation (`spiw` instruction).
+
+<p align=center> <img src="figs/WV-SPI.png" alt="figs/WV-SPI.png" width="1000"/> </p>
+
+The `clk` signal which is colored blue is the system clock. The SPI's serial clock is the inverted system clock. The serial clock idles @ logic low and outcoming or incoming bits are sampled @ its positive edge. This means that the SPI's mode is 0. More on that here: https://en.wikipedia.org/wiki/Serial_Peripheral_Interface. The `buffer` is the signal coming from the shift register and `nbytes` register is the `NB` register as shown in the SPI image above.
+
+Once the `buffer` and `nbytes` registers have been initialized the chip select signal (`cs_out`) is deasserted to indicate the start of a transaction. Then the slave samples (or should sample) every bit @ the rising edge of the `sclk` signal. `mosi` signal indicates the bits sampled. The shift register shifts its bits one to the right and the `nbytes` counter decrements by 1, both on every falling edge.
+
+The waveform below shows a SPI read operation (`spir` instruction).
+
+<p align=center> <img src="figs/WV-SPIr.png" alt="figs/WV-SPIr.png" width="1000"/> </p>
+
+The input `miso` signal is buffered and then shifted into the shift register @ every positive edge of the serial clock. Everything else is similar to the SPI write operation waveform.
+
+#### Note
+
+When the driver initializes the processor it uses the SPI module. However, it does not strictly follow the SPI protocol. That is why the `miso` signal is not buffered when driver IO takes place.
+
 ### 7-seg driver
 
 The diagram for the 7-segment driver is shown below.

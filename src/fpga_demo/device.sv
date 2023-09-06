@@ -40,11 +40,6 @@ generate
   end
 endgenerate
 
-logic phase_shift;
-always_ff @(negedge clk) begin
-  phase_shift <= register[0];
-end
-
-assign miso = phase_shift;
+assign miso = register[0];
 
 endmodule

@@ -54,6 +54,8 @@ assign cs          = uio_out[6];
 driver #( .nInstructions(16), .nRegisters(16) )
 dut     ( .clk(clk), .*, .done_out(d_done_out));
 
+device device_0 (.*);
+
 tt_um_tiny_processor tt_um_tiny_processor (
   .ui_in   (ui_in),    // Dedicated inputs
   .uo_out  (uo_out),   // Dedicated outputs
@@ -70,6 +72,10 @@ initial begin
 
   drive <= 1'b1;
   @(posedge clk);
+
+  @(mode_out == 2'b11) begin
+    sel_dev <= 1'b1;
+  end
 
   $stop;
 end

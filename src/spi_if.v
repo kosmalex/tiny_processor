@@ -92,6 +92,8 @@ wire[BUFFER_SIZE-1:0]  buffer;
 wire master_override;
 reg cs;
 
+reg bf_miso;
+
 wire is_idle, is_busy;
 wire all_bits_recvd;
 
@@ -130,7 +132,7 @@ shift_reg #(
   .clk (clk),
   .rst (rst),
 
-  .sdata_in   (miso_in),
+  .sdata_in   (driver_io_in ? miso_in : bf_miso),
   .en_in      (sr_en),
   .en_shft_in (master_override),
   .mode_in    (sr_mode),
@@ -138,6 +140,11 @@ shift_reg #(
   .data_in  (data_in),
   .data_out (buffer)
 );
+
+// buffered mosi
+always @(negedge clk) begin
+  if (~cs) bf_miso <= miso_in;
+end
 
 // reversed select
 always @(posedge clk) begin
