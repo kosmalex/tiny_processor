@@ -358,7 +358,7 @@ The driver module orchestrates the processor's initialization and execution. The
 
 If there are less instructions than initialization values, the processor will run the same program (sequence of instructions) on different initialization values for the registers.
 
-if there are less initialization values than instructions, the processor will run a bigger program withought losing its itermediate register values. In other words GPRs do not lose their values between program executions.
+if there are less initialization values than instructions, the processor will run a bigger program withought losing its itermediate register values. In other words **GPRs** and the **accumulator** register **do not** lose their values between program executions.
 
 The module contains the so-called *modifiable region*. This is basically where you should put your `.mem` binaries. Their purpose was described in the software section.
 

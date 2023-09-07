@@ -27,6 +27,7 @@ logic[3:0] addr_in;
 logic [6:0] segments = uo_out[6:0];
 logic       lsb      = uo_out[7];
 
+logic sclk;
 logic sel_dev;
 logic done_drive;
 logic drive, done_in;
@@ -43,11 +44,12 @@ assign ui_in[6]   = view_sel;
 assign ui_in[7]   = anim_en;
 
 assign uio_in[1:0] = mode_out;
+assign sclk        = uio_out[3];
 assign uio_in[4]   = sel_dev ? miso : mosi_out;
 assign mosi        = uio_out[5];
 assign cs          = uio_out[6];
 
-driver #( .nInstructions(16), .nRegisters(16) )
+driver #( .nInstructions(32), .nRegisters(16) )
 dut     ( .clk(clk), .*, .done_out(d_done_out));
 
 device device_0 (.*);
@@ -72,6 +74,16 @@ initial begin
   @(mode_out == 2'b11) begin
     sel_dev <= 1'b1;
   end
+
+  //>>>>>>> For every new 16 group of instructions
+  // @(mode_out != 2'b11) begin
+  //   sel_dev <= 1'b0;
+  // end
+  
+  // @(mode_out == 2'b11) begin
+  //   sel_dev <= 1'b0;
+  // end
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   $stop;
 end

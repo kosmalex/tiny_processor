@@ -1,0 +1,9 @@
+main:
+  la x15
+  bnez main
+  
+  spir x14
+  la x14
+  sa x9
+
+j main

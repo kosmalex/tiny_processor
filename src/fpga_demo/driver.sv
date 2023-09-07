@@ -29,8 +29,12 @@ int offsetI, offsetD;
 // initial $readmemh("./anim0d.mem", dmem);
 
 /// Animation double bar
-initial $readmemh("./anim1.mem ", imem);
-initial $readmemh("./anim1d.mem", dmem);
+// initial $readmemh("./anim1.mem ", imem);
+// initial $readmemh("./anim1d.mem", dmem);
+
+/// Animation snake using external SPI pseudo device
+initial $readmemh("./anim2.mem ", imem);
+initial $readmemh("./anim2d.mem", dmem);
 
 /// Some additions
 // initial $readmemh("./add_.mem ", imem);
@@ -47,6 +51,10 @@ initial $readmemh("./anim1d.mem", dmem);
 /// Test to view animation register withought animation 
 // initial $readmemh("./test1.mem ", imem);
 // initial $readmemh("./test1d.mem", dmem);
+
+/// Test to check multiple sets of 16 instructions 
+// initial $readmemh("./test0.mem ", imem);
+// initial $readmemh("./test0d.mem", dmem);
 
 /// SPI write operation
 // initial $readmemh("./spi.mem ", imem);

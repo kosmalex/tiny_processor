@@ -31,6 +31,9 @@ logic[1:0] mode_out;
 
 assign rst_n = ~rst;
 
+// Device
+logic d_miso;
+
 // Processor
 logic p_sclk;
 logic p_mosi;
@@ -39,7 +42,7 @@ logic p_cs;
 assign uio_in[1:0] = mode_out;
 assign done_in     = uio_out[2];
 assign p_sclk      = uio_out[3];
-assign uio_in[4]   = (drive & done_in) ? 1'b0 : mosi_out;
+assign uio_in[4]   = (mode_out == 2'b11) ? d_miso : mosi_out;
 assign p_mosi      = uio_out[5];
 assign p_cs        = uio_out[6];
 assign p_sync      = uio_out[7];
@@ -49,6 +52,8 @@ assign s7 = ~s7_n;
 
 driver #( .nInstructions(32), .nRegisters(16) )
 driver_0 (.clk(clk), .*, .done_out(d_done_out));
+
+device device_0 ( .*, .mosi(p_mosi), .cs(p_cs), .miso(d_miso) );
 
 tt_um_tiny_processor tt_um_tiny_processor_0 (
   .ui_in   (sw[7:0]), // Dedicated inputs
