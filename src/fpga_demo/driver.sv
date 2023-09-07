@@ -24,16 +24,31 @@ int offsetI, offsetD;
 
 //<<<<<<<<<<<<<<<<< Modifiable Region <<<<<<<<<<<<<<<
 
-// initial $readmemh("./test.mem ", imem);
-// initial $readmemh("./testd.mem", dmem);
-initial $readmemh("./anim0.mem ", imem);
-initial $readmemh("./anim0d.mem", dmem);
-// initial $readmemh("./add.mem ", imem);
-// initial $readmemh("./addd.mem", dmem);
+/// Animation single bar
+// initial $readmemh("./anim0.mem ", imem);
+// initial $readmemh("./anim0d.mem", dmem);
+
+/// Animation double bar
+initial $readmemh("./anim1.mem ", imem);
+initial $readmemh("./anim1d.mem", dmem);
+
+/// Some additions
+// initial $readmemh("./add_.mem ", imem);
+// initial $readmemh("./add_d.mem", dmem);
+
+/// Some shifts
 // initial $readmemh("./shift.mem ", imem);
 // initial $readmemh("./shiftd.mem", dmem);
+
+/// Population count operation
 // initial $readmemh("./popc.mem ", imem);
 // initial $readmemh("./popcd.mem", dmem);
+
+/// Test to view animation register withought animation 
+// initial $readmemh("./test1.mem ", imem);
+// initial $readmemh("./test1d.mem", dmem);
+
+/// SPI write operation
 // initial $readmemh("./spi.mem ", imem);
 // initial $readmemh("./spid.mem", dmem);
 

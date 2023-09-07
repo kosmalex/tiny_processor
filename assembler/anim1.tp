@@ -1,0 +1,16 @@
+main:
+  la x15
+  bnez skip
+    la x1
+    and x9
+    bnez to_init
+      la x9
+      slli 1
+      j skip_rest
+    to_init:
+      la x9
+      srl x0
+    skip_rest:
+      sa x9
+  skip:
+j main

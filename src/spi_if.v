@@ -68,12 +68,12 @@ module spi_if #(
 
   // DRIVER EXT //
   input  wire             driver_io_in, 
-  output wire[ADDR_W-1:0] addr_out,
+  output wire[ADDR_W-1:0] addr_out    ,
 
   // READ //
-  input  wire             read_in,
+  input  wire             read_in  ,
   output wire             ready_out,
-  output wire[DATA_W-1:0] data_out,
+  output wire[DATA_W-1:0] data_out ,
 
   // WRITE //
   input wire             send_in,
@@ -166,7 +166,7 @@ assign all_bits_recvd = (nbytes == 1'b1);
 assign ready_out = is_busy & all_bits_recvd;
 
 assign master_override = ~cs | driver_io_in;
-assign sclk_out        = master_override ? ~clk : 1'b0;
+assign sclk_out        = ~cs ? ~clk : 1'b0;
 assign cs_out          = cs;
 
 assign sr_en   = read_in & is_busy;

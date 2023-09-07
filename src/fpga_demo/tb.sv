@@ -82,7 +82,7 @@ task RESET();
   drive      <= 1'b0;
   sel_dev    <= 1'b0;
   anim_en    <= 1'b1;
-  display_on <= 1'b0;
+  display_on <= 1'b1;
   addr_in    <= 4'b0;
   view_sel   <= 1'b0;
   msb        <= 1'b0;

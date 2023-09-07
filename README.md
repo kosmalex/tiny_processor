@@ -324,7 +324,7 @@ The input `miso` signal is buffered @ every falling edge of the input clock, if 
 #### Notes
 
 - When the driver initializes the processor it uses the SPI module. However, it does not strictly follow the SPI protocol. That is why the `miso` signal is not buffered when driver IO takes place.
-- The logic high of the *Tiny processor* design will be around **1.8 V**. Consiquently, SPI signals may need external amplification.
+- The logic high of the *Tiny processor* design will be around **1.8 V**.
 
 ### 7-seg driver
 
