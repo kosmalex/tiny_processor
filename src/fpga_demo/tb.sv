@@ -4,14 +4,10 @@ module tb;
 
 logic clk, pclk, rst;
 
+// 50MHz clock
 initial begin
   clk = 0;
-  forever #5ns clk = ~clk;
-end
-
-initial begin
-  pclk = 0;
-  forever #10ns pclk = ~pclk;
+  forever #10ns clk = ~clk;
 end
 
 logic [7:0] uo_out;

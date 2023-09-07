@@ -284,7 +284,7 @@ The three main components of the SPI module are the FSM, the counter `NB` that i
 
 #### FSM
 
-The finite state machine of the SPI module is pretty simple. When the module receives an incoming request (`send` | `read`) the FSM transitions to `BUSY` state. While in this state it enables the datapath to send or receive data based on the which signal (`send` or `read`) was active. When the transaction has been completed, (`all_bits_received` = 1) it returns to its `IDLE` state.
+The finite state machine of the SPI module is pretty simple. When the module receives an incoming request (`send` | `read`) the FSM transitions to `BUSY` state. While in this state it enables the datapath to send or receive data based on the which signal (`send` or `read`) was active. When the transaction has been completed, (`all_bits_rcvd` = 1) it returns to its `IDLE` state.
 
 #### Number of Bytes counter or NB
 
@@ -295,11 +295,11 @@ The `NB` counter is a 4-bit counter and has 4 possible future values;
   3. `NB - 1`: While the transaction through SPI is not yet complete the counter decrements by 1, to count the number of bytes sent or received.
   4. `NB`: When none of the above is not true the counter does nothing.
 
-Once the counter's value reaches 1, it indicates that all bits have been received and so sets the `all_bits_received` signal.
+Once the counter's value reaches 1, it indicates that all bits have been received and so sets the `all_bits_rcvd` signal.
 
 #### Shift register
 
-The shift register stores the data that is about to be sent or received via SPI protocol. When the request is a `read` or when the driver module initializes the processor the each bit received is shifted into the shift register from its `sdata` input. All bits of the shift register are read in parallel (`buffer`). When the processor requests a write to an external device a GPR register is written to the shift register via its `data` input. It is then sent bit by bit through the `mosi` IO of the module. The shift register alias is $x14$.
+The shift register stores the data that is about to be sent or received via SPI protocol. When the request is a `read` or when the driver module initializes the processor, each bit received is shifted into the shift register from its `sdata` input. All bits of the shift register are read in parallel (`buffer`). When the processor requests a write to an external device a GPR register is written to the shift register via its `data` input. It is then sent bit by bit through the `mosi` IO of the module. The shift register alias is $x14$.
 
 #### Chip Select register
 
@@ -311,19 +311,20 @@ The below waveform shows a SPI write operation (`spiw` instruction).
 
 <p align=center> <img src="figs/WV-SPI.png" alt="figs/WV-SPI.png" width="1000"/> </p>
 
-The `clk` signal which is colored blue is the system clock. The SPI's serial clock is the inverted system clock. The serial clock idles @ logic low and outcoming or incoming bits are sampled @ its positive edge. This means that the SPI's mode is 0. More on that here: https://en.wikipedia.org/wiki/Serial_Peripheral_Interface. The `buffer` is the signal coming from the shift register and `nbytes` register is the `NB` register as shown in the SPI image above.
+The `clk` signal which is colored blue is the system clock. The SPI's serial clock is the inverted system clock. The serial clock idles @ logic low and outcoming or incoming bits are sampled @ its positive edge. This means that the SPI's mode is 0. More on that here; https://en.wikipedia.org/wiki/Serial_Peripheral_Interface. The `buffer` is the signal coming from the shift register and `nbytes` register is the `NB` register from the SPI image above.
 
-Once the `buffer` and `nbytes` registers have been initialized the chip select signal (`cs_out`) is deasserted to indicate the start of a transaction. Then the slave samples (or should sample) every bit @ the rising edge of the `sclk` signal. `mosi` signal indicates the bits sampled. The shift register shifts its bits one to the right and the `nbytes` counter decrements by 1, both on every falling edge.
+Once the `buffer` and `nbytes` registers have been initialized the chip select signal (`cs_out`) is deasserted to indicate the start of a transaction. Then the slave samples (or should sample) every bit @ the rising edge of the `sclk` signal. The `mosi` signal indicates the bit that is about to be sampled. The shift register shifts its bits one to the right and the `nbytes` counter decrements by 1, both on every falling edge of clock (`clk`).
 
 The waveform below shows a SPI read operation (`spir` instruction).
 
 <p align=center> <img src="figs/WV-SPIr.png" alt="figs/WV-SPIr.png" width="1000"/> </p>
 
-The input `miso` signal is buffered and then shifted into the shift register @ every positive edge of the serial clock. Everything else is similar to the SPI write operation waveform.
+The input `miso` signal is buffered @ every falling edge of the input clock, if `cs` is deasserted. It's shifted into the shift register @ every positive edge of the serial clock. Everything else is similar to the SPI write operation waveform.
 
-#### Note
+#### Notes
 
-When the driver initializes the processor it uses the SPI module. However, it does not strictly follow the SPI protocol. That is why the `miso` signal is not buffered when driver IO takes place.
+- When the driver initializes the processor it uses the SPI module. However, it does not strictly follow the SPI protocol. That is why the `miso` signal is not buffered when driver IO takes place.
+- The logic high of the *Tiny processor* design will be around **1.8 V**. Consiquently, SPI signals may need external amplification.
 
 ### 7-seg driver
 
@@ -342,4 +343,53 @@ Below is the mapping between the signals from the **DATAPATH**, **IO** images an
 | -    |  ui_in[0]    | display_on |
 | -    |  ui_in[7]    | anim_en |
 
+# Hands on stuff
 
+This section describes the following;
+  1. A quick introduction to the driver module.
+  2. How to simulate the design using **Mentor's Modelsim**.
+  3. How to program the Nexys A7 FPGA and run the animation binary using **Xilinx' Vivado**. 
+
+## Driver module
+
+The driver module orchestrates the processor's initialization and execution. The module contains 2 parameters the number of instructions to execute `nInstructions` and the number of register initialization values `nRegisters`. Both must be a multiple of 16. Since the processor has only 16 elements for both data (rf) and instruction memories, the driver loads the first 16 instructions, initializes the registers w/ the first 16 values and signals the processor to begin execution. After the execution has finished the driver procedes to initialize the processor memories w/ the next pair of 16 elements (instructions and register values) and once again signal it to begin execution. This process repeats until every specified instruction is executed or every register initialization has occured, as shown in the diagram below.
+
+<p align=center> <img src="figs/TP-driver.png" alt="figs/TP-driver.png" width="700"/> </p>
+
+If there are less instructions than initialization values, the processor will run the same program (sequence of instructions) on different initialization values for the registers.
+
+if there are less initialization values than instructions, the processor will run a bigger program withought losing its itermediate register values. In other words GPRs do not lose their values between program executions.
+
+The module contains the so-called *modifiable region*. This is basically where you should put your `.mem` binaries. Their purpose was described in the software section.
+
+## Simulation
+
+Below is the abstract diagram of the `tb` module.
+
+<p align=center> <img src="figs/TP-tb.png" alt="figs/TP-tb.png" width="400"/> </p>
+
+The device is a pseudo SPI device used to test the correctness of the `spir` instruction. It will send a single Byte to the processor when its `cs` signal goes low.
+
+Once you've cloned the repo from git, head to the fpga_demo directory.
+
+```
+$ cd <path-to-git>/src/fpga_demo
+```
+
+Open modelsim in the directory you're in, and run the `run.do` file. Make sure you have specified the location of **modelsim** in the **PATH** environmental variable. You can also open modelsim first and the navigate to the specified directory.
+
+```
+$ modelsim .
+
+modelsim shell> do run.do
+```
+
+Once the simulation has run, the waveform for the default `anim0.mem` binary should look like this;
+
+<p align=center> <img src="figs/RUN-anim0.png" alt="figs/RUN-anim0.png" width="1100"/> </p>
+
+Feel free to play with different scripts. Make sure the driver module has the correct parameters.
+
+## FPGA implementation
+
+Instead of the tb module, the demo_top module is used for implementation. Here's a video [https://youtu.be/60c3beFnRuM] showing how to program the FPGA with the animation script.
