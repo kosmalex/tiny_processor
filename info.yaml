@@ -40,7 +40,7 @@ documentation:
   how_to_test: |
       1. Write and assemble a simple program using the provided assembler (more on that in the README.md) to generate a .mem file. This file will be used to initialize the instructions' memory of the processor. Make a similar .mem initialization file for registers.
       2. Open Xilinx' Vivado and create a project containing all the necessary file (e.g. driver.sv, tp.xdc).
-      4. Replace the desired file paths in the **readmemh** macros in the driver.sv module for instructions and data. Don't forget to adjust the modules parameters (**nInstructions**, **nRegisters**).
+      4. Replace the desired file paths in the **readmemh** macros in the driver.sv module for instructions and data.
       5. Connect the processor to the FPGA.
       6. Program the FPGA using Vivado.
 
