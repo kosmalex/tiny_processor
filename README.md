@@ -2,7 +2,7 @@
 
 # Tiny Processor
 
-The readme file is split into two sections; The introduction section that describes the software part, and the hardware part of this project, and a *hands on* section which shows how to simulate the design or implement it on an FPGA. In the software part of the first section we describe the ISA, the programming model and the compiler script that was used to generate the executable files. In the hardware part we describe the harware components of the *Tiny Processor* design.
+The readme file is split into two sections; The introduction section that describes the software part, and the hardware part of this project, and a *hands on* section which shows how to simulate the design or implement it on an FPGA. In the software part of the first section we describe the ISA, the programming model and the assembler script that was used to generate the executable files. In the hardware part we describe the harware components of the *Tiny Processor* design.
 
 ## Software
 
@@ -51,13 +51,13 @@ The accumulator register is an extra 8-bit register used as source and destinati
 | sa  x0 | $x0  \leftarrow acc$ |
 | spiw x0| $x0  \rightarrow spi\ write$ |
 
-## Compiler
+## assembler
 
-To ease the task of writing kernels for the processor, we developed a Python compiler script, located in the `compiler` directory. The script takes as input a `.tp` file, a format field `-f` (hex (default), bin, dec), and outputs an executable `.mem` file. Below we demonstrate step-by-step, how to create an executable that animates the seven segment display in a circular pattern.
+To ease the task of writing kernels for the processor, we developed a Python assembler script, located in the `assembler` directory. The script takes as input a `.tp` file, a format field `-f` (hex (default), bin, dec), and outputs an executable `.mem` file. Below we demonstrate step-by-step, how to create an executable that animates the seven segment display in a circular pattern.
 
-### Go to the compiler directory
+### Go to the assembler directory
 ```
-$ cd <path-to-git-dir>/compiler
+$ cd <path-to-git-dir>/assembler
 ```
 ### Create a .tp file
 

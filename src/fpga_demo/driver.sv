@@ -25,16 +25,17 @@ int offsetI, offsetD;
 //<<<<<<<<<<<<<<<<< Modifiable Region <<<<<<<<<<<<<<<
 
 /// Animation single bar
-// initial $readmemh("./anim0.mem ", imem);
-// initial $readmemh("./anim0d.mem", dmem);
+initial $readmemh("./anim0.mem ", imem);
+initial $readmemh("./anim0d.mem", dmem);
 
 /// Animation double bar
 // initial $readmemh("./anim1.mem ", imem);
 // initial $readmemh("./anim1d.mem", dmem);
 
 /// Animation snake using external SPI pseudo device
-initial $readmemh("./anim2.mem ", imem);
-initial $readmemh("./anim2d.mem", dmem);
+/// *** INCLUDE drive.sv in the Vivado project ***
+// initial $readmemh("./anim2.mem ", imem);
+// initial $readmemh("./anim2d.mem", dmem);
 
 /// Some additions
 // initial $readmemh("./add_.mem ", imem);

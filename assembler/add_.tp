@@ -1,0 +1,12 @@
+main:
+  la x0
+  srl x2
+
+  la x2
+  addi 1
+  sa x2
+
+  la x1
+  addi -1
+  sa x1
+  bnez main

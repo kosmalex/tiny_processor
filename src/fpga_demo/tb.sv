@@ -49,7 +49,7 @@ assign uio_in[4]   = sel_dev ? miso : mosi_out;
 assign mosi        = uio_out[5];
 assign cs          = uio_out[6];
 
-driver #( .nInstructions(32), .nRegisters(16) )
+driver #( .nInstructions(16), .nRegisters(16) )
 dut     ( .clk(clk), .*, .done_out(d_done_out));
 
 device device_0 (.*);
@@ -81,7 +81,7 @@ initial begin
   // end
   
   // @(mode_out == 2'b11) begin
-  //   sel_dev <= 1'b0;
+  //   sel_dev <= 1'b1;
   // end
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 

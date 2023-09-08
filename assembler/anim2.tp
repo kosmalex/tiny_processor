@@ -5,5 +5,4 @@ main:
   spir x14
   la x14
   sa x9
-
 j main
