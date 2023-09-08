@@ -27,7 +27,6 @@ insts = {
 def main():
   parser = argparse.ArgumentParser("Compiler for tiny processor")
   parser.add_argument("input", type=str, help="Input file")
-  parser.add_argument("-o", type=str, help="Output file", default="a.mem")
   parser.add_argument("-f", type=str, help="Output format", default="hex")
   args = parser.parse_args()
 
@@ -69,13 +68,22 @@ def main():
 
     outf = open(OUTFILE, "w")
 
-    print(raw_cmds)
-
     """ Make numbers out of them """
-    for cmd in raw_cmds:
+    for line, cmd in enumerate(raw_cmds):
       # parts[0] -> instruction mnemonic
-      # parts[1] -> rs or imm
-      parts = cmd.split(" ")
+      # parts[1] -> rs or imm or label
+      
+      #####################################################################
+      # https://www.geeksforgeeks.org/python-string-split-including-spaces/
+      #####################################################################
+    
+      # Using re.split() to split the string excluding spaces
+      parts = re.split(r'\s', cmd)
+  
+      # Removing empty strings from the list
+      parts = [x for x in parts if x != '']
+     
+      #####################################################################
       
       opcode = insts[parts[0]]
 
@@ -83,6 +91,14 @@ def main():
       m  = re.match('(x[0-9])|(x[1][0-4])', parts[1])
       if m is not None:
         op = int(m.string.split("x")[1])
+
+        # Check if the correct register was provided for spir
+        if opcode == 0x5 and op != 14:
+          raise Exception(f"\n[ERROR][@line {line+1}]: `spir x{op}` instruction is invalid! Register dst must be [x14].")
+        if opcode == 0x7 and (op == 14 or op == 15):
+          raise Exception(f"\n[ERROR][@line {line+1}]: `sa x{op}` instruction is invalid! Register is read only.")
+        if opcode == 0x1 and op == 14:
+          raise Exception(f"\n[ERROR][@line {line+1}]: `spiw x14` instruction is invalid! Only GPRs (x0-x13) allowed.")
       else:
         op = int(parts[1])
 

@@ -33,8 +33,8 @@ int offsetI, offsetD;
 // initial $readmemh("./anim1d.mem", dmem);
 
 /// Animation snake using external SPI pseudo device
-initial $readmemh("./anim2.mem ", imem);
-initial $readmemh("./anim2d.mem", dmem);
+// initial $readmemh("./anim2.mem ", imem);
+// initial $readmemh("./anim2d.mem", dmem);
 
 /// Some additions
 // initial $readmemh("./add_.mem ", imem);
@@ -57,8 +57,8 @@ initial $readmemh("./anim2d.mem", dmem);
 // initial $readmemh("./test0d.mem", dmem);
 
 /// SPI write operation
-// initial $readmemh("./spi.mem ", imem);
-// initial $readmemh("./spid.mem", dmem);
+initial $readmemh("./spi.mem ", imem);
+initial $readmemh("./spid.mem", dmem);
 
 //<<<<<<<<<<<<<<<<< Modifiable Region End <<<<<<<<<<<
 
