@@ -236,7 +236,10 @@ assign frame_cntr_reg_sel_out = rs_in[3] & rs_in[2] & rs_in[1] & rs_in[0];
   instructions.
  */
 always @(posedge clk) begin
-  is_rid_15 <= frame_cntr_reg_sel_out;
+  if (rst)
+    is_rid_15 <= 0;
+  else
+    is_rid_15 <= frame_cntr_reg_sel_out;
 end
 
 // Don't write accumulator register
@@ -353,7 +356,6 @@ assign csd        = ~(  uio_in[1] & ~uio_in[0] );
 assign miso       = uio_in[4];
 assign uio_out[2] = ctrl_proc_done;
 assign uio_out[5] = mosi;
-assign uio_out[7] = frame_cntr_reg_val;
 
 // Ground unused
 assign uio_out[1:0] = 3'b0; 
@@ -368,7 +370,18 @@ assign uio_oe[3:2] = 2'b11; // done(uio_oe[2]), sclk
 assign uio_oe[6:5] = 2'b11; // mosi, cs
 assign uio_oe[7]   = 1'b1;  // sync
 
-assign opcode = icache_data[3:0]; 
+assign opcode = icache_data[3:0];
+
+// Buffer the `sync` output signal
+reg bfrd_fcrv;
+always @(posedge clk) begin
+  if (rst) begin
+    bfrd_fcrv <= 1'b1;
+  end else begin
+    bfrd_fcrv <= frame_cntr_reg_val;
+  end
+end
+assign uio_out[7] = bfrd_fcrv;
 
 control_logic control_logic_0 (
   .clk        (clk ),
