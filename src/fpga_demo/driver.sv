@@ -17,7 +17,7 @@ module driver #(
   output logic[1:0] mode_out
 );
 
-logic[7:0] imem[nInstructions];
+logic[7:0] imem[1];
 logic[7:0] dmem[nRegisters   ];
 
 int offsetI, offsetD;
